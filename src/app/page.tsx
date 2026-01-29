@@ -12,12 +12,21 @@ export default function Home() {
   const [stainsKey, setStainsKey] = useState(0);
   const [postcardFlipped, setPostcardFlipped] = useState(false);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [initialAnimationDone, setInitialAnimationDone] = useState(false);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
     // Trigger stain re-animation on mode change
     setStainsKey(prev => prev + 1);
   }, [darkMode]);
+
+  // Mark initial animation as done after it completes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setInitialAnimationDone(true);
+    }, 1800); // Last letter animation ends around 1.24s + 0.5s duration
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,7 +86,7 @@ export default function Home() {
       </div>
 
       {/* INTERACTIVE CHERUB - Left (Blue) - Toggles Dark Mode */}
-      <div className="fixed left-4 md:left-8 top-1/2 -translate-y-1/2 z-10 animate-load-cherub-left">
+      <div className="fixed left-2 md:left-8 top-1/2 -translate-y-1/2 z-10 animate-load-cherub-left">
         <button
           onClick={() => setDarkMode(!darkMode)}
           className="cherub-btn animate-float-1"
@@ -88,13 +97,13 @@ export default function Home() {
             alt="Toggle dark mode"
             width={100}
             height={120}
-            className={`w-[80px] md:w-[120px] transition-all duration-300 ${darkMode ? 'brightness-50' : 'brightness-100'}`}
+            className={`w-[50px] sm:w-[70px] md:w-[120px] transition-all duration-300 ${darkMode ? 'brightness-50' : 'brightness-100'}`}
           />
         </button>
       </div>
 
       {/* INTERACTIVE CHERUB - Right (Pink) - Makes letters fall */}
-      <div className="fixed right-4 md:right-8 top-1/2 -translate-y-1/2 z-10 animate-load-cherub-right">
+      <div className="fixed right-2 md:right-8 top-1/2 -translate-y-1/2 z-10 animate-load-cherub-right">
         <button
           onClick={() => triggerChaos('fall')}
           className="cherub-btn animate-float-2"
@@ -105,7 +114,7 @@ export default function Home() {
             alt="Shake things up"
             width={100}
             height={120}
-            className="w-[80px] md:w-[120px] hover:animate-shake"
+            className="w-[50px] sm:w-[70px] md:w-[120px] hover:animate-shake"
           />
         </button>
       </div>
@@ -147,20 +156,20 @@ export default function Home() {
         {/* BIG HEADLINE */}
         <div className="mb-8">
           <div className="cutout-line mb-2 md:mb-3">
-            <span className={`cutout cut-4 text-4xl md:text-6xl lg:text-7xl animate-letter letter-delay-1 ${chaos === 'fall' ? 'animate-fall-1' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>E</span>
-            <span className={`cutout cut-2 text-4xl md:text-6xl lg:text-7xl animate-letter letter-delay-2 ${chaos === 'fall' ? 'animate-fall-2' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>M</span>
-            <span className={`cutout cut-9 text-4xl md:text-6xl lg:text-7xl animate-letter letter-delay-3 ${chaos === 'fall' ? 'animate-fall-3' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-2' : ''}`}>B</span>
-            <span className={`cutout cut-3 text-4xl md:text-6xl lg:text-7xl animate-letter letter-delay-4 ${chaos === 'fall' ? 'animate-fall-4' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>R</span>
-            <span className={`cutout cut-1 text-4xl md:text-6xl lg:text-7xl animate-letter letter-delay-5 ${chaos === 'fall' ? 'animate-fall-5' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>A</span>
-            <span className={`cutout cut-5 text-4xl md:text-6xl lg:text-7xl animate-letter letter-delay-6 ${chaos === 'fall' ? 'animate-fall-6' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-2' : ''}`}>C</span>
-            <span className={`cutout cut-7 text-4xl md:text-6xl lg:text-7xl animate-letter letter-delay-7 ${chaos === 'fall' ? 'animate-fall-7' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>E</span>
+            <span className={`cutout cut-4 text-4xl md:text-6xl lg:text-7xl ${!initialAnimationDone ? 'animate-letter letter-delay-1' : ''} ${chaos === 'fall' ? 'animate-fall-1' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>E</span>
+            <span className={`cutout cut-2 text-4xl md:text-6xl lg:text-7xl ${!initialAnimationDone ? 'animate-letter letter-delay-2' : ''} ${chaos === 'fall' ? 'animate-fall-2' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>M</span>
+            <span className={`cutout cut-9 text-4xl md:text-6xl lg:text-7xl ${!initialAnimationDone ? 'animate-letter letter-delay-3' : ''} ${chaos === 'fall' ? 'animate-fall-3' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-2' : ''}`}>B</span>
+            <span className={`cutout cut-3 text-4xl md:text-6xl lg:text-7xl ${!initialAnimationDone ? 'animate-letter letter-delay-4' : ''} ${chaos === 'fall' ? 'animate-fall-4' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>R</span>
+            <span className={`cutout cut-1 text-4xl md:text-6xl lg:text-7xl ${!initialAnimationDone ? 'animate-letter letter-delay-5' : ''} ${chaos === 'fall' ? 'animate-fall-5' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>A</span>
+            <span className={`cutout cut-5 text-4xl md:text-6xl lg:text-7xl ${!initialAnimationDone ? 'animate-letter letter-delay-6' : ''} ${chaos === 'fall' ? 'animate-fall-6' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-2' : ''}`}>C</span>
+            <span className={`cutout cut-7 text-4xl md:text-6xl lg:text-7xl ${!initialAnimationDone ? 'animate-letter letter-delay-7' : ''} ${chaos === 'fall' ? 'animate-fall-7' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>E</span>
           </div>
           <div className="cutout-line">
-            <span className={`cutout cut-6 text-3xl md:text-5xl lg:text-6xl animate-letter letter-delay-8 ${chaos === 'fall' ? 'animate-fall-3' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>the</span>
-            <span className={`cutout cut-9 text-5xl md:text-7xl lg:text-8xl animate-letter letter-delay-9 ${chaos === 'fall' ? 'animate-fall-1' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>M</span>
-            <span className={`cutout cut-2 text-5xl md:text-7xl lg:text-8xl animate-letter letter-delay-10 ${chaos === 'fall' ? 'animate-fall-5' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-2' : ''}`}>E</span>
-            <span className={`cutout cut-3 text-5xl md:text-7xl lg:text-8xl animate-letter letter-delay-11 ${chaos === 'fall' ? 'animate-fall-2' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>S</span>
-            <span className={`cutout cut-4 text-5xl md:text-7xl lg:text-8xl animate-letter letter-delay-12 ${chaos === 'fall' ? 'animate-fall-6' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>S</span>
+            <span className={`cutout cut-6 text-3xl md:text-5xl lg:text-6xl ${!initialAnimationDone ? 'animate-letter letter-delay-8' : ''} ${chaos === 'fall' ? 'animate-fall-3' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>the</span>
+            <span className={`cutout cut-9 text-5xl md:text-7xl lg:text-8xl ${!initialAnimationDone ? 'animate-letter letter-delay-9' : ''} ${chaos === 'fall' ? 'animate-fall-1' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>M</span>
+            <span className={`cutout cut-2 text-5xl md:text-7xl lg:text-8xl ${!initialAnimationDone ? 'animate-letter letter-delay-10' : ''} ${chaos === 'fall' ? 'animate-fall-5' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-2' : ''}`}>E</span>
+            <span className={`cutout cut-3 text-5xl md:text-7xl lg:text-8xl ${!initialAnimationDone ? 'animate-letter letter-delay-11' : ''} ${chaos === 'fall' ? 'animate-fall-2' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>S</span>
+            <span className={`cutout cut-4 text-5xl md:text-7xl lg:text-8xl ${!initialAnimationDone ? 'animate-letter letter-delay-12' : ''} ${chaos === 'fall' ? 'animate-fall-6' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>S</span>
           </div>
         </div>
 
@@ -194,7 +203,7 @@ export default function Home() {
           onClick={closePanel}
         >
           <div
-            className="relative max-w-lg w-full animate-panel-in"
+            className="relative max-w-[95vw] sm:max-w-md md:max-w-lg w-full animate-panel-in"
             onClick={(e) => e.stopPropagation()}
           >
             {/* STORY PANEL - AIM Chat Style */}

@@ -2467,3 +2467,333 @@ body {
   animation: fade-in 0.6s ease-out forwards;
   animation-delay: 1.9s;
 }
+
+/* ============================================
+   MOBILE RESPONSIVE STYLES
+   ============================================ */
+
+/* Small phones (max 480px) */
+@media (max-width: 480px) {
+  /* Spam popup adjustments */
+  .spam-popup {
+    margin: 0 8px;
+  }
+
+  .spam-flash {
+    font-size: 12px;
+    padding: 8px;
+  }
+
+  .spam-arrows {
+    font-size: 11px;
+  }
+
+  .spam-image-wrapper {
+    padding: 4px;
+  }
+
+  .spam-image {
+    width: 150px;
+    height: auto;
+  }
+
+  .spam-prize {
+    font-size: 14px;
+  }
+
+  .spam-highlight {
+    font-size: 16px;
+    padding: 3px 8px;
+  }
+
+  .spam-count {
+    font-size: 13px;
+  }
+
+  .spam-warning {
+    font-size: 11px;
+    padding: 6px;
+  }
+
+  .spam-cta {
+    font-size: 14px;
+    padding: 10px 16px;
+  }
+
+  .spam-fine-print {
+    font-size: 7px;
+  }
+
+  /* AIM chat adjustments */
+  .aim-titlebar {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+
+  .aim-toolbar {
+    flex-wrap: wrap;
+    gap: 0;
+  }
+
+  .aim-toolbar-btn {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+
+  .aim-chat {
+    max-height: 250px;
+    padding: 8px;
+    margin: 6px;
+  }
+
+  .aim-message {
+    font-size: 11px;
+  }
+
+  .aim-input-area {
+    padding: 6px;
+    gap: 6px;
+  }
+
+  .aim-input {
+    font-size: 11px;
+    padding: 4px 6px;
+  }
+
+  .aim-send {
+    font-size: 10px;
+    padding: 4px 10px;
+  }
+
+  .aim-status {
+    font-size: 9px;
+    padding: 3px 8px;
+  }
+
+  .aim-dropdown {
+    min-width: 120px;
+  }
+
+  .aim-dropdown-item {
+    font-size: 10px;
+    padding: 5px 10px;
+  }
+
+  /* Web95 signup adjustments */
+  .web95-titlebar {
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+
+  .web95-content {
+    padding: 12px;
+  }
+
+  .web95-inner {
+    padding: 14px;
+  }
+
+  .web95-marquee {
+    font-size: 11px;
+    padding: 5px 8px;
+  }
+
+  .web95-comic {
+    font-size: 12px;
+  }
+
+  .web95-construction {
+    font-size: 10px;
+  }
+
+  .web95-btn {
+    font-size: 11px;
+    padding: 5px 14px;
+  }
+
+  .web95-counter {
+    font-size: 10px;
+  }
+
+  .web95-badge {
+    font-size: 8px;
+  }
+
+  /* Cutout letters - smaller padding on mobile */
+  .cutout {
+    padding: 4px 6px;
+    margin: 1px;
+  }
+
+  /* CRT effect - lighter on mobile for performance */
+  .crt-overlay {
+    background:
+      repeating-linear-gradient(
+        0deg,
+        transparent 0px,
+        transparent 2px,
+        rgba(0, 0, 0, 0.04) 2px,
+        rgba(0, 0, 0, 0.04) 4px
+      );
+  }
+
+  .crt-overlay::before {
+    display: none;
+  }
+
+  .crt-overlay::after {
+    opacity: 0.4;
+  }
+}
+
+/* Scale down stains on tablets and smaller */
+@media (max-width: 768px) {
+  .stain-pink-lg {
+    width: 180px;
+    height: 200px;
+  }
+
+  .stain-blue-lg {
+    width: 200px;
+    height: 150px;
+  }
+
+  .stain-yellow-md {
+    width: 130px;
+    height: 120px;
+  }
+
+  .stain-purple-lg {
+    width: 120px;
+    height: 130px;
+  }
+
+  .stain-green-md {
+    width: 100px;
+    height: 90px;
+  }
+
+  /* Hide some tiny stains on mobile */
+  .stain-tiny-1,
+  .stain-tiny-2,
+  .stain-tiny-3 {
+    display: none;
+  }
+
+  /* Smaller orange drips */
+  .stain-orange-1 {
+    width: 35px;
+    height: 80px;
+  }
+  .stain-orange-2 {
+    width: 25px;
+    height: 55px;
+  }
+  .stain-orange-3 {
+    width: 18px;
+    height: 40px;
+  }
+}
+
+/* Small phones - hide more stains */
+@media (max-width: 480px) {
+  .stain-pink-sm-1,
+  .stain-pink-sm-2,
+  .stain-blue-sm-1,
+  .stain-blue-sm-2,
+  .stain-yellow-sm {
+    display: none;
+  }
+
+  .stain-pink-lg {
+    width: 140px;
+    height: 160px;
+  }
+
+  .stain-blue-lg {
+    width: 150px;
+    height: 110px;
+  }
+
+  .stain-yellow-md {
+    width: 100px;
+    height: 90px;
+  }
+
+  .stain-purple-lg {
+    width: 90px;
+    height: 100px;
+  }
+
+  .stain-green-md {
+    width: 80px;
+    height: 70px;
+  }
+
+  .stain-orange-1,
+  .stain-orange-2,
+  .stain-orange-3 {
+    display: none;
+  }
+}
+
+/* Touch-friendly improvements */
+@media (hover: none) and (pointer: coarse) {
+  /* Larger tap targets for touch devices */
+  .cherub-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .aim-close,
+  .spam-close,
+  .web95-close {
+    min-width: 36px;
+    min-height: 36px;
+    width: 36px;
+    height: 36px;
+  }
+
+  .aim-toolbar-btn {
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+  }
+
+  .aim-dropdown-item {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Remove hover animations on touch devices */
+  .cutout:hover {
+    transform: none;
+  }
+
+  .cherub-btn:hover {
+    transform: none;
+    filter: none;
+  }
+
+  /* Active states for touch feedback */
+  .cutout:active {
+    transform: scale(1.05);
+  }
+
+  .cherub-btn:active {
+    transform: scale(1.1);
+  }
+}
+
+/* Prevent horizontal scroll on mobile */
+html, body {
+  overflow-x: hidden;
+}
+
+/* Safe area insets for notched phones */
+@supports (padding: max(0px)) {
+  .fixed.bottom-4 {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}
