@@ -10,6 +10,8 @@ export default function Home() {
   const [darkMode, setDarkMode] = useState(false);
   const [chaos, setChaos] = useState<string | null>(null);
   const [stainsKey, setStainsKey] = useState(0);
+  const [postcardFlipped, setPostcardFlipped] = useState(false);
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
@@ -22,7 +24,11 @@ export default function Home() {
     setSubmitted(true);
   };
 
-  const closePanel = () => setActivePanel(null);
+  const closePanel = () => {
+    setActivePanel(null);
+    setPostcardFlipped(false);
+    setActiveMenu(null);
+  };
 
   // Chaotic interactions
   const triggerChaos = (type: string) => {
@@ -71,7 +77,7 @@ export default function Home() {
       </div>
 
       {/* INTERACTIVE CHERUB - Left (Blue) - Toggles Dark Mode */}
-      <div className="fixed left-4 md:left-8 top-1/2 -translate-y-1/2 z-10">
+      <div className="fixed left-4 md:left-8 top-1/2 -translate-y-1/2 z-10 animate-load-cherub-left">
         <button
           onClick={() => setDarkMode(!darkMode)}
           className="cherub-btn animate-float-1"
@@ -88,7 +94,7 @@ export default function Home() {
       </div>
 
       {/* INTERACTIVE CHERUB - Right (Pink) - Makes letters fall */}
-      <div className="fixed right-4 md:right-8 top-1/2 -translate-y-1/2 z-10">
+      <div className="fixed right-4 md:right-8 top-1/2 -translate-y-1/2 z-10 animate-load-cherub-right">
         <button
           onClick={() => triggerChaos('fall')}
           className="cherub-btn animate-float-2"
@@ -105,7 +111,7 @@ export default function Home() {
       </div>
 
       {/* INTERACTIVE CHERUB - Top (Green) - Spins letters */}
-      <div className="fixed top-8 left-1/4 z-10 hidden lg:block">
+      <div className="fixed top-8 left-1/4 z-10 hidden lg:block animate-load-cherub-top">
         <button
           onClick={() => triggerChaos('spin')}
           className="cherub-btn animate-float-3"
@@ -127,7 +133,7 @@ export default function Home() {
       {/* MAIN CONTENT */}
       <div className="text-center z-20 max-w-4xl">
         {/* Logo */}
-        <div className="mb-6">
+        <div className="mb-6 animate-load-logo">
           <Image
             src="/assets/already spilled main.png"
             alt="Already Spilled"
@@ -141,25 +147,25 @@ export default function Home() {
         {/* BIG HEADLINE */}
         <div className="mb-8">
           <div className="cutout-line mb-2 md:mb-3">
-            <span className={`cutout cut-4 text-4xl md:text-6xl lg:text-7xl ${chaos === 'fall' ? 'animate-fall-1' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>E</span>
-            <span className={`cutout cut-2 text-4xl md:text-6xl lg:text-7xl ${chaos === 'fall' ? 'animate-fall-2' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>M</span>
-            <span className={`cutout cut-9 text-4xl md:text-6xl lg:text-7xl ${chaos === 'fall' ? 'animate-fall-3' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-2' : ''}`}>B</span>
-            <span className={`cutout cut-3 text-4xl md:text-6xl lg:text-7xl ${chaos === 'fall' ? 'animate-fall-4' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>R</span>
-            <span className={`cutout cut-1 text-4xl md:text-6xl lg:text-7xl ${chaos === 'fall' ? 'animate-fall-5' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>A</span>
-            <span className={`cutout cut-5 text-4xl md:text-6xl lg:text-7xl ${chaos === 'fall' ? 'animate-fall-6' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-2' : ''}`}>C</span>
-            <span className={`cutout cut-7 text-4xl md:text-6xl lg:text-7xl ${chaos === 'fall' ? 'animate-fall-7' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>E</span>
+            <span className={`cutout cut-4 text-4xl md:text-6xl lg:text-7xl animate-letter letter-delay-1 ${chaos === 'fall' ? 'animate-fall-1' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>E</span>
+            <span className={`cutout cut-2 text-4xl md:text-6xl lg:text-7xl animate-letter letter-delay-2 ${chaos === 'fall' ? 'animate-fall-2' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>M</span>
+            <span className={`cutout cut-9 text-4xl md:text-6xl lg:text-7xl animate-letter letter-delay-3 ${chaos === 'fall' ? 'animate-fall-3' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-2' : ''}`}>B</span>
+            <span className={`cutout cut-3 text-4xl md:text-6xl lg:text-7xl animate-letter letter-delay-4 ${chaos === 'fall' ? 'animate-fall-4' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>R</span>
+            <span className={`cutout cut-1 text-4xl md:text-6xl lg:text-7xl animate-letter letter-delay-5 ${chaos === 'fall' ? 'animate-fall-5' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>A</span>
+            <span className={`cutout cut-5 text-4xl md:text-6xl lg:text-7xl animate-letter letter-delay-6 ${chaos === 'fall' ? 'animate-fall-6' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-2' : ''}`}>C</span>
+            <span className={`cutout cut-7 text-4xl md:text-6xl lg:text-7xl animate-letter letter-delay-7 ${chaos === 'fall' ? 'animate-fall-7' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>E</span>
           </div>
           <div className="cutout-line">
-            <span className={`cutout cut-6 text-3xl md:text-5xl lg:text-6xl ${chaos === 'fall' ? 'animate-fall-3' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>the</span>
-            <span className={`cutout cut-9 text-5xl md:text-7xl lg:text-8xl ${chaos === 'fall' ? 'animate-fall-1' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>M</span>
-            <span className={`cutout cut-2 text-5xl md:text-7xl lg:text-8xl ${chaos === 'fall' ? 'animate-fall-5' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-2' : ''}`}>E</span>
-            <span className={`cutout cut-3 text-5xl md:text-7xl lg:text-8xl ${chaos === 'fall' ? 'animate-fall-2' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>S</span>
-            <span className={`cutout cut-4 text-5xl md:text-7xl lg:text-8xl ${chaos === 'fall' ? 'animate-fall-6' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>S</span>
+            <span className={`cutout cut-6 text-3xl md:text-5xl lg:text-6xl animate-letter letter-delay-8 ${chaos === 'fall' ? 'animate-fall-3' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>the</span>
+            <span className={`cutout cut-9 text-5xl md:text-7xl lg:text-8xl animate-letter letter-delay-9 ${chaos === 'fall' ? 'animate-fall-1' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>M</span>
+            <span className={`cutout cut-2 text-5xl md:text-7xl lg:text-8xl animate-letter letter-delay-10 ${chaos === 'fall' ? 'animate-fall-5' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-2' : ''}`}>E</span>
+            <span className={`cutout cut-3 text-5xl md:text-7xl lg:text-8xl animate-letter letter-delay-11 ${chaos === 'fall' ? 'animate-fall-2' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>S</span>
+            <span className={`cutout cut-4 text-5xl md:text-7xl lg:text-8xl animate-letter letter-delay-12 ${chaos === 'fall' ? 'animate-fall-6' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>S</span>
           </div>
         </div>
 
         {/* BUTTONS */}
-        <div className="flex flex-wrap justify-center gap-3 md:gap-4">
+        <div className="flex flex-wrap justify-center gap-3 md:gap-4 animate-load-buttons">
           <button
             onClick={() => setActivePanel("story")}
             className="cutout cut-8 text-sm md:text-base px-4 py-2 cursor-pointer hover:scale-105 transition-transform"
@@ -191,126 +197,290 @@ export default function Home() {
             className="relative max-w-lg w-full animate-panel-in"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Close button */}
-            <button
-              onClick={closePanel}
-              className="absolute -top-3 -right-3 cutout cut-9 text-lg w-10 h-10 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform z-10"
-            >
-              ×
-            </button>
-
-            {/* STORY PANEL */}
+            {/* STORY PANEL - AIM Chat Style */}
             {activePanel === "story" && (
-              <div className="torn-paper">
-                <div className="torn-edge-top"></div>
-                <div className="panel-content">
-                  <div className="panel-header">
-                    <span className="panel-date">Est. 2025</span>
-                    <span className="panel-edition">Vol. 1, No. 1</span>
+              <div className="aim-window">
+                <div className="aim-titlebar">
+                  <span>AlreadySpilled - Instant Message</span>
+                  <button onClick={closePanel} className="aim-close">×</button>
+                </div>
+                <div className="aim-toolbar">
+                  <div className="aim-menu-wrapper">
+                    <span
+                      className="aim-toolbar-btn"
+                      onClick={() => setActiveMenu(activeMenu === 'file' ? null : 'file')}
+                    >
+                      File
+                    </span>
+                    {activeMenu === 'file' && (
+                      <div className="aim-dropdown">
+                        <div className="aim-dropdown-item" onClick={() => setActiveMenu(null)}>New Message</div>
+                        <div className="aim-dropdown-item" onClick={() => setActiveMenu(null)}>Save Chat</div>
+                        <div className="aim-dropdown-divider"></div>
+                        <div className="aim-dropdown-item" onClick={closePanel}>Close Window</div>
+                      </div>
+                    )}
                   </div>
-
-                  <h2 className="panel-headline">The Story</h2>
-                  <div className="panel-divider"></div>
-
-                  <div className="panel-body space-y-4">
-                    <p className="panel-lead">
-                      In the world of collectibles, <span className="cutout cut-2 text-sm">condition is everything.</span> Mint in box. Factory sealed. Never opened.
-                    </p>
-
-                    <p className="panel-bold">We disagree.</p>
-
-                    <div className="panel-quote">
-                      &ldquo;A knight in shining armor has not seen battle.&rdquo;
-                    </div>
-
-                    <p className="panel-text">
-                      Already Spilled celebrates the <span className="cutout cut-7 text-xs">stains,</span> the <span className="cutout cut-4 text-xs">scuffs,</span> and the stories they tell. The coffee ring on your favorite book. The grass stain from that winning catch.
-                    </p>
-
-                    <p className="panel-text">
-                      These aren&apos;t flaws — they&apos;re <span className="cutout cut-10 text-xs">proof of life.</span>
-                    </p>
+                  <div className="aim-menu-wrapper">
+                    <span
+                      className="aim-toolbar-btn"
+                      onClick={() => setActiveMenu(activeMenu === 'edit' ? null : 'edit')}
+                    >
+                      Edit
+                    </span>
+                    {activeMenu === 'edit' && (
+                      <div className="aim-dropdown">
+                        <div className="aim-dropdown-item aim-dropdown-disabled">Cut</div>
+                        <div className="aim-dropdown-item aim-dropdown-disabled">Copy</div>
+                        <div className="aim-dropdown-item aim-dropdown-disabled">Paste</div>
+                        <div className="aim-dropdown-divider"></div>
+                        <div className="aim-dropdown-item" onClick={() => setActiveMenu(null)}>Select All</div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="aim-menu-wrapper">
+                    <span
+                      className="aim-toolbar-btn"
+                      onClick={() => setActiveMenu(activeMenu === 'insert' ? null : 'insert')}
+                    >
+                      Insert
+                    </span>
+                    {activeMenu === 'insert' && (
+                      <div className="aim-dropdown">
+                        <div className="aim-dropdown-item" onClick={() => setActiveMenu(null)}>😎 Smiley</div>
+                        <div className="aim-dropdown-item" onClick={() => setActiveMenu(null)}>☕ Coffee Stain</div>
+                        <div className="aim-dropdown-item" onClick={() => setActiveMenu(null)}>🫘 Spilled Beans</div>
+                        <div className="aim-dropdown-item" onClick={() => setActiveMenu(null)}>👼 Cherub</div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="aim-menu-wrapper">
+                    <span
+                      className="aim-toolbar-btn"
+                      onClick={() => setActiveMenu(activeMenu === 'people' ? null : 'people')}
+                    >
+                      People
+                    </span>
+                    {activeMenu === 'people' && (
+                      <div className="aim-dropdown">
+                        <div className="aim-dropdown-item" onClick={() => setActiveMenu(null)}>Follow us on AIM</div>
+                      </div>
+                    )}
                   </div>
                 </div>
-                <div className="torn-edge-bottom"></div>
+                <div className="aim-chat">
+                  <div className="aim-message aim-them">
+                    <span className="aim-screenname">AlreadySpilled:</span>
+                    <span className="aim-text">hey, wanna hear something wild?</span>
+                  </div>
+                  <div className="aim-message aim-them">
+                    <span className="aim-screenname">AlreadySpilled:</span>
+                    <span className="aim-text">in the world of collectibles, condition is EVERYTHING</span>
+                  </div>
+                  <div className="aim-message aim-them">
+                    <span className="aim-screenname">AlreadySpilled:</span>
+                    <span className="aim-text">mint. sealed. untouched. &quot;perfect&quot;</span>
+                  </div>
+                  <div className="aim-message aim-you">
+                    <span className="aim-screenname">You:</span>
+                    <span className="aim-text">sounds boring lol</span>
+                  </div>
+                  <div className="aim-message aim-them">
+                    <span className="aim-screenname">AlreadySpilled:</span>
+                    <span className="aim-text">EXACTLY</span>
+                  </div>
+                  <div className="aim-message aim-them">
+                    <span className="aim-screenname">AlreadySpilled:</span>
+                    <span className="aim-text">&quot;a knight in shining armor has never had his mettle tested&quot;</span>
+                  </div>
+                  <div className="aim-message aim-them">
+                    <span className="aim-screenname">AlreadySpilled:</span>
+                    <span className="aim-text">we celebrate the stains, the scuffs, the stories they tell</span>
+                  </div>
+                  <div className="aim-message aim-them">
+                    <span className="aim-screenname">AlreadySpilled:</span>
+                    <span className="aim-text">the coffee ring on ur fav book ☕</span>
+                  </div>
+                  <div className="aim-message aim-them">
+                    <span className="aim-screenname">AlreadySpilled:</span>
+                    <span className="aim-text">the grass stain from that winning catch 🏆</span>
+                  </div>
+                  <div className="aim-message aim-you">
+                    <span className="aim-screenname">You:</span>
+                    <span className="aim-text">ohhh i get it</span>
+                  </div>
+                  <div className="aim-message aim-them">
+                    <span className="aim-screenname">AlreadySpilled:</span>
+                    <span className="aim-text">these aren&apos;t flaws—they&apos;re PROOF OF LIFE</span>
+                  </div>
+                  <div className="aim-message aim-them aim-away">
+                    <span className="aim-screenname">AlreadySpilled:</span>
+                    <span className="aim-text">brb, spilling something 😎</span>
+                  </div>
+                </div>
+                <div className="aim-input-area">
+                  <input type="text" className="aim-input" placeholder="Type a message..." disabled />
+                  <button className="aim-send">Send</button>
+                </div>
+                <div className="aim-status">
+                  <span>AlreadySpilled is online</span>
+                  <span className="aim-timestamp">Est. 2025</span>
+                </div>
               </div>
             )}
 
-            {/* COLLECTION PANEL */}
+            {/* COLLECTION PANEL - Spammy Popup */}
             {activePanel === "collection" && (
-              <div className="torn-paper">
-                <div className="torn-edge-top"></div>
-                <div className="panel-content">
-                  <h2 className="panel-headline">Collection</h2>
-                  <div className="panel-divider"></div>
-                  <div className="photo-cutout mb-4">
+              <div className="spam-popup">
+                <div className="spam-titlebar">
+                  <span>⚠️ CONGRATULATIONS!!! ⚠️</span>
+                  <button onClick={closePanel} className="spam-close">×</button>
+                </div>
+                <div className="spam-content">
+                  <div className="spam-flash">
+                    🎉 YOU ARE THE 1,000,000th VISITOR!!! 🎉
+                  </div>
+
+                  <div className="spam-arrows">
+                    👇👇👇 CLICK HERE 👇👇👇
+                  </div>
+
+                  <div className="spam-image-wrapper">
                     <Image
                       src="/assets/main artwork.png"
                       alt="Can of Lonely Beans"
-                      width={400}
-                      height={280}
-                      className="w-full h-auto"
+                      width={200}
+                      height={200}
+                      className="spam-image"
                     />
                   </div>
-                  <div className="text-center">
-                    <h3 className="panel-subtitle">Can of Lonely Beans</h3>
-                    <p className="panel-text mb-3">First Collection</p>
-                    <div className="flex flex-wrap justify-center gap-2 text-xs md:text-sm">
-                      <span className="cutout cut-6">11 shirts</span>
-                      <span className="cutout cut-7">11 stories</span>
-                      <span className="cutout cut-10">1 treasure hunt</span>
-                    </div>
-                    <div className="mt-4">
-                      <span className="cutout cut-9 text-sm">SPILLVILLE, IOWA</span>
-                    </div>
+
+                  <div className="spam-prize">
+                    YOU&apos;VE WON ACCESS TO THE<br/>
+                    <span className="spam-highlight">EXCLUSIVE COLLECTION</span>
+                  </div>
+
+                  <div className="spam-details">
+                    <p className="spam-count">🔥 11 SHIRTS 🔥</p>
+                    <p className="spam-count">🔥 11 STORIES 🔥</p>
+                    <p className="spam-count">🔥 1 TREASURE HUNT 🔥</p>
+                  </div>
+
+                  <div className="spam-warning">
+                    ⏰ LIMITED TIME OFFER ⏰
+                  </div>
+
+                  <button className="spam-cta">
+                    🚨 CLAIM YOUR PRIZE NOW 🚨
+                  </button>
+
+                  <p className="spam-fine-print">
+                    *Details coming soon. No purchase necessary.
+                    By clicking you agree that stains are beautiful.
+                  </p>
+
+                  <div className="spam-fake-btns">
+                    <span className="spam-fake-x">✕</span>
+                    <span className="spam-fake-x">✕</span>
+                    <span className="spam-fake-x">✕</span>
                   </div>
                 </div>
-                <div className="torn-edge-bottom"></div>
               </div>
             )}
 
-            {/* SIGNUP PANEL */}
+            {/* SIGNUP PANEL - Early Internet Style */}
             {activePanel === "signup" && (
-              <div className="torn-paper">
-                <div className="torn-edge-top"></div>
-                <div className="panel-content">
-                  <h2 className="panel-headline">Get Notified</h2>
-                  <div className="panel-divider"></div>
+              <div className="web95">
+                <div className="web95-titlebar">
+                  <span>📧 Already Spilled - Mailing List</span>
+                  <button onClick={closePanel} className="web95-close">×</button>
+                </div>
+
+                <div className="web95-content">
                   {!submitted ? (
-                    <>
-                      <p className="text-center panel-text mb-6">
-                        Be the first to know when the beans spill.
+                    <div className="web95-inner">
+                      <div className="web95-marquee">
+                        ⭐ JOIN OUR MAILING LIST!!! ⭐
+                      </div>
+
+                      <div className="web95-rainbow"></div>
+
+                      <p className="web95-comic text-center text-sm mb-4">
+                        Be the <b>FIRST</b> to know when the beans spill!!!
                       </p>
-                      <form onSubmit={handleSubmit} className="space-y-4">
-                        <input
-                          type="email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          placeholder="your@email.com"
-                          required
-                          className="panel-input w-full"
-                        />
-                        <button type="submit" className="panel-btn w-full">
-                          Subscribe
-                        </button>
+
+                      <div className="web95-construction">
+                        🚧 <span>NEW COLLECTION COMING SOON</span> 🚧
+                      </div>
+
+                      <form onSubmit={handleSubmit} className="space-y-3">
+                        <div>
+                          <label className="block text-xs mb-1">Your E-Mail Address:</label>
+                          <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="coolperson@aol.com"
+                            required
+                            className="web95-input"
+                          />
+                        </div>
+                        <div className="text-center">
+                          <button type="submit" className="web95-btn">
+                            ✉️ SUBSCRIBE NOW ✉️
+                          </button>
+                        </div>
                       </form>
-                      <p className="text-center text-xs mt-4 panel-text opacity-70">
-                        We only write when it matters.
+
+                      <div className="web95-rainbow"></div>
+
+                      <div className="text-center mt-4">
+                        <span className="web95-counter">Visitors: 000,847</span>
+                      </div>
+
+                      <p className="text-center text-xs mt-3 text-gray-600">
+                        We only write when it matters. <span className="web95-link">Sign our Guestbook!</span>
                       </p>
-                    </>
+
+                      <div className="text-center mt-3">
+                        <span className="web95-badge">🏆 Best viewed in Netscape Navigator 🏆</span>
+                      </div>
+                    </div>
                   ) : (
-                    <div className="text-center py-8">
-                      <div className="cutout cut-5 text-4xl inline-block mb-4">✓</div>
-                      <p className="text-xl font-semibold mb-2 panel-text">
-                        You&apos;re in!
+                    <div className="web95-inner text-center">
+                      <div className="web95-marquee">
+                        🎉 WELCOME TO THE CLUB!!! 🎉
+                      </div>
+
+                      <div className="web95-rainbow"></div>
+
+                      <p className="text-4xl my-4">
+                        <span className="web95-email">📧</span>
                       </p>
-                      <p className="panel-text opacity-80">
+
+                      <p className="web95-comic text-lg mb-2">
+                        <b>You&apos;re in!</b>
+                      </p>
+
+                      <p className="text-sm text-gray-600 mb-4">
                         The mess awaits...
+                      </p>
+
+                      <div className="web95-bevel">
+                        <p className="text-xs">
+                          Thank you for signing up!<br/>
+                          You are visitor #847
+                        </p>
+                      </div>
+
+                      <div className="web95-rainbow"></div>
+
+                      <p className="text-xs mt-3">
+                        <span className="web95-link">Click here</span> to tell your friends!
                       </p>
                     </div>
                   )}
                 </div>
-                <div className="torn-edge-bottom"></div>
               </div>
             )}
           </div>
@@ -318,8 +488,8 @@ export default function Home() {
       )}
 
       {/* FOOTER */}
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-20">
-        <span className="cutout cut-6 text-xs">© 2025 Already Spilled</span>
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-20 animate-load-footer">
+        <span className="cutout cut-6 text-xs">© 2026 Already Spilled</span>
       </div>
     </main>
   );
