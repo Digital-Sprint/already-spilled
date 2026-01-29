@@ -22,33 +22,11 @@ body {
   padding: 0;
 }
 
-/* Light paper background with brand-colored spills */
+/* Light paper background */
 .paper-bg {
   min-height: 100vh;
   background-color: #f5f0e8;
   background-image:
-    /* PINK spill - top right */
-    radial-gradient(ellipse 140px 200px at 90% 8%, rgba(255, 107, 157, 0.35) 0%, rgba(255, 107, 157, 0.15) 35%, transparent 55%),
-    radial-gradient(ellipse 80px 60px at 82% 18%, rgba(255, 107, 157, 0.25) 0%, transparent 60%),
-    /* BLUE puddle - bottom left */
-    radial-gradient(ellipse 220px 160px at 5% 92%, rgba(74, 144, 217, 0.35) 0%, rgba(74, 144, 217, 0.15) 40%, transparent 65%),
-    radial-gradient(ellipse 100px 180px at 15% 85%, rgba(74, 144, 217, 0.28) 0%, transparent 55%),
-    /* YELLOW splash - top left */
-    radial-gradient(ellipse 180px 150px at 12% 10%, rgba(245, 224, 80, 0.4) 0%, rgba(245, 224, 80, 0.2) 40%, transparent 60%),
-    radial-gradient(ellipse 80px 120px at 20% 18%, rgba(245, 224, 80, 0.3) 0%, transparent 50%),
-    /* ORANGE drips - center right */
-    radial-gradient(ellipse 30px 80px at 95% 45%, rgba(255, 140, 66, 0.35) 0%, transparent 60%),
-    radial-gradient(ellipse 25px 60px at 92% 55%, rgba(255, 140, 66, 0.28) 0%, transparent 55%),
-    radial-gradient(ellipse 20px 50px at 96% 62%, rgba(255, 140, 66, 0.22) 0%, transparent 50%),
-    /* GREEN spot - bottom right */
-    radial-gradient(ellipse 120px 100px at 85% 88%, rgba(124, 184, 96, 0.3) 0%, rgba(124, 184, 96, 0.12) 45%, transparent 65%),
-    /* PURPLE splash - center */
-    radial-gradient(ellipse 100px 80px at 50% 75%, rgba(157, 78, 221, 0.25) 0%, transparent 55%),
-    /* Small scattered drips */
-    radial-gradient(circle 12px at 30% 60%, rgba(255, 107, 157, 0.3) 0%, transparent 70%),
-    radial-gradient(circle 10px at 70% 30%, rgba(74, 144, 217, 0.28) 0%, transparent 65%),
-    radial-gradient(circle 8px at 45% 45%, rgba(245, 224, 80, 0.35) 0%, transparent 60%),
-    radial-gradient(circle 11px at 60% 85%, rgba(230, 57, 70, 0.25) 0%, transparent 65%),
     /* Paper texture */
     url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.06'/%3E%3C/svg%3E");
 }
@@ -163,19 +141,19 @@ body {
   position: relative;
 }
 
-/* Image treatments - Pop Art style */
+/* Image treatments - Paper style */
 .photo-cutout {
-  border: 4px solid #000;
-  box-shadow: 6px 6px 0 #000;
+  border: 4px solid #fff;
+  box-shadow: 4px 4px 12px rgba(0,0,0,0.25);
   position: relative;
+  transform: rotate(1deg);
 }
 
 .photo-cutout::after {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(circle, rgba(0,0,0,0.05) 1px, transparent 1px);
-  background-size: 4px 4px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%);
   pointer-events: none;
 }
 
@@ -338,31 +316,11 @@ body {
   color: #fff;
 }
 
-/* Dark mode background with brand-colored spills (darker) */
+/* Dark mode background */
 .dark-bg {
   min-height: 100vh;
   background-color: #1a1a1a;
   background-image:
-    /* PINK spill - top right (darker) */
-    radial-gradient(ellipse 140px 200px at 90% 8%, rgba(180, 60, 100, 0.4) 0%, rgba(150, 50, 85, 0.2) 35%, transparent 55%),
-    radial-gradient(ellipse 80px 60px at 82% 18%, rgba(160, 55, 90, 0.3) 0%, transparent 60%),
-    /* BLUE puddle - bottom left (darker) */
-    radial-gradient(ellipse 220px 160px at 5% 92%, rgba(40, 80, 130, 0.45) 0%, rgba(35, 70, 115, 0.2) 40%, transparent 65%),
-    radial-gradient(ellipse 100px 180px at 15% 85%, rgba(38, 75, 120, 0.35) 0%, transparent 55%),
-    /* YELLOW splash - top left (darker/golden) */
-    radial-gradient(ellipse 180px 150px at 12% 10%, rgba(180, 160, 50, 0.35) 0%, rgba(160, 140, 40, 0.18) 40%, transparent 60%),
-    radial-gradient(ellipse 80px 120px at 20% 18%, rgba(170, 150, 45, 0.28) 0%, transparent 50%),
-    /* ORANGE drips (darker) */
-    radial-gradient(ellipse 30px 80px at 95% 45%, rgba(180, 90, 35, 0.4) 0%, transparent 60%),
-    radial-gradient(ellipse 25px 60px at 92% 55%, rgba(165, 85, 32, 0.32) 0%, transparent 55%),
-    /* GREEN spot (darker) */
-    radial-gradient(ellipse 120px 100px at 85% 88%, rgba(70, 110, 55, 0.38) 0%, rgba(60, 95, 48, 0.18) 45%, transparent 65%),
-    /* PURPLE splash (darker) */
-    radial-gradient(ellipse 100px 80px at 50% 75%, rgba(100, 50, 140, 0.35) 0%, transparent 55%),
-    /* Small scattered drips */
-    radial-gradient(circle 12px at 30% 60%, rgba(150, 55, 90, 0.35) 0%, transparent 70%),
-    radial-gradient(circle 10px at 70% 30%, rgba(40, 75, 120, 0.35) 0%, transparent 65%),
-    radial-gradient(circle 11px at 60% 85%, rgba(160, 40, 50, 0.32) 0%, transparent 65%),
     /* Texture */
     url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.15'/%3E%3C/svg%3E");
 }
@@ -630,187 +588,206 @@ body {
     3px 3px 8px rgba(0,0,0,0.2);
 }
 
-/* Pop Art Panel Styles */
+/* Panel Styles - Matching main page aesthetic */
 .torn-paper {
   position: relative;
-  border: 4px solid #000;
-  box-shadow: 8px 8px 0 #000;
+  box-shadow: 6px 6px 20px rgba(0,0,0,0.3);
   overflow: hidden;
 }
 
-.torn-edge-top,
+.torn-edge-top {
+  height: 12px;
+  background: #f5f0e8;
+  position: relative;
+  clip-path: polygon(
+    0% 100%, 3% 50%, 6% 85%, 10% 40%, 14% 70%, 18% 30%, 22% 65%, 26% 45%,
+    30% 80%, 34% 35%, 38% 60%, 42% 25%, 46% 55%, 50% 40%, 54% 75%, 58% 30%,
+    62% 60%, 66% 45%, 70% 80%, 74% 35%, 78% 65%, 82% 50%, 86% 70%, 90% 40%,
+    94% 75%, 97% 55%, 100% 100%
+  );
+}
+
 .torn-edge-bottom {
-  display: none;
+  height: 12px;
+  background: #f5f0e8;
+  position: relative;
+  clip-path: polygon(
+    0% 0%, 3% 50%, 6% 15%, 10% 60%, 14% 30%, 18% 70%, 22% 35%, 26% 55%,
+    30% 20%, 34% 65%, 38% 40%, 42% 75%, 46% 45%, 50% 60%, 54% 25%, 58% 70%,
+    62% 40%, 66% 55%, 70% 20%, 74% 65%, 78% 35%, 82% 50%, 86% 30%, 90% 60%,
+    94% 25%, 97% 45%, 100% 0%
+  );
 }
 
 .panel-content {
-  background-color: #fff;
+  background-color: #f5f0e8;
+  background-image:
+    /* Pink spill top-right */
+    radial-gradient(ellipse 80px 100px at 85% 15%, rgba(255, 107, 157, 0.25) 0%, transparent 50%),
+    /* Blue puddle bottom-left */
+    radial-gradient(ellipse 100px 80px at 10% 85%, rgba(74, 144, 217, 0.22) 0%, transparent 55%),
+    /* Yellow splash */
+    radial-gradient(ellipse 60px 50px at 20% 25%, rgba(245, 224, 80, 0.28) 0%, transparent 50%),
+    /* Paper texture */
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
   padding: 28px 32px;
   position: relative;
 }
 
-/* Halftone dot pattern overlay */
+/* Subtle aged paper effect */
 .panel-content::before {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px);
-  background-size: 6px 6px;
+  background: linear-gradient(135deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
   pointer-events: none;
-}
-
-/* Color accent bar at top */
-.panel-content::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 8px;
-  background: var(--paper-yellow);
 }
 
 .panel-header {
   display: flex;
   justify-content: space-between;
-  font-family: 'Bebas Neue', 'Anton', sans-serif;
-  font-size: 12px;
-  color: #000;
+  font-family: 'Courier Prime', monospace;
+  font-size: 10px;
+  color: #666;
   text-transform: uppercase;
-  letter-spacing: 2px;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 3px solid #000;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px dashed #999;
 }
 
 .panel-headline {
-  font-family: 'Bebas Neue', 'Anton', 'Impact', sans-serif;
-  font-size: 42px;
+  display: inline-block;
+  font-family: 'Anton', 'Bebas Neue', sans-serif;
+  font-size: 32px;
   font-weight: 400;
   text-transform: uppercase;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
   line-height: 1;
-  margin: 0 0 16px 0;
-  color: #000;
-  text-shadow: 3px 3px 0 var(--paper-pink);
+  margin: 0 0 14px 0;
+  padding: 6px 12px;
+  background: var(--paper-pink);
+  color: #fff;
+  transform: rotate(-1deg);
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.2);
 }
 
 .panel-subtitle {
-  font-family: 'Bebas Neue', 'Anton', sans-serif;
-  font-size: 28px;
+  display: inline-block;
+  font-family: 'Anton', sans-serif;
+  font-size: 22px;
   font-weight: 400;
-  color: #000;
-  margin-bottom: 12px;
+  padding: 4px 10px;
+  background: var(--paper-blue);
+  color: #fff;
+  margin-bottom: 10px;
   text-transform: uppercase;
+  transform: rotate(1deg);
 }
 
 .panel-divider {
-  height: 4px;
-  background: #000;
-  margin-bottom: 20px;
+  height: 2px;
+  background: linear-gradient(90deg, #333 0%, #333 50%, transparent 100%);
+  margin-bottom: 16px;
 }
 
 .panel-body {
   font-family: 'Courier Prime', monospace;
-  color: #000;
+  color: #333;
 }
 
 .panel-lead {
   font-family: 'Courier Prime', monospace;
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.6;
-  margin-bottom: 16px;
-  color: #000;
+  margin-bottom: 14px;
+  color: #333;
 }
 
 .panel-lead strong {
   font-weight: 700;
   background: var(--paper-yellow);
-  padding: 0 4px;
+  padding: 1px 4px;
+  color: #000;
 }
 
 .panel-bold {
-  font-family: 'Bebas Neue', 'Anton', 'Impact', sans-serif;
-  font-size: 28px;
+  display: inline-block;
+  font-family: 'Anton', sans-serif;
+  font-size: 24px;
   font-weight: 400;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   text-transform: uppercase;
-  color: var(--paper-red);
-  text-shadow: 2px 2px 0 #000;
+  padding: 4px 10px;
+  background: var(--paper-red);
+  color: #fff;
+  transform: rotate(-1deg);
 }
 
 .panel-quote {
-  font-family: 'Permanent Marker', cursive;
-  font-size: 20px;
-  font-style: normal;
-  margin-bottom: 16px;
-  padding: 16px;
-  background: var(--paper-yellow);
-  border: 3px solid #000;
-  color: #000;
-  transform: rotate(-1deg);
+  font-family: 'Courier Prime', monospace;
+  font-size: 15px;
+  font-style: italic;
+  margin-bottom: 14px;
+  padding: 12px 16px;
+  background: rgba(245, 224, 80, 0.3);
+  border-left: 4px solid var(--paper-yellow);
+  color: #444;
 }
 
 .panel-text {
   font-family: 'Courier Prime', monospace;
-  font-size: 14px;
-  line-height: 1.7;
-  color: #000;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #444;
 }
 
 .panel-input {
   font-family: 'Courier Prime', monospace;
-  font-size: 16px;
-  padding: 14px 16px;
-  background: #fff;
-  border: 3px solid #000;
-  box-shadow: 4px 4px 0 #000;
-  transition: all 0.15s ease;
+  font-size: 15px;
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.8);
+  border: 2px solid #888;
+  box-shadow: inset 2px 2px 4px rgba(0,0,0,0.08);
+  transition: all 0.2s ease;
 }
 
 .panel-input:focus {
   outline: none;
-  box-shadow: 6px 6px 0 #000;
-  transform: translate(-2px, -2px);
+  border-color: var(--paper-pink);
+  background: #fff;
+  box-shadow: inset 2px 2px 4px rgba(0,0,0,0.05);
 }
 
 .panel-input::placeholder {
-  color: #666;
+  color: #888;
+  font-style: italic;
 }
 
 .panel-btn {
-  font-family: 'Bebas Neue', 'Anton', sans-serif;
-  font-size: 20px;
+  font-family: 'Anton', sans-serif;
+  font-size: 18px;
   text-transform: uppercase;
-  letter-spacing: 3px;
-  padding: 16px 32px;
+  letter-spacing: 2px;
+  padding: 14px 28px;
   background: var(--paper-pink);
-  color: #000;
-  border: 3px solid #000;
+  color: #fff;
+  border: none;
   cursor: pointer;
-  box-shadow: 5px 5px 0 #000;
-  transition: all 0.1s ease;
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.25);
+  transition: all 0.15s ease;
+  transform: rotate(-1deg);
 }
 
 .panel-btn:hover {
-  transform: translate(-3px, -3px);
-  box-shadow: 8px 8px 0 #000;
-  background: var(--paper-yellow);
+  transform: rotate(1deg) scale(1.02);
+  box-shadow: 5px 5px 0 rgba(0,0,0,0.3);
+  background: var(--paper-red);
 }
 
 .panel-btn:active {
-  transform: translate(2px, 2px);
-  box-shadow: 3px 3px 0 #000;
-}
-
-/* Story panel - pink accent */
-.torn-paper:has(.panel-lead) .panel-content::after {
-  background: var(--paper-pink);
-}
-
-/* Collection panel - blue accent */
-.torn-paper:has(.photo-cutout) .panel-content::after {
-  background: var(--paper-blue);
+  transform: rotate(0deg) scale(0.98);
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.2);
 }
 
 /* Make TV more visible */
@@ -1084,17 +1061,20 @@ body {
 /* Chaos animations */
 @keyframes fall-letter {
   0% { transform: translateY(0) rotate(var(--start-rotate, 0deg)); }
-  20% { transform: translateY(-20px) rotate(calc(var(--start-rotate, 0deg) - 10deg)); }
-  100% { transform: translateY(150vh) rotate(calc(var(--start-rotate, 0deg) + 720deg)); }
+  10% { transform: translateY(-30px) rotate(calc(var(--start-rotate, 0deg) - 15deg)); }
+  45% { transform: translateY(120vh) rotate(calc(var(--start-rotate, 0deg) + 540deg)); }
+  50% { transform: translateY(120vh) rotate(calc(var(--start-rotate, 0deg) + 540deg)); }
+  55% { transform: translateY(115vh) rotate(calc(var(--start-rotate, 0deg) + 520deg)); }
+  100% { transform: translateY(0) rotate(var(--start-rotate, 0deg)); }
 }
 
-.animate-fall-1 { --start-rotate: -3deg; animation: fall-letter 1.5s ease-in forwards; animation-delay: 0s; }
-.animate-fall-2 { --start-rotate: 2deg; animation: fall-letter 1.5s ease-in forwards; animation-delay: 0.1s; }
-.animate-fall-3 { --start-rotate: -2deg; animation: fall-letter 1.5s ease-in forwards; animation-delay: 0.15s; }
-.animate-fall-4 { --start-rotate: 3deg; animation: fall-letter 1.5s ease-in forwards; animation-delay: 0.05s; }
-.animate-fall-5 { --start-rotate: -1deg; animation: fall-letter 1.5s ease-in forwards; animation-delay: 0.2s; }
-.animate-fall-6 { --start-rotate: 1deg; animation: fall-letter 1.5s ease-in forwards; animation-delay: 0.08s; }
-.animate-fall-7 { --start-rotate: -4deg; animation: fall-letter 1.5s ease-in forwards; animation-delay: 0.12s; }
+.animate-fall-1 { --start-rotate: -3deg; animation: fall-letter 2.5s ease-in-out; animation-delay: 0s; }
+.animate-fall-2 { --start-rotate: 2deg; animation: fall-letter 2.5s ease-in-out; animation-delay: 0.08s; }
+.animate-fall-3 { --start-rotate: -2deg; animation: fall-letter 2.5s ease-in-out; animation-delay: 0.12s; }
+.animate-fall-4 { --start-rotate: 3deg; animation: fall-letter 2.5s ease-in-out; animation-delay: 0.04s; }
+.animate-fall-5 { --start-rotate: -1deg; animation: fall-letter 2.5s ease-in-out; animation-delay: 0.16s; }
+.animate-fall-6 { --start-rotate: 1deg; animation: fall-letter 2.5s ease-in-out; animation-delay: 0.06s; }
+.animate-fall-7 { --start-rotate: -4deg; animation: fall-letter 2.5s ease-in-out; animation-delay: 0.1s; }
 
 @keyframes spin-letter {
   0% { transform: rotate(var(--start-rotate, 0deg)); }
@@ -1125,4 +1105,197 @@ body {
 
 .hover\:animate-spin-slow:hover {
   animation: spin-slow 1s linear;
+}
+
+/* Animated Stains */
+@keyframes stain-grow {
+  0% {
+    transform: scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(var(--stain-rotate, 0deg));
+    opacity: 1;
+  }
+}
+
+.stain {
+  position: absolute;
+  border-radius: 50%;
+  animation: stain-grow 1.2s ease-out forwards;
+  opacity: 0;
+}
+
+/* Large pink stain - solo */
+.stain-pink-lg {
+  width: 280px;
+  height: 320px;
+  background: radial-gradient(ellipse, rgba(255, 107, 157, 0.32) 0%, rgba(255, 107, 157, 0.12) 45%, transparent 65%);
+  --stain-rotate: 12deg;
+  animation-delay: 0.15s;
+}
+
+/* Small pink drops - grouped */
+.stain-pink-sm-1 {
+  width: 60px;
+  height: 80px;
+  background: radial-gradient(ellipse, rgba(255, 107, 157, 0.4) 0%, rgba(255, 107, 157, 0.15) 50%, transparent 70%);
+  --stain-rotate: -8deg;
+  animation-delay: 0.3s;
+}
+.stain-pink-sm-2 {
+  width: 45px;
+  height: 55px;
+  background: radial-gradient(ellipse, rgba(255, 107, 157, 0.35) 0%, transparent 60%);
+  --stain-rotate: 20deg;
+  animation-delay: 0.45s;
+}
+
+/* Large blue puddle - solo */
+.stain-blue-lg {
+  width: 320px;
+  height: 240px;
+  background: radial-gradient(ellipse, rgba(74, 144, 217, 0.3) 0%, rgba(74, 144, 217, 0.12) 50%, transparent 70%);
+  --stain-rotate: -8deg;
+  animation-delay: 0.5s;
+}
+
+/* Blue drops - grouped */
+.stain-blue-sm-1 {
+  width: 70px;
+  height: 90px;
+  background: radial-gradient(ellipse, rgba(74, 144, 217, 0.38) 0%, transparent 65%);
+  --stain-rotate: 15deg;
+  animation-delay: 0.65s;
+}
+.stain-blue-sm-2 {
+  width: 40px;
+  height: 50px;
+  background: radial-gradient(ellipse, rgba(74, 144, 217, 0.35) 0%, transparent 60%);
+  --stain-rotate: -12deg;
+  animation-delay: 0.75s;
+}
+
+/* Yellow splash - medium solo */
+.stain-yellow-md {
+  width: 200px;
+  height: 180px;
+  background: radial-gradient(ellipse, rgba(245, 224, 80, 0.38) 0%, rgba(245, 224, 80, 0.15) 45%, transparent 65%);
+  --stain-rotate: 5deg;
+  animation-delay: 0.85s;
+}
+
+/* Small yellow drops */
+.stain-yellow-sm {
+  width: 50px;
+  height: 60px;
+  background: radial-gradient(ellipse, rgba(245, 224, 80, 0.42) 0%, transparent 60%);
+  --stain-rotate: -18deg;
+  animation-delay: 0.95s;
+}
+
+/* Orange drip cluster */
+.stain-orange-1 {
+  width: 50px;
+  height: 120px;
+  background: radial-gradient(ellipse, rgba(255, 140, 66, 0.4) 0%, rgba(255, 140, 66, 0.12) 55%, transparent 75%);
+  --stain-rotate: -3deg;
+  animation-delay: 1.05s;
+}
+.stain-orange-2 {
+  width: 35px;
+  height: 80px;
+  background: radial-gradient(ellipse, rgba(255, 140, 66, 0.35) 0%, transparent 65%);
+  --stain-rotate: 8deg;
+  animation-delay: 1.15s;
+}
+.stain-orange-3 {
+  width: 25px;
+  height: 55px;
+  background: radial-gradient(ellipse, rgba(255, 140, 66, 0.38) 0%, transparent 60%);
+  --stain-rotate: -10deg;
+  animation-delay: 1.25s;
+}
+
+/* Green stain - medium solo */
+.stain-green-md {
+  width: 160px;
+  height: 140px;
+  background: radial-gradient(ellipse, rgba(124, 184, 96, 0.32) 0%, rgba(124, 184, 96, 0.1) 50%, transparent 70%);
+  --stain-rotate: 22deg;
+  animation-delay: 1.35s;
+}
+
+/* Purple splash - large solo */
+.stain-purple-lg {
+  width: 180px;
+  height: 200px;
+  background: radial-gradient(ellipse, rgba(157, 78, 221, 0.28) 0%, rgba(157, 78, 221, 0.08) 55%, transparent 70%);
+  --stain-rotate: -15deg;
+  animation-delay: 1.5s;
+}
+
+/* Tiny scattered drops */
+.stain-tiny-1 {
+  width: 25px;
+  height: 30px;
+  background: radial-gradient(ellipse, rgba(255, 107, 157, 0.45) 0%, transparent 65%);
+  animation-delay: 1.6s;
+}
+.stain-tiny-2 {
+  width: 20px;
+  height: 25px;
+  background: radial-gradient(ellipse, rgba(74, 144, 217, 0.4) 0%, transparent 60%);
+  animation-delay: 1.7s;
+}
+.stain-tiny-3 {
+  width: 30px;
+  height: 35px;
+  background: radial-gradient(ellipse, rgba(230, 57, 70, 0.35) 0%, transparent 60%);
+  animation-delay: 1.8s;
+}
+
+/* Dark mode stains */
+.stain-dark.stain-pink-lg,
+.stain-dark.stain-pink-sm-1,
+.stain-dark.stain-pink-sm-2 {
+  background: radial-gradient(ellipse, rgba(180, 60, 100, 0.4) 0%, rgba(150, 50, 85, 0.15) 50%, transparent 70%);
+}
+
+.stain-dark.stain-blue-lg,
+.stain-dark.stain-blue-sm-1,
+.stain-dark.stain-blue-sm-2 {
+  background: radial-gradient(ellipse, rgba(40, 80, 130, 0.45) 0%, rgba(35, 70, 115, 0.18) 50%, transparent 70%);
+}
+
+.stain-dark.stain-yellow-md,
+.stain-dark.stain-yellow-sm {
+  background: radial-gradient(ellipse, rgba(180, 160, 50, 0.38) 0%, rgba(160, 140, 40, 0.15) 50%, transparent 70%);
+}
+
+.stain-dark.stain-orange-1,
+.stain-dark.stain-orange-2,
+.stain-dark.stain-orange-3 {
+  background: radial-gradient(ellipse, rgba(180, 90, 35, 0.42) 0%, rgba(165, 85, 32, 0.15) 55%, transparent 75%);
+}
+
+.stain-dark.stain-green-md {
+  background: radial-gradient(ellipse, rgba(70, 110, 55, 0.4) 0%, rgba(60, 95, 48, 0.15) 50%, transparent 70%);
+}
+
+.stain-dark.stain-purple-lg {
+  background: radial-gradient(ellipse, rgba(100, 50, 140, 0.38) 0%, rgba(90, 45, 125, 0.12) 55%, transparent 70%);
+}
+
+.stain-dark.stain-tiny-1 {
+  background: radial-gradient(ellipse, rgba(150, 50, 80, 0.5) 0%, transparent 65%);
+}
+.stain-dark.stain-tiny-2 {
+  background: radial-gradient(ellipse, rgba(35, 70, 110, 0.45) 0%, transparent 60%);
+}
+.stain-dark.stain-tiny-3 {
+  background: radial-gradient(ellipse, rgba(160, 40, 50, 0.4) 0%, transparent 60%);
 }

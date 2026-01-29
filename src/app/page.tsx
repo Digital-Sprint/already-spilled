@@ -9,9 +9,12 @@ export default function Home() {
   const [submitted, setSubmitted] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [chaos, setChaos] = useState<string | null>(null);
+  const [stainsKey, setStainsKey] = useState(0);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
+    // Trigger stain re-animation on mode change
+    setStainsKey(prev => prev + 1);
   }, [darkMode]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -24,11 +27,48 @@ export default function Home() {
   // Chaotic interactions
   const triggerChaos = (type: string) => {
     setChaos(type);
-    setTimeout(() => setChaos(null), 1500);
+    setTimeout(() => setChaos(null), 3000);
   };
 
   return (
     <main className={`${darkMode ? 'dark-bg' : 'paper-bg'} min-h-screen flex flex-col items-center justify-center p-4 md:p-8 relative overflow-hidden transition-colors duration-500`}>
+
+      {/* ANIMATED STAINS - thrown against the wall */}
+      <div key={stainsKey} className="fixed inset-0 pointer-events-none z-0">
+        {/* Big pink splash - top right corner */}
+        <div className={`stain stain-pink-lg ${darkMode ? 'stain-dark' : ''}`} style={{ top: '-2%', right: '5%' }} />
+
+        {/* Pink drip cluster below it */}
+        <div className={`stain stain-pink-sm-1 ${darkMode ? 'stain-dark' : ''}`} style={{ top: '18%', right: '12%' }} />
+        <div className={`stain stain-pink-sm-2 ${darkMode ? 'stain-dark' : ''}`} style={{ top: '22%', right: '8%' }} />
+
+        {/* Large blue puddle - bottom left */}
+        <div className={`stain stain-blue-lg ${darkMode ? 'stain-dark' : ''}`} style={{ bottom: '-5%', left: '-3%' }} />
+
+        {/* Blue splatter bits nearby */}
+        <div className={`stain stain-blue-sm-1 ${darkMode ? 'stain-dark' : ''}`} style={{ bottom: '18%', left: '15%' }} />
+        <div className={`stain stain-blue-sm-2 ${darkMode ? 'stain-dark' : ''}`} style={{ bottom: '25%', left: '8%' }} />
+
+        {/* Yellow splash - top left, solo */}
+        <div className={`stain stain-yellow-md ${darkMode ? 'stain-dark' : ''}`} style={{ top: '5%', left: '8%' }} />
+        <div className={`stain stain-yellow-sm ${darkMode ? 'stain-dark' : ''}`} style={{ top: '18%', left: '22%' }} />
+
+        {/* Orange drips running down right edge */}
+        <div className={`stain stain-orange-1 ${darkMode ? 'stain-dark' : ''}`} style={{ top: '40%', right: '2%' }} />
+        <div className={`stain stain-orange-2 ${darkMode ? 'stain-dark' : ''}`} style={{ top: '48%', right: '5%' }} />
+        <div className={`stain stain-orange-3 ${darkMode ? 'stain-dark' : ''}`} style={{ top: '55%', right: '1%' }} />
+
+        {/* Green splat - bottom right, solo */}
+        <div className={`stain stain-green-md ${darkMode ? 'stain-dark' : ''}`} style={{ bottom: '8%', right: '18%' }} />
+
+        {/* Purple splash - center left area, solo */}
+        <div className={`stain stain-purple-lg ${darkMode ? 'stain-dark' : ''}`} style={{ top: '60%', left: '3%' }} />
+
+        {/* Tiny scattered drops */}
+        <div className={`stain stain-tiny-1 ${darkMode ? 'stain-dark' : ''}`} style={{ top: '35%', left: '30%' }} />
+        <div className={`stain stain-tiny-2 ${darkMode ? 'stain-dark' : ''}`} style={{ top: '70%', right: '35%' }} />
+        <div className={`stain stain-tiny-3 ${darkMode ? 'stain-dark' : ''}`} style={{ bottom: '30%', left: '45%' }} />
+      </div>
 
       {/* INTERACTIVE CHERUB - Left (Blue) - Toggles Dark Mode */}
       <div className="fixed left-4 md:left-8 top-1/2 -translate-y-1/2 z-10">
@@ -168,18 +208,27 @@ export default function Home() {
                     <span className="panel-date">Est. 2025</span>
                     <span className="panel-edition">Vol. 1, No. 1</span>
                   </div>
+
                   <h2 className="panel-headline">The Story</h2>
                   <div className="panel-divider"></div>
-                  <div className="panel-body">
+
+                  <div className="panel-body space-y-4">
                     <p className="panel-lead">
-                      In the world of collectibles, <strong>condition is everything.</strong> Mint in box. Factory sealed. Never opened.
+                      In the world of collectibles, <span className="cutout cut-2 text-sm">condition is everything.</span> Mint in box. Factory sealed. Never opened.
                     </p>
+
                     <p className="panel-bold">We disagree.</p>
-                    <p className="panel-quote">
+
+                    <div className="panel-quote">
                       &ldquo;A knight in shining armor has not seen battle.&rdquo;
-                    </p>
+                    </div>
+
                     <p className="panel-text">
-                      Already Spilled celebrates the stains, the scuffs, and the stories they tell. The coffee ring on your favorite book. The grass stain from that winning catch. These aren&apos;t flaws — they&apos;re proof of life.
+                      Already Spilled celebrates the <span className="cutout cut-7 text-xs">stains,</span> the <span className="cutout cut-4 text-xs">scuffs,</span> and the stories they tell. The coffee ring on your favorite book. The grass stain from that winning catch.
+                    </p>
+
+                    <p className="panel-text">
+                      These aren&apos;t flaws — they&apos;re <span className="cutout cut-10 text-xs">proof of life.</span>
                     </p>
                   </div>
                 </div>
