@@ -120,7 +120,7 @@ export default function Home() {
       </div>
 
       {/* INTERACTIVE CHERUB - Top (Green) - Spins letters */}
-      <div className="fixed top-8 left-1/4 z-10 hidden lg:block animate-load-cherub-top">
+      <div className="fixed top-4 md:top-8 right-4 md:left-1/4 md:right-auto z-10 animate-load-cherub-top">
         <button
           onClick={() => triggerChaos('spin')}
           className="cherub-btn animate-float-3"
@@ -131,7 +131,7 @@ export default function Home() {
             alt="Spin letters"
             width={80}
             height={100}
-            className="opacity-90 hover:animate-spin-slow"
+            className="w-[40px] sm:w-[60px] md:w-[80px] opacity-90 hover:animate-spin-slow"
           />
         </button>
       </div>

@@ -2786,9 +2786,28 @@ body {
   }
 }
 
-/* Prevent horizontal scroll on mobile */
-html, body {
+/* Prevent horizontal scroll on mobile and fix overscroll background */
+html {
   overflow-x: hidden;
+  background-color: #f5f0e8;
+  overscroll-behavior: none;
+}
+
+body {
+  overflow-x: hidden;
+  background-color: #f5f0e8;
+  overscroll-behavior: none;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Dark mode background for html/body */
+html.dark {
+  background-color: #1a1a1a;
+}
+
+html.dark body {
+  background-color: #1a1a1a;
 }
 
 /* Safe area insets for notched phones */
