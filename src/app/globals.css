@@ -2410,6 +2410,18 @@ body {
   animation: letter-drop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
+/* Override letter animation when chaos is active */
+.animate-letter.animate-fall-1 { opacity: 1; animation: fall-letter 2.5s ease-in-out; animation-delay: 0s; }
+.animate-letter.animate-fall-2 { opacity: 1; animation: fall-letter 2.5s ease-in-out; animation-delay: 0.08s; }
+.animate-letter.animate-fall-3 { opacity: 1; animation: fall-letter 2.5s ease-in-out; animation-delay: 0.12s; }
+.animate-letter.animate-fall-4 { opacity: 1; animation: fall-letter 2.5s ease-in-out; animation-delay: 0.04s; }
+.animate-letter.animate-fall-5 { opacity: 1; animation: fall-letter 2.5s ease-in-out; animation-delay: 0.16s; }
+.animate-letter.animate-fall-6 { opacity: 1; animation: fall-letter 2.5s ease-in-out; animation-delay: 0.06s; }
+.animate-letter.animate-fall-7 { opacity: 1; animation: fall-letter 2.5s ease-in-out; animation-delay: 0.1s; }
+.animate-letter.animate-spin-letter { opacity: 1; animation: spin-letter 0.6s ease-in-out; }
+.animate-letter.animate-spin-letter-delay-1 { opacity: 1; animation: spin-letter 0.6s ease-in-out 0.1s; }
+.animate-letter.animate-spin-letter-delay-2 { opacity: 1; animation: spin-letter 0.6s ease-in-out 0.2s; }
+
 /* EMBRACE letters - staggered delays */
 .letter-delay-1 { animation-delay: 0.3s; --letter-rotate: -3deg; }
 .letter-delay-2 { animation-delay: 0.38s; --letter-rotate: 2deg; }
