@@ -97,7 +97,7 @@ export default function Home() {
             alt="Toggle dark mode"
             width={100}
             height={120}
-            className={`w-[50px] sm:w-[70px] md:w-[120px] transition-all duration-300 ${darkMode ? 'brightness-50' : 'brightness-100'}`}
+            className={`w-[70px] sm:w-[90px] md:w-[120px] transition-all duration-300 ${darkMode ? 'brightness-50' : 'brightness-100'}`}
           />
         </button>
       </div>
@@ -114,7 +114,7 @@ export default function Home() {
             alt="Shake things up"
             width={100}
             height={120}
-            className="w-[50px] sm:w-[70px] md:w-[120px] hover:animate-shake"
+            className="w-[70px] sm:w-[90px] md:w-[120px] hover:animate-shake"
           />
         </button>
       </div>
@@ -131,7 +131,7 @@ export default function Home() {
             alt="Spin letters"
             width={80}
             height={100}
-            className="w-[40px] sm:w-[60px] md:w-[80px] opacity-90 hover:animate-spin-slow"
+            className="w-[50px] sm:w-[65px] md:w-[80px] opacity-90 hover:animate-spin-slow"
           />
         </button>
       </div>
@@ -148,7 +148,7 @@ export default function Home() {
             alt="Already Spilled"
             width={200}
             height={100}
-            className="mx-auto"
+            className="mx-auto w-[160px] sm:w-[180px] md:w-[200px]"
             priority
           />
         </div>
