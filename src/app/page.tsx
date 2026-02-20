@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 export default function Home() {
   const [activePanel, setActivePanel] = useState<string | null>(null);
@@ -13,6 +13,20 @@ export default function Home() {
   const [postcardFlipped, setPostcardFlipped] = useState(false);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [initialAnimationDone, setInitialAnimationDone] = useState(false);
+  const [chatInput, setChatInput] = useState("");
+  const [chatMessages, setChatMessages] = useState<{ sender: "you" | "them" | "them-away"; text: string }[]>([]);
+  const [isTyping, setIsTyping] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+  const [waitlistEmail, setWaitlistEmail] = useState("");
+  const [waitlistSubmitted, setWaitlistSubmitted] = useState(false);
+  const [progressPhase, setProgressPhase] = useState<"loading" | "timeout" | "phrases">("loading");
+  const [phraseIndex, setPhraseIndex] = useState(0);
+  const [storyName, setStoryName] = useState("");
+  const [storyText, setStoryText] = useState("");
+  const [storySubmitted, setStorySubmitted] = useState(false);
+  const sprayCanvasRef = useRef<HTMLCanvasElement>(null);
+  const sprayColorRef = useRef({ h: 0, color: "" });
+  const lastPosRef = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
@@ -28,9 +42,18 @@ export default function Home() {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitted(true);
+    try {
+      await fetch("https://digitalsprint.app.n8n.cloud/webhook/already-spilled-waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+    } catch {
+      // Still show confirmation even if webhook fails
+    }
   };
 
   const closePanel = () => {
@@ -44,6 +67,256 @@ export default function Home() {
     setChaos(type);
     setTimeout(() => setChaos(null), 3000);
   };
+
+  const spilledReplies = [
+    "that's the thing tho... perfection is BORING",
+    "u ever look at a coffee ring and think 'art'? no? just us?",
+    "stains aren't accidents, they're MEMORIES",
+    "we literally built a whole brand around ur clumsiness. ur welcome",
+    "imagine paying extra for something pristine lmaooo couldn't be us",
+    "every shirt we make has a story before u even wear it",
+    "fun fact: the mona lisa has cracks. she's still iconic",
+    "spilling things is just redistributing vibes",
+    "ur shirt got a stain? congrats it just went up in value",
+    "we don't do mint condition. we do LIVED IN condition",
+    "a knight in shining armor has never had his mettle tested... think about that",
+    "the best vintage tees are the ones that look like they've BEEN somewhere",
+    "embrace the mess or the mess embraces u. ur choice",
+    "11 shirts. 11 stories. infinite stains. stay tuned",
+    "what if i told u the stain IS the design",
+    "collecting things in perfect condition is just hoarding with anxiety",
+    "the beans have been spilled. there's no going back now",
+    "every scuff tells a story. what's urs?",
+    "we're not messy, we're EXPERIENCED",
+    "pristine is just code for 'never actually used'",
+    "ur grandma's favorite recipe has stains on it for a reason",
+    "if it's not a little bit wrecked, did u even live?",
+    "we're basically a support group for people who ruin nice things",
+    "already spilled... so now we can actually enjoy the moment",
+  ];
+
+  const handleChatSend = () => {
+    const msg = chatInput.trim();
+    if (!msg || isTyping) return;
+
+    setChatMessages((prev) => [...prev, { sender: "you", text: msg }]);
+    setChatInput("");
+    setIsTyping(true);
+
+    const delay = 800 + Math.random() * 1200;
+    setTimeout(() => {
+      const reply = spilledReplies[Math.floor(Math.random() * spilledReplies.length)];
+      setChatMessages((prev) => [...prev, { sender: "them", text: reply }]);
+      setIsTyping(false);
+    }, delay);
+  };
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessages, isTyping]);
+
+  const progressPhrases = [
+    "Connection timed out. Retrying...",
+    "Still loading... probably...",
+    "Have you tried turning it off and on again?",
+    "The intern spilled coffee on the server",
+    "Downloading more RAM...",
+    "Asking the cherubs for help...",
+    "404: Patience not found",
+    "Untangling the ethernet cables...",
+    "Blowing into the cartridge...",
+    "The hamster powering the server took a break",
+    "Reticulating splines...",
+    "Consulting the magic 8-ball...",
+    "Almost there... just kidding",
+    "Loading loading screen...",
+    "The beans are still being counted",
+  ];
+
+  useEffect(() => {
+    if (activePanel !== "collection") {
+      setProgressPhase("loading");
+      setPhraseIndex(0);
+      return;
+    }
+
+    const timeoutTimer = setTimeout(() => {
+      setProgressPhase("timeout");
+    }, 8000);
+
+    const phraseTimer = setTimeout(() => {
+      setProgressPhase("phrases");
+    }, 10000);
+
+    return () => {
+      clearTimeout(timeoutTimer);
+      clearTimeout(phraseTimer);
+    };
+  }, [activePanel]);
+
+  useEffect(() => {
+    if (progressPhase !== "phrases") return;
+    const interval = setInterval(() => {
+      setPhraseIndex((prev) => (prev + 1) % progressPhrases.length);
+    }, 2500);
+    return () => clearInterval(interval);
+  }, [progressPhase, progressPhrases.length]);
+
+  // Spray paint colors from brand palette
+  const sprayColors = useRef([
+    "rgba(255, 107, 157,",  // pink
+    "rgba(74, 144, 217,",   // blue
+    "rgba(245, 224, 80,",   // yellow
+    "rgba(124, 184, 96,",   // green
+    "rgba(255, 140, 66,",   // orange
+    "rgba(157, 78, 221,",   // purple
+    "rgba(230, 57, 70,",    // red
+    "rgba(46, 196, 182,",   // teal
+  ]);
+
+  const pickNewColor = useCallback(() => {
+    const colors = sprayColors.current;
+    let idx = Math.floor(Math.random() * colors.length);
+    if (sprayColorRef.current.h === idx) idx = (idx + 1) % colors.length;
+    sprayColorRef.current = { h: idx, color: colors[idx] };
+  }, []);
+
+  // Initialize spray paint canvas
+  useEffect(() => {
+    const canvas = sprayCanvasRef.current;
+    if (!canvas) return;
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resize();
+    window.addEventListener("resize", resize);
+
+    pickNewColor();
+
+    const colorInterval = setInterval(pickNewColor, 3000 + Math.random() * 2000);
+
+    return () => {
+      window.removeEventListener("resize", resize);
+      clearInterval(colorInterval);
+    };
+  }, [pickNewColor]);
+
+  // Spray paint draw handler
+  useEffect(() => {
+    const canvas = sprayCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const spray = (x: number, y: number, density: number) => {
+      const baseColor = sprayColorRef.current.color;
+      const radius = 18;
+
+      for (let i = 0; i < density; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const dist = Math.random() * Math.random() * radius;
+        const dx = Math.cos(angle) * dist;
+        const dy = Math.sin(angle) * dist;
+        const size = Math.random() * 2.5 + 0.5;
+        const opacity = 0.15 + Math.random() * 0.25;
+
+        ctx.beginPath();
+        ctx.arc(x + dx, y + dy, size, 0, Math.PI * 2);
+        ctx.fillStyle = `${baseColor} ${opacity})`;
+        ctx.fill();
+      }
+    };
+
+    const handleMove = (e: MouseEvent) => {
+      const x = e.clientX;
+      const y = e.clientY;
+      const last = lastPosRef.current;
+
+      if (last) {
+        const dx = x - last.x;
+        const dy = y - last.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const steps = Math.max(1, Math.floor(dist / 4));
+
+        for (let s = 0; s <= steps; s++) {
+          const t = s / steps;
+          const ix = last.x + dx * t;
+          const iy = last.y + dy * t;
+          spray(ix, iy, 8);
+        }
+      } else {
+        spray(x, y, 12);
+      }
+
+      lastPosRef.current = { x, y };
+    };
+
+    const handleLeave = () => {
+      lastPosRef.current = null;
+    };
+
+    // Big splat on click
+    const handleClick = (e: MouseEvent) => {
+      const x = e.clientX;
+      const y = e.clientY;
+      const baseColor = sprayColorRef.current.color;
+
+      for (let i = 0; i < 80; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const dist = Math.random() * Math.random() * 35;
+        const size = Math.random() * 4 + 1;
+        const opacity = 0.2 + Math.random() * 0.35;
+        ctx.beginPath();
+        ctx.arc(x + Math.cos(angle) * dist, y + Math.sin(angle) * dist, size, 0, Math.PI * 2);
+        ctx.fillStyle = `${baseColor} ${opacity})`;
+        ctx.fill();
+      }
+
+      const dropletCount = 12 + Math.floor(Math.random() * 10);
+      for (let i = 0; i < dropletCount; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const flingDist = 30 + Math.random() * 60;
+        const dx = Math.cos(angle) * flingDist;
+        const dy = Math.sin(angle) * flingDist;
+        const size = Math.random() * 3 + 0.8;
+        const opacity = 0.25 + Math.random() * 0.3;
+
+        const trailSteps = 3 + Math.floor(Math.random() * 3);
+        for (let s = 0; s <= trailSteps; s++) {
+          const t = s / trailSteps;
+          const trailSize = size * (0.3 + t * 0.7);
+          const trailOpacity = opacity * (0.2 + t * 0.8);
+          ctx.beginPath();
+          ctx.arc(x + dx * t, y + dy * t, trailSize, 0, Math.PI * 2);
+          ctx.fillStyle = `${baseColor} ${trailOpacity})`;
+          ctx.fill();
+        }
+      }
+
+      pickNewColor();
+    };
+
+    // Fade existing paint slowly
+    const fadeInterval = setInterval(() => {
+      ctx.fillStyle = darkMode
+        ? "rgba(26, 26, 26, 0.012)"
+        : "rgba(245, 240, 232, 0.012)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }, 100);
+
+    window.addEventListener("mousemove", handleMove);
+    window.addEventListener("mouseleave", handleLeave);
+    window.addEventListener("click", handleClick);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("mouseleave", handleLeave);
+      window.removeEventListener("click", handleClick);
+      clearInterval(fadeInterval);
+    };
+  }, [darkMode]);
 
   return (
     <main className={`${darkMode ? 'dark-bg' : 'paper-bg'} min-h-screen flex flex-col items-center justify-center p-4 md:p-8 relative overflow-hidden transition-colors duration-500`}>
@@ -136,6 +409,13 @@ export default function Home() {
         </button>
       </div>
 
+      {/* SPRAY PAINT CANVAS */}
+      <canvas
+        ref={sprayCanvasRef}
+        className="fixed inset-0 pointer-events-none z-10"
+        style={{ mixBlendMode: "multiply" }}
+      />
+
       {/* CRT OVERLAY - Fuzzy TV effect */}
       <div className="crt-overlay pointer-events-none"></div>
 
@@ -191,7 +471,7 @@ export default function Home() {
             onClick={() => setActivePanel("signup")}
             className="cutout cut-3 text-sm md:text-base px-4 py-2 cursor-pointer hover:scale-105 transition-transform"
           >
-            Get Notified
+            Spill It
           </button>
         </div>
       </div>
@@ -326,10 +606,30 @@ export default function Home() {
                     <span className="aim-screenname">AlreadySpilled:</span>
                     <span className="aim-text">brb, spilling something 😎</span>
                   </div>
+                  {chatMessages.map((msg, i) => (
+                    <div key={i} className={`aim-message ${msg.sender === "you" ? "aim-you" : "aim-them"}${msg.sender === "them-away" ? " aim-away" : ""}`}>
+                      <span className="aim-screenname">{msg.sender === "you" ? "You:" : "AlreadySpilled:"}</span>
+                      <span className="aim-text">{msg.text}</span>
+                    </div>
+                  ))}
+                  {isTyping && (
+                    <div className="aim-message aim-them">
+                      <span className="aim-screenname">AlreadySpilled:</span>
+                      <span className="aim-text aim-typing">is typing...</span>
+                    </div>
+                  )}
+                  <div ref={chatEndRef} />
                 </div>
                 <div className="aim-input-area">
-                  <input type="text" className="aim-input" placeholder="Type a message..." disabled />
-                  <button className="aim-send">Send</button>
+                  <input
+                    type="text"
+                    className="aim-input"
+                    placeholder="Type a message..."
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") handleChatSend(); }}
+                  />
+                  <button className="aim-send" onClick={handleChatSend}>Send</button>
                 </div>
                 <div className="aim-status">
                   <span>AlreadySpilled is online</span>
@@ -338,105 +638,177 @@ export default function Home() {
               </div>
             )}
 
-            {/* COLLECTION PANEL - Spammy Popup */}
+            {/* COLLECTION PANEL - Under Construction */}
             {activePanel === "collection" && (
-              <div className="spam-popup">
-                <div className="spam-titlebar">
-                  <span>⚠️ CONGRATULATIONS!!! ⚠️</span>
-                  <button onClick={closePanel} className="spam-close">×</button>
+              <div className="construction-popup">
+                <div className="construction-titlebar">
+                  <span>🚧 http://www.alreadyspilled.com/collection 🚧</span>
+                  <button onClick={closePanel} className="construction-close">×</button>
                 </div>
-                <div className="spam-content">
-                  <div className="spam-flash">
-                    🎉 YOU ARE THE 1,000,000th VISITOR!!! 🎉
+                <div className="construction-content">
+                  <div className="construction-tape construction-tape-top">
+                    ⚠ CAUTION ⚠ CAUTION ⚠ CAUTION ⚠ CAUTION ⚠ CAUTION ⚠
                   </div>
 
-                  <div className="spam-arrows">
-                    👇👇👇 CLICK HERE 👇👇👇
+                  <div className="construction-heading">
+                    <span className="construction-blink">🚧</span>
+                    {" "}UNDER CONSTRUCTION{" "}
+                    <span className="construction-blink">🚧</span>
                   </div>
 
-                  <div className="spam-image-wrapper">
+                  <div className="construction-crane-wrapper">
                     <Image
-                      src="/assets/main artwork.png"
-                      alt="Can of Lonely Beans"
+                      src="/assets/crane.png"
+                      alt="Under construction crane"
                       width={200}
                       height={200}
-                      className="spam-image"
+                      className="construction-crane"
                     />
                   </div>
 
-                  <div className="spam-prize">
-                    YOU&apos;VE WON ACCESS TO THE<br/>
-                    <span className="spam-highlight">EXCLUSIVE COLLECTION</span>
+                  <div className="construction-hardhat">
+                    👷 PARDON OUR DUST 👷
                   </div>
 
-                  <div className="spam-details">
-                    <p className="spam-count">🔥 11 SHIRTS 🔥</p>
-                    <p className="spam-count">🔥 11 STORIES 🔥</p>
-                    <p className="spam-count">🔥 1 TREASURE HUNT 🔥</p>
+                  <div className="construction-info">
+                    <p>The collection is being assembled...</p>
+                    <p className="construction-waitlist-label">
+                      Enter your email to get added to the waitlist.
+                    </p>
                   </div>
 
-                  <div className="spam-warning">
-                    ⏰ LIMITED TIME OFFER ⏰
+                  {!waitlistSubmitted ? (
+                    <form
+                      className="construction-form"
+                      onSubmit={async (e) => {
+                        e.preventDefault();
+                        if (!waitlistEmail.trim()) return;
+                        setWaitlistSubmitted(true);
+                        try {
+                          await fetch("https://digitalsprint.app.n8n.cloud/webhook/already-spilled-waitlist", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ email: waitlistEmail }),
+                          });
+                        } catch {
+                          // Still show confirmation even if webhook fails
+                        }
+                      }}
+                    >
+                      <input
+                        type="email"
+                        className="construction-email"
+                        placeholder="coolperson@aol.com"
+                        value={waitlistEmail}
+                        onChange={(e) => setWaitlistEmail(e.target.value)}
+                        required
+                      />
+                      <button type="submit" className="construction-submit">
+                        📧 NOTIFY ME
+                      </button>
+                    </form>
+                  ) : (
+                    <div className="construction-confirmed">
+                      ✅ You&apos;re in! We&apos;ll let you know when the dust settles.
+                    </div>
+                  )}
+
+                  <div className="construction-progress">
+                    {progressPhase === "loading" && (
+                      <>
+                        <div className="construction-progress-label">Loading collection...</div>
+                        <div className="construction-progress-bar">
+                          <div className="construction-progress-fill construction-progress-slow"></div>
+                        </div>
+                      </>
+                    )}
+                    {progressPhase === "timeout" && (
+                      <div className="construction-timeout">
+                        ❌ ERROR: Connection timed out (0x80004005)
+                      </div>
+                    )}
+                    {progressPhase === "phrases" && (
+                      <div className="construction-phrase">
+                        {progressPhrases[phraseIndex]}
+                      </div>
+                    )}
                   </div>
 
-                  <button className="spam-cta">
-                    🚨 CLAIM YOUR PRIZE NOW 🚨
-                  </button>
+                  <div className="construction-tape construction-tape-bottom">
+                    ⚠ CAUTION ⚠ CAUTION ⚠ CAUTION ⚠ CAUTION ⚠ CAUTION ⚠
+                  </div>
 
-                  <p className="spam-fine-print">
-                    *Details coming soon. No purchase necessary.
-                    By clicking you agree that stains are beautiful.
+                  <p className="construction-fine-print">
+                    This page last updated by webmaster on 01/01/2026.
+                    Best viewed in 800x600.
                   </p>
-
-                  <div className="spam-fake-btns">
-                    <span className="spam-fake-x">✕</span>
-                    <span className="spam-fake-x">✕</span>
-                    <span className="spam-fake-x">✕</span>
-                  </div>
                 </div>
               </div>
             )}
 
-            {/* SIGNUP PANEL - Early Internet Style */}
+            {/* SIGNUP PANEL - Spill Your Story */}
             {activePanel === "signup" && (
               <div className="web95">
                 <div className="web95-titlebar">
-                  <span>📧 Already Spilled - Mailing List</span>
+                  <span>☕ Already Spilled - Guestbook</span>
                   <button onClick={closePanel} className="web95-close">×</button>
                 </div>
 
                 <div className="web95-content">
-                  {!submitted ? (
+                  {!storySubmitted ? (
                     <div className="web95-inner">
                       <div className="web95-marquee">
-                        ⭐ JOIN OUR MAILING LIST!!! ⭐
+                        ☕ SPILL YOUR STORY!!! ☕
                       </div>
 
                       <div className="web95-rainbow"></div>
 
                       <p className="web95-comic text-center text-sm mb-4">
-                        Be the <b>FIRST</b> to know when the beans spill!!!
+                        Tell us about your <b>BEST</b> spill, stain, or mess.
+                        The more chaotic the better!!!
                       </p>
 
-                      <div className="web95-construction">
-                        🚧 <span>NEW COLLECTION COMING SOON</span> 🚧
-                      </div>
-
-                      <form onSubmit={handleSubmit} className="space-y-3">
+                      <form
+                        onSubmit={async (e) => {
+                          e.preventDefault();
+                          if (!storyText.trim()) return;
+                          setStorySubmitted(true);
+                          try {
+                            await fetch("https://digitalsprint.app.n8n.cloud/webhook/already-spilled-stories", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ name: storyName || "Anonymous Spiller", story: storyText }),
+                            });
+                          } catch {
+                            // Still show confirmation even if webhook fails
+                          }
+                        }}
+                        className="space-y-3"
+                      >
                         <div>
-                          <label className="block text-xs mb-1">Your E-Mail Address:</label>
+                          <label className="block text-xs mb-1">Your Name (or alias):</label>
                           <input
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="coolperson@aol.com"
-                            required
+                            type="text"
+                            value={storyName}
+                            onChange={(e) => setStoryName(e.target.value)}
+                            placeholder="ClumsyKing99"
                             className="web95-input"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs mb-1">Your Spill Story:</label>
+                          <textarea
+                            value={storyText}
+                            onChange={(e) => setStoryText(e.target.value)}
+                            placeholder="One time I knocked over an entire pot of coffee onto my white shirt right before a job interview..."
+                            required
+                            rows={4}
+                            className="web95-input web95-textarea"
                           />
                         </div>
                         <div className="text-center">
                           <button type="submit" className="web95-btn">
-                            ✉️ SUBSCRIBE NOW ✉️
+                            ☕ SPILL IT ☕
                           </button>
                         </div>
                       </form>
@@ -444,12 +816,8 @@ export default function Home() {
                       <div className="web95-rainbow"></div>
 
                       <div className="text-center mt-4">
-                        <span className="web95-counter">Visitors: 000,847</span>
+                        <span className="web95-counter">Stories spilled: 000,847</span>
                       </div>
-
-                      <p className="text-center text-xs mt-3 text-gray-600">
-                        We only write when it matters. <span className="web95-link">Sign our Guestbook!</span>
-                      </p>
 
                       <div className="text-center mt-3">
                         <span className="web95-badge">🏆 Best viewed in Netscape Navigator 🏆</span>
@@ -458,34 +826,34 @@ export default function Home() {
                   ) : (
                     <div className="web95-inner text-center">
                       <div className="web95-marquee">
-                        🎉 WELCOME TO THE CLUB!!! 🎉
+                        🎉 THE BEANS HAVE BEEN SPILLED!!! 🎉
                       </div>
 
                       <div className="web95-rainbow"></div>
 
-                      <p className="text-4xl my-4">
-                        <span className="web95-email">📧</span>
-                      </p>
+                      <p className="text-4xl my-4">☕</p>
 
                       <p className="web95-comic text-lg mb-2">
-                        <b>You&apos;re in!</b>
+                        <b>Thanks for spilling!</b>
                       </p>
 
                       <p className="text-sm text-gray-600 mb-4">
-                        The mess awaits...
+                        Your story has been added to the mess.
                       </p>
 
                       <div className="web95-bevel">
                         <p className="text-xs">
-                          Thank you for signing up!<br/>
-                          You are visitor #847
+                          &quot;{storyText.length > 80 ? storyText.slice(0, 80) + "..." : storyText}&quot;<br/>
+                          — {storyName || "Anonymous Spiller"}
                         </p>
                       </div>
 
                       <div className="web95-rainbow"></div>
 
                       <p className="text-xs mt-3">
-                        <span className="web95-link">Click here</span> to tell your friends!
+                        <span className="web95-link" onClick={() => { setStorySubmitted(false); setStoryText(""); setStoryName(""); }}>
+                          Spill another one?
+                        </span>
                       </p>
                     </div>
                   )}
