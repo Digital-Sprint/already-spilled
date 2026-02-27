@@ -917,7 +917,7 @@ body {
 .aim-chat {
   background: #fff;
   padding: 12px;
-  max-height: 350px;
+  height: 55vh;
   overflow-y: auto;
   border: 2px inset #ccc;
   margin: 8px;
@@ -960,6 +960,68 @@ body {
 @keyframes typing-blink {
   0%, 50% { opacity: 1; }
   51%, 100% { opacity: 0.4; }
+}
+
+.aim-skip-btn {
+  background: #ece9d8;
+  border: 1px solid #999;
+  padding: 4px 16px;
+  font-size: 11px;
+  font-family: "Tahoma", "MS Sans Serif", sans-serif;
+  color: #333;
+  cursor: pointer;
+  margin-left: auto;
+}
+
+.aim-skip-btn:hover {
+  background: #316ac5;
+  color: #fff;
+}
+
+.aim-spacer {
+  height: 12px;
+}
+
+.aim-error-block {
+  margin: 16px 0 8px;
+  padding: 12px;
+  background: #f0f0f0;
+  border: 2px inset #ccc;
+  text-align: center;
+  font-family: "Tahoma", "MS Sans Serif", sans-serif;
+}
+
+.aim-thinking {
+  display: block;
+  color: #888;
+  font-style: italic;
+  font-size: 12px;
+  margin-bottom: 8px;
+  animation: typing-blink 1.5s steps(1) infinite;
+}
+
+.aim-retry-btn {
+  background: #d4d4d4;
+  border: 2px outset #fff;
+  padding: 4px 16px;
+  font-size: 12px;
+  font-family: "Tahoma", "MS Sans Serif", sans-serif;
+  cursor: pointer;
+}
+
+.aim-retry-btn:active {
+  border-style: inset;
+}
+
+.aim-boop-video {
+  margin: 12px 0;
+  text-align: center;
+}
+
+.aim-video {
+  max-width: 100%;
+  border: 2px inset #ccc;
+  border-radius: 0;
 }
 
 .aim-input-area {
@@ -2866,7 +2928,7 @@ body {
   }
 
   .aim-chat {
-    max-height: 250px;
+    height: 45vh;
     padding: 8px;
     margin: 6px;
   }

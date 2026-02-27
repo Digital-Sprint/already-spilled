@@ -3,6 +3,67 @@
 import Image from "next/image";
 import { useState, useEffect, useRef, useCallback } from "react";
 
+const storyConversation: { name: string; text: string; side: "you" | "them" }[] = [
+  { name: "You", text: "so uuhhh, wtf is this?", side: "you" },
+  { name: "AlreadySpilled", text: "Excellent Question. Please expand.", side: "them" },
+  { name: "You", text: "like what type of company? fashion? Media? A strange movement of some kind?", side: "you" },
+  { name: "AlreadySpilled", text: "We\u2019ve spent a lot of time thinking about this and landed on \u201Celaborate bit\u201D.", side: "them" },
+  { name: "AlreadySpilled", text: "It started with a feeling, \u201Cwhy can\u2019t I make it through a meal without spilling on myself?\u201D", side: "them" },
+  { name: "AlreadySpilled", text: "I started asking around and found others just like me. Who saw spilling as an inevitability", side: "them" },
+  { name: "AlreadySpilled", text: "There was no clear thread that connected us all. So we set out on a mission to find that community and understand what makes someone susceptible to spilling.", side: "them" },
+  { name: "You", text: "That sounds incredibly dumb but im here for it", side: "you" },
+  { name: "AlreadySpilled", text: "Thank you. It\u2019s the kinda thing that sooner or later probably won\u2019t make more sense but we\u2019re enjoying the ride. We like making art, short films, random items (like imagine if the pages in a coffee table book were actually coasters. Wouldn\u2019t that be more useful?), so you can expect more of that.", side: "them" },
+  { name: "You", text: "You keep saying we. Who is we?", side: "you" },
+  { name: "Already Spilled", text: "Ah. Who are we but us?", side: "them" },
+  { name: "Already Spilled", text: "Just a boy with a silly dream a lot of talented friends", side: "them" },
+  { name: "Already Spilled", text: "But you can call me Al, Court Jester of Spillville.", side: "them" },
+  { name: "You", text: "Well nice to meet you Al", side: "you" },
+  { name: "Al, Court Jester of Spillville", text: "Al, Court Jester of Spillville. Sorry it really bothers me when people don\u2019t use my full title. I worked hard for it.", side: "them" },
+  { name: "You", text: "Apologies Al, Court Jester of Spillville.", side: "you" },
+  { name: "You", text: "Just a couple more questions for ya. First off, what\u2019s up with the cherubs?", side: "you" },
+  { name: "Al", text: "Hard to say really. They just kinda showed up one day.", side: "them" },
+  { name: "Al", text: "But they\u2019re really good at their jobs and seem to enjoy the chaos.", side: "them" },
+  { name: "You", text: "Fair enough. Plus, if one of them descended from a crane and threw beans at me, I probably would be too embarrassed to tell anyone.", side: "you" },
+  { name: "Al", text: "Exactly. Their ridiculousness enhances their maneuverability.", side: "them" },
+  { name: "You", text: "Alright, these kinda things always end up in collabs. What\u2019s your dream pairing?", side: "you" },
+  { name: "Al", text: "We try to be organic so it really would come down to fit. But since you asked:", side: "them" },
+  { name: "Al", text: "1. Scunthorpe United. A rainy November home night fixture. For one night and one night only. Think of the stains\u2026", side: "them" },
+  { name: "Al", text: "2. Lola Young. I swear \u201CMessy\u201D was in my head for like 3 months. It got to the point where I thought it must be part of a psyop. Not sure what this collab would look like.", side: "them" },
+  { name: "Al", text: "3. This one is a bit of a stretch but hear me out. Knicks cavs eastern conference finals, Game 7. Cavs down 2 with 5 seconds left.", side: "them" },
+  { name: "Al", text: "I\u2019m court side eating buffalo cauliflower wings with blue ketchup (I brought it from home).", side: "them" },
+  { name: "Al", text: "Josh hart doinks a long 3 (nothing but love Josh).", side: "them" },
+  { name: "Al", text: "Jose Alvarado chases it down with Harden right behind him desperate to prove he\u2019s clutch.", side: "them" },
+  { name: "Al", text: "They\u2019re coming right at me. I have no time to do anything.", side: "them" },
+  { name: "Al", text: "Alvarado knocks the wings straight up into the air and the ketchup onto my shirt.", side: "them" },
+  { name: "Al", text: "Harden stretches out to tip the ball to tip the ball to an open Thabo Sefalosha who heaves a buzzer beating halfcourt short.", side: "them" },
+  { name: "Al", text: "On his way down he catches all the wings in his beard and crashes right into me. Leaving an orange and blue beardshaped imprint at my neckline.", side: "them" },
+  { name: "Al", text: "He can\u2019t watch but hears the crowd groan in unison as Thabo\u2019s shot goes in. Cavs in 7.", side: "them" },
+  { name: "Al", text: "The BS Sunday pod opens with a discussion of BeardGate (Gates are back, baby!) and what this means for Harden\u2019s Legacy.", side: "them" },
+  { name: "Al", text: "", side: "them" },
+  { name: "Al", text: "Zach didn\u2019t see it.", side: "them" },
+  { name: "You", text: "Is this a hallucination?", side: "you" },
+  { name: "Al", text: "Really wish I could answer yes that. Welcome to my brain.", side: "them" },
+  { name: "You", text: "Alright so far you\u2019ve got me. what can I expect from you?", side: "you" },
+  { name: "Al", text: "Here is where we\u2019ve landed", side: "them" },
+  { name: "Al", text: "You won\u2019t like everything we do", side: "them" },
+  { name: "Al", text: "You will only hear from when you need to", side: "them" },
+  { name: "Al", text: "This will come to an end once our story is told", side: "them" },
+  { name: "Al", text: "Absolutely no acronyms ever.", side: "them" },
+  { name: "You", text: "Damn. That\u2019s a lot of no\u2019s. Give me something you believe in.", side: "you" },
+  { name: "Al", text: "You know my mom had the same reaction haha. But here you go.", side: "them" },
+  { name: "Al", text: "The older I get, the list of memories I rely on to bring my joy shrinks", side: "them" },
+  { name: "Al", text: "There is so much beauty in the day to day", side: "them" },
+  { name: "Al", text: "But our brains are overworked, they can\u2019t keep up and it\u2019s only getting worse.", side: "them" },
+  { name: "Al", text: "You can go weeks at a time just on autopilot just trying to get the new milestone without taking a breath", side: "them" },
+  { name: "Al", text: "But Already Spilled forces us to look down", side: "them" },
+  { name: "Al", text: "Take in the moment", side: "them" },
+  { name: "Al", text: "Use all our senses", side: "them" },
+  { name: "Al", text: "marvel at the magic that got the byproduct of tomatoes from Italy, spices from India, and peppers from Mexico all coalesce on your shirt at the same time", side: "them" },
+  { name: "Al", text: "Can you believe that? Really something else", side: "them" },
+  { name: "Al", text: "Come on do it with me", side: "them" },
+  { name: "Al", text: "Look down at your shirt", side: "them" },
+];
+
 export default function Home() {
   const [activePanel, setActivePanel] = useState<string | null>(null);
   const [email, setEmail] = useState("");
@@ -13,10 +74,17 @@ export default function Home() {
   const [postcardFlipped, setPostcardFlipped] = useState(false);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [initialAnimationDone, setInitialAnimationDone] = useState(false);
+  const [boopRevealed, setBoopRevealed] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(false);
   const [chatInput, setChatInput] = useState("");
-  const [chatMessages, setChatMessages] = useState<{ sender: "you" | "them" | "them-away"; text: string }[]>([]);
+  const [chatMessages, setChatMessages] = useState<{ sender: "you" | "them"; text: string }[]>([]);
   const [isTyping, setIsTyping] = useState(false);
+  const [userMessageCount, setUserMessageCount] = useState(0);
+  const [chatFailed, setChatFailed] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const autoScrollRef = useRef(true);
   const [waitlistEmail, setWaitlistEmail] = useState("");
   const [waitlistSubmitted, setWaitlistSubmitted] = useState(false);
   const [progressPhase, setProgressPhase] = useState<"loading" | "timeout" | "phrases">("loading");
@@ -68,6 +136,82 @@ export default function Home() {
     setTimeout(() => setChaos(null), 3000);
   };
 
+  // Story auto-play: start when panel opens, advance one message at a time
+  useEffect(() => {
+    if (activePanel === "story" && visibleCount === 0 && !isAutoPlaying) {
+      setIsAutoPlaying(true);
+      setVisibleCount(1);
+    }
+    if (activePanel !== "story") {
+      // Reset when panel closes
+      setVisibleCount(0);
+      setIsAutoPlaying(false);
+      setChatMessages([]);
+      setUserMessageCount(0);
+      setChatFailed(false);
+      setBoopRevealed(false);
+      setChatInput("");
+    }
+  }, [activePanel]);
+
+  useEffect(() => {
+    if (!isAutoPlaying || visibleCount === 0) return;
+    if (visibleCount >= storyConversation.length) {
+      setIsAutoPlaying(false);
+      return;
+    }
+
+    const nextMsg = storyConversation[visibleCount];
+    const prevMsg = storyConversation[visibleCount - 1];
+    const isConsecutive = prevMsg && nextMsg.side === prevMsg.side;
+
+    let delay: number;
+    if (!nextMsg.text) {
+      // Empty spacer message
+      delay = 800;
+    } else if (nextMsg.side === "you") {
+      delay = isConsecutive ? 800 : 1200;
+    } else {
+      // "them" messages get typing delay
+      delay = isConsecutive ? 1200 : 1800;
+    }
+
+    const timer = setTimeout(() => {
+      setVisibleCount((prev) => prev + 1);
+    }, delay);
+
+    return () => clearTimeout(timer);
+  }, [isAutoPlaying, visibleCount]);
+
+  // Detect user scrolling up to break auto-scroll lock
+  useEffect(() => {
+    const container = chatContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      // If user is within 60px of the bottom, re-enable auto-scroll
+      autoScrollRef.current = scrollHeight - scrollTop - clientHeight < 60;
+    };
+
+    container.addEventListener("scroll", handleScroll);
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // Auto-scroll chat as messages appear (only if locked to bottom)
+  useEffect(() => {
+    if (autoScrollRef.current) {
+      chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [visibleCount, chatMessages, isTyping]);
+
+  const handleSkip = () => {
+    setVisibleCount(storyConversation.length);
+    setIsAutoPlaying(false);
+  };
+
+  const storyComplete = visibleCount >= storyConversation.length && !isAutoPlaying;
+
   const spilledReplies = [
     "that's the thing tho... perfection is BORING",
     "u ever look at a coffee ring and think 'art'? no? just us?",
@@ -82,27 +226,33 @@ export default function Home() {
     "a knight in shining armor has never had his mettle tested... think about that",
     "the best vintage tees are the ones that look like they've BEEN somewhere",
     "embrace the mess or the mess embraces u. ur choice",
-    "11 shirts. 11 stories. infinite stains. stay tuned",
     "what if i told u the stain IS the design",
-    "collecting things in perfect condition is just hoarding with anxiety",
     "the beans have been spilled. there's no going back now",
     "every scuff tells a story. what's urs?",
     "we're not messy, we're EXPERIENCED",
-    "pristine is just code for 'never actually used'",
-    "ur grandma's favorite recipe has stains on it for a reason",
-    "if it's not a little bit wrecked, did u even live?",
-    "we're basically a support group for people who ruin nice things",
     "already spilled... so now we can actually enjoy the moment",
   ];
 
   const handleChatSend = () => {
     const msg = chatInput.trim();
-    if (!msg || isTyping) return;
+    if (!msg || isTyping || chatFailed) return;
 
+    const newCount = userMessageCount + 1;
     setChatMessages((prev) => [...prev, { sender: "you", text: msg }]);
     setChatInput("");
-    setIsTyping(true);
+    setUserMessageCount(newCount);
 
+    if (newCount >= 3) {
+      // Chat fails after 3 user messages
+      setIsTyping(true);
+      setTimeout(() => {
+        setIsTyping(false);
+        setChatFailed(true);
+      }, 1500);
+      return;
+    }
+
+    setIsTyping(true);
     const delay = 800 + Math.random() * 1200;
     setTimeout(() => {
       const reply = spilledReplies[Math.floor(Math.random() * spilledReplies.length)];
@@ -111,9 +261,6 @@ export default function Home() {
     }, delay);
   };
 
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chatMessages, isTyping]);
 
   const progressPhrases = [
     "Connection timed out. Retrying...",
@@ -536,10 +683,10 @@ export default function Home() {
                     </span>
                     {activeMenu === 'insert' && (
                       <div className="aim-dropdown">
-                        <div className="aim-dropdown-item" onClick={() => setActiveMenu(null)}>😎 Smiley</div>
-                        <div className="aim-dropdown-item" onClick={() => setActiveMenu(null)}>☕ Coffee Stain</div>
-                        <div className="aim-dropdown-item" onClick={() => setActiveMenu(null)}>🫘 Spilled Beans</div>
-                        <div className="aim-dropdown-item" onClick={() => setActiveMenu(null)}>👼 Cherub</div>
+                        <div className="aim-dropdown-item" onClick={() => { if (storyComplete && !chatFailed && !boopRevealed) setChatInput(prev => prev + '😎'); setActiveMenu(null); }}>😎 Smiley</div>
+                        <div className="aim-dropdown-item" onClick={() => { if (storyComplete && !chatFailed && !boopRevealed) setChatInput(prev => prev + '☕'); setActiveMenu(null); }}>☕ Coffee Stain</div>
+                        <div className="aim-dropdown-item" onClick={() => { if (storyComplete && !chatFailed && !boopRevealed) setChatInput(prev => prev + '🫘'); setActiveMenu(null); }}>🫘 Spilled Beans</div>
+                        <div className="aim-dropdown-item" onClick={() => { if (storyComplete && !chatFailed && !boopRevealed) setChatInput(prev => prev + '👼'); setActiveMenu(null); }}>👼 Cherub</div>
                       </div>
                     )}
                   </div>
@@ -557,82 +704,80 @@ export default function Home() {
                     )}
                   </div>
                 </div>
-                <div className="aim-chat">
-                  <div className="aim-message aim-them">
-                    <span className="aim-screenname">AlreadySpilled:</span>
-                    <span className="aim-text">hey, wanna hear something wild?</span>
-                  </div>
-                  <div className="aim-message aim-them">
-                    <span className="aim-screenname">AlreadySpilled:</span>
-                    <span className="aim-text">in the world of collectibles, condition is EVERYTHING</span>
-                  </div>
-                  <div className="aim-message aim-them">
-                    <span className="aim-screenname">AlreadySpilled:</span>
-                    <span className="aim-text">mint. sealed. untouched. &quot;perfect&quot;</span>
-                  </div>
-                  <div className="aim-message aim-you">
-                    <span className="aim-screenname">You:</span>
-                    <span className="aim-text">sounds boring lol</span>
-                  </div>
-                  <div className="aim-message aim-them">
-                    <span className="aim-screenname">AlreadySpilled:</span>
-                    <span className="aim-text">EXACTLY</span>
-                  </div>
-                  <div className="aim-message aim-them">
-                    <span className="aim-screenname">AlreadySpilled:</span>
-                    <span className="aim-text">&quot;a knight in shining armor has never had his mettle tested&quot;</span>
-                  </div>
-                  <div className="aim-message aim-them">
-                    <span className="aim-screenname">AlreadySpilled:</span>
-                    <span className="aim-text">we celebrate the stains, the scuffs, the stories they tell</span>
-                  </div>
-                  <div className="aim-message aim-them">
-                    <span className="aim-screenname">AlreadySpilled:</span>
-                    <span className="aim-text">the coffee ring on ur fav book ☕</span>
-                  </div>
-                  <div className="aim-message aim-them">
-                    <span className="aim-screenname">AlreadySpilled:</span>
-                    <span className="aim-text">the grass stain from that winning catch 🏆</span>
-                  </div>
-                  <div className="aim-message aim-you">
-                    <span className="aim-screenname">You:</span>
-                    <span className="aim-text">ohhh i get it</span>
-                  </div>
-                  <div className="aim-message aim-them">
-                    <span className="aim-screenname">AlreadySpilled:</span>
-                    <span className="aim-text">these aren&apos;t flaws—they&apos;re PROOF OF LIFE</span>
-                  </div>
-                  <div className="aim-message aim-them aim-away">
-                    <span className="aim-screenname">AlreadySpilled:</span>
-                    <span className="aim-text">brb, spilling something 😎</span>
-                  </div>
-                  {chatMessages.map((msg, i) => (
-                    <div key={i} className={`aim-message ${msg.sender === "you" ? "aim-you" : "aim-them"}${msg.sender === "them-away" ? " aim-away" : ""}`}>
-                      <span className="aim-screenname">{msg.sender === "you" ? "You:" : "AlreadySpilled:"}</span>
-                      <span className="aim-text">{msg.text}</span>
-                    </div>
+                <div className="aim-chat" ref={chatContainerRef}>
+                  {storyConversation.slice(0, visibleCount).map((msg, i) => (
+                    msg.text ? (
+                      <div key={`story-${i}`} className={`aim-message ${msg.side === "you" ? "aim-you" : "aim-them"}`}>
+                        <span className="aim-screenname">{msg.name}:</span>
+                        <span className="aim-text">{msg.text}</span>
+                      </div>
+                    ) : (
+                      <div key={`story-${i}`} className="aim-spacer" />
+                    )
                   ))}
-                  {isTyping && (
+                  {isAutoPlaying && visibleCount < storyConversation.length && storyConversation[visibleCount]?.side === "them" && storyConversation[visibleCount]?.text && (
                     <div className="aim-message aim-them">
-                      <span className="aim-screenname">AlreadySpilled:</span>
+                      <span className="aim-screenname">{storyConversation[visibleCount].name}:</span>
                       <span className="aim-text aim-typing">is typing...</span>
                     </div>
                   )}
+                  {chatMessages.map((msg, i) => (
+                    <div key={`chat-${i}`} className={`aim-message ${msg.sender === "you" ? "aim-you" : "aim-them"}`}>
+                      <span className="aim-screenname">{msg.sender === "you" ? "You:" : "Al:"}</span>
+                      <span className="aim-text">{msg.text}</span>
+                    </div>
+                  ))}
+                  {isTyping && !chatFailed && (
+                    <div className="aim-message aim-them">
+                      <span className="aim-screenname">Al:</span>
+                      <span className="aim-text aim-typing">is typing...</span>
+                    </div>
+                  )}
+                  {chatFailed && !boopRevealed && (
+                    <div className="aim-error-block">
+                      <span className="aim-thinking">Al is thinking...</span>
+                      <button className="aim-retry-btn" onClick={() => setBoopRevealed(true)}>Try Again</button>
+                    </div>
+                  )}
+                  {boopRevealed && (
+                    <>
+                      <div className="aim-boop-video">
+                        <video
+                          src="/assets/boop.mp4"
+                          autoPlay
+                          playsInline
+                          muted
+                          className="aim-video"
+                        />
+                      </div>
+                      <div className="aim-message aim-them aim-away">
+                        <span className="aim-screenname">Al, Court Jester of Spillville:</span>
+                        <span className="aim-text">has signed off</span>
+                      </div>
+                    </>
+                  )}
                   <div ref={chatEndRef} />
                 </div>
-                <div className="aim-input-area">
-                  <input
-                    type="text"
-                    className="aim-input"
-                    placeholder="Type a message..."
-                    value={chatInput}
-                    onChange={(e) => setChatInput(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === "Enter") handleChatSend(); }}
-                  />
-                  <button className="aim-send" onClick={handleChatSend}>Send</button>
-                </div>
+                {isAutoPlaying && (
+                  <div className="aim-input-area">
+                    <button className="aim-skip-btn" onClick={handleSkip}>Skip &raquo;</button>
+                  </div>
+                )}
+                {storyComplete && !chatFailed && !boopRevealed && (
+                  <div className="aim-input-area">
+                    <input
+                      type="text"
+                      className="aim-input"
+                      placeholder="Type a message..."
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter") handleChatSend(); }}
+                    />
+                    <button className="aim-send" onClick={handleChatSend}>Send</button>
+                  </div>
+                )}
                 <div className="aim-status">
-                  <span>AlreadySpilled is online</span>
+                  <span>{boopRevealed ? "Al, Court Jester of Spillville has signed off" : "AlreadySpilled is online"}</span>
                   <span className="aim-timestamp">Est. 2025</span>
                 </div>
               </div>
