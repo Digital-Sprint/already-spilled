@@ -583,42 +583,70 @@ export default function Home() {
         {/* BIG HEADLINE */}
         <div className="mb-8">
           <div className="cutout-line mb-2 md:mb-3">
-            <span className={`cutout cut-4 text-4xl md:text-6xl lg:text-7xl ${!initialAnimationDone ? 'animate-letter letter-delay-1' : ''} ${chaos === 'fall' ? 'animate-fall-1' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>E</span>
-            <span className={`cutout cut-2 text-4xl md:text-6xl lg:text-7xl ${!initialAnimationDone ? 'animate-letter letter-delay-2' : ''} ${chaos === 'fall' ? 'animate-fall-2' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>M</span>
-            <span className={`cutout cut-9 text-4xl md:text-6xl lg:text-7xl ${!initialAnimationDone ? 'animate-letter letter-delay-3' : ''} ${chaos === 'fall' ? 'animate-fall-3' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-2' : ''}`}>B</span>
-            <span className={`cutout cut-3 text-4xl md:text-6xl lg:text-7xl ${!initialAnimationDone ? 'animate-letter letter-delay-4' : ''} ${chaos === 'fall' ? 'animate-fall-4' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>R</span>
-            <span className={`cutout cut-1 text-4xl md:text-6xl lg:text-7xl ${!initialAnimationDone ? 'animate-letter letter-delay-5' : ''} ${chaos === 'fall' ? 'animate-fall-5' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>A</span>
-            <span className={`cutout cut-5 text-4xl md:text-6xl lg:text-7xl ${!initialAnimationDone ? 'animate-letter letter-delay-6' : ''} ${chaos === 'fall' ? 'animate-fall-6' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-2' : ''}`}>C</span>
-            <span className={`cutout cut-7 text-4xl md:text-6xl lg:text-7xl ${!initialAnimationDone ? 'animate-letter letter-delay-7' : ''} ${chaos === 'fall' ? 'animate-fall-7' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>E</span>
+            <div className="flex items-center -space-x-0.5">
+              <span className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-1' : ''} ${chaos === 'fall' ? 'animate-fall-1' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>
+                <Image src="/assets/letters/embrace/E1.png" alt="E" width={80} height={100} className="h-[50px] md:h-[80px] lg:h-[100px] w-auto" draggable={false} />
+              </span>
+              <span className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-2' : ''} ${chaos === 'fall' ? 'animate-fall-2' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>
+                <Image src="/assets/letters/embrace/M1.png" alt="M" width={100} height={100} className="h-[50px] md:h-[80px] lg:h-[100px] w-auto" draggable={false} />
+              </span>
+              <span className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-3' : ''} ${chaos === 'fall' ? 'animate-fall-3' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-2' : ''}`}>
+                <Image src="/assets/letters/embrace/B1.png" alt="B" width={90} height={100} className="h-[50px] md:h-[80px] lg:h-[100px] w-auto" draggable={false} />
+              </span>
+              <span className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-4' : ''} ${chaos === 'fall' ? 'animate-fall-4' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>
+                <Image src="/assets/letters/embrace/R1.png" alt="R" width={70} height={100} className="h-[50px] md:h-[80px] lg:h-[100px] w-auto" draggable={false} />
+              </span>
+              <span className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-5' : ''} ${chaos === 'fall' ? 'animate-fall-5' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>
+                <Image src="/assets/letters/embrace/A1.png" alt="A" width={85} height={100} className="h-[50px] md:h-[80px] lg:h-[100px] w-auto" draggable={false} />
+              </span>
+              <span className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-6' : ''} ${chaos === 'fall' ? 'animate-fall-6' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-2' : ''}`}>
+                <Image src="/assets/letters/embrace/C1.png" alt="C" width={75} height={100} className="h-[50px] md:h-[80px] lg:h-[100px] w-auto" draggable={false} />
+              </span>
+              <span className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-7' : ''} ${chaos === 'fall' ? 'animate-fall-7' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>
+                <Image src="/assets/letters/embrace/E2 Row 1End.png" alt="E" width={85} height={100} className="h-[50px] md:h-[80px] lg:h-[100px] w-auto" draggable={false} />
+              </span>
+            </div>
           </div>
           <div className="cutout-line">
-            <span className={`cutout cut-6 text-3xl md:text-5xl lg:text-6xl ${!initialAnimationDone ? 'animate-letter letter-delay-8' : ''} ${chaos === 'fall' ? 'animate-fall-3' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>the</span>
-            <span className={`cutout cut-9 text-5xl md:text-7xl lg:text-8xl ${!initialAnimationDone ? 'animate-letter letter-delay-9' : ''} ${chaos === 'fall' ? 'animate-fall-1' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>M</span>
-            <span className={`cutout cut-2 text-5xl md:text-7xl lg:text-8xl ${!initialAnimationDone ? 'animate-letter letter-delay-10' : ''} ${chaos === 'fall' ? 'animate-fall-5' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-2' : ''}`}>E</span>
-            <span className={`cutout cut-3 text-5xl md:text-7xl lg:text-8xl ${!initialAnimationDone ? 'animate-letter letter-delay-11' : ''} ${chaos === 'fall' ? 'animate-fall-2' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>S</span>
-            <span className={`cutout cut-4 text-5xl md:text-7xl lg:text-8xl ${!initialAnimationDone ? 'animate-letter letter-delay-12' : ''} ${chaos === 'fall' ? 'animate-fall-6' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>S</span>
+            <span className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-8' : ''} ${chaos === 'fall' ? 'animate-fall-3' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>
+              <Image src="/assets/letters/The.png" alt="the" width={140} height={80} className="h-[40px] md:h-[65px] lg:h-[80px] w-auto" draggable={false} />
+            </span>
+            <div className="flex items-center -space-x-0.5">
+              <span className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-9' : ''} ${chaos === 'fall' ? 'animate-fall-1' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>
+                <Image src="/assets/letters/mess/M2.png" alt="M" width={100} height={110} className="h-[55px] md:h-[90px] lg:h-[110px] w-auto" draggable={false} />
+              </span>
+              <span className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-10' : ''} ${chaos === 'fall' ? 'animate-fall-5' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-2' : ''}`}>
+                <Image src="/assets/letters/mess/E2.png" alt="E" width={95} height={110} className="h-[55px] md:h-[90px] lg:h-[110px] w-auto" draggable={false} />
+              </span>
+              <span className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-11' : ''} ${chaos === 'fall' ? 'animate-fall-2' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>
+                <Image src="/assets/letters/mess/S1.png" alt="S" width={75} height={110} className="h-[55px] md:h-[90px] lg:h-[110px] w-auto" draggable={false} />
+              </span>
+              <span className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-12' : ''} ${chaos === 'fall' ? 'animate-fall-6' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>
+                <Image src="/assets/letters/mess/S2.png" alt="S" width={70} height={110} className="h-[55px] md:h-[90px] lg:h-[110px] w-auto" draggable={false} />
+              </span>
+            </div>
           </div>
         </div>
 
         {/* BUTTONS */}
-        <div className="flex flex-wrap justify-center gap-3 md:gap-4 animate-load-buttons">
+        <div className="flex flex-wrap justify-center items-center gap-3 md:gap-4 animate-load-buttons">
           <button
             onClick={() => setActivePanel("story")}
-            className="cutout cut-8 text-sm md:text-base px-4 py-2 cursor-pointer hover:scale-105 transition-transform"
+            className="cursor-pointer hover:scale-105 transition-transform"
           >
-            The Story
+            <Image src="/assets/buttons/Story.png" alt="The Story" width={200} height={90} className="h-[50px] md:h-[65px] lg:h-[75px] w-auto" draggable={false} />
           </button>
           <button
             onClick={() => setActivePanel("collection")}
-            className="cutout cut-9 text-sm md:text-base px-4 py-2 cursor-pointer hover:scale-105 transition-transform"
+            className="cursor-pointer hover:scale-105 transition-transform"
           >
-            Collection
+            <Image src="/assets/buttons/Collection.png" alt="Collection" width={250} height={90} className="h-[50px] md:h-[65px] lg:h-[75px] w-auto" draggable={false} />
           </button>
           <button
             onClick={() => setActivePanel("signup")}
-            className="cutout cut-3 text-sm md:text-base px-4 py-2 cursor-pointer hover:scale-105 transition-transform"
+            className="cursor-pointer hover:scale-105 transition-transform"
           >
-            Spill It
+            <Image src="/assets/buttons/Spill it.png" alt="Spill It" width={180} height={90} className="h-[50px] md:h-[65px] lg:h-[75px] w-auto" draggable={false} />
           </button>
         </div>
       </div>
@@ -1011,7 +1039,7 @@ export default function Home() {
 
       {/* FOOTER */}
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-20 animate-load-footer">
-        <span className="cutout cut-6 text-xs">© 2026 Already Spilled</span>
+        <Image src="/assets/2026.png" alt="© 2026 Already Spilled" width={300} height={60} className="h-[35px] md:h-[45px] w-auto" draggable={false} />
       </div>
     </main>
   );

@@ -262,8 +262,8 @@ body {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  align-items: baseline;
-  gap: 4px;
+  align-items: center;
+  gap: 2px;
 }
 
 /* Floating animations for cherubs */
@@ -2808,6 +2808,27 @@ body {
 .animate-letter.animate-spin-letter { opacity: 1; animation: spin-letter 0.6s ease-in-out; }
 .animate-letter.animate-spin-letter-delay-1 { opacity: 1; animation: spin-letter 0.6s ease-in-out 0.1s; }
 .animate-letter.animate-spin-letter-delay-2 { opacity: 1; animation: spin-letter 0.6s ease-in-out 0.2s; }
+
+/* Letter wiggle on hover */
+@keyframes wiggle {
+  0% { transform: rotate(0deg) scale(1); }
+  20% { transform: rotate(-6deg) scale(1.05); }
+  40% { transform: rotate(6deg) scale(1.05); }
+  60% { transform: rotate(-4deg) scale(1.03); }
+  80% { transform: rotate(4deg) scale(1.03); }
+  100% { transform: rotate(0deg) scale(1); }
+}
+
+.letter-hover {
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+}
+
+.letter-hover:hover {
+  animation: wiggle 0.4s ease-in-out !important;
+  z-index: 10;
+}
 
 /* EMBRACE letters - staggered delays */
 .letter-delay-1 { animation-delay: 0.3s; --letter-rotate: -3deg; }
