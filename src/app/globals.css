@@ -3304,6 +3304,14 @@ html.dark body {
 .dark .ctrl-btn.ctrl-on { background: #4a5d8a; }
 .dark .ctrl-btn.ctrl-off { background: #1f1f1f; }
 
+/* Clean Up is an action, not a toggle — give it its own pink look */
+.ctrl-btn.ctrl-cleanup {
+  background: #ff6b9d;
+  color: #1a1a1a;
+  margin-top: 0.15rem;
+}
+.dark .ctrl-btn.ctrl-cleanup { background: #b3416d; color: #f5f0e8; }
+
 @media (max-width: 640px) {
   .ctrl-btn { font-size: 0.62rem; padding: 0.22rem 0.45rem; }
 }
