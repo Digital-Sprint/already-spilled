@@ -678,7 +678,7 @@ export default function Home() {
 
   return (
     <ResetContext.Provider value={resetSignal}>
-    <main className={`${darkMode ? 'dark-bg' : 'paper-bg'} min-h-screen flex flex-col items-center justify-center p-4 md:p-8 relative overflow-hidden transition-colors duration-500`}>
+    <main className={`${darkMode ? 'dark-bg' : 'paper-bg'} min-h-screen flex flex-col items-center justify-center p-4 pt-16 pb-24 md:p-8 relative overflow-hidden transition-colors duration-500`}>
 
       {/* HAND-PAINTED SPLATTER BACKGROUND (inverts in dark mode) */}
       <div className={`bg-splatter ${darkMode ? 'bg-splatter-dark' : ''}`} />
@@ -809,25 +809,25 @@ export default function Home() {
           className={`ctrl-btn ${soundOn ? 'ctrl-on' : 'ctrl-off'}`}
           onClick={() => setSoundOn((v) => !v)}
         >
-          {soundOn ? '🔊' : '🔇'} Sound
+          🐮 moosic
         </button>
         <button
           className={`ctrl-btn ${crtOn ? 'ctrl-on' : 'ctrl-off'}`}
           onClick={() => setCrtOn((v) => !v)}
         >
-          📺 Fuzz
+          🍑 fuzz
         </button>
         <button
           className={`ctrl-btn ${stainsOn ? 'ctrl-on' : 'ctrl-off'}`}
           onClick={() => setStainsOn((v) => !v)}
         >
-          🎨 Splatter
+          💦 plop
         </button>
         <button
           className={`ctrl-btn ${darkMode ? 'ctrl-on' : 'ctrl-off'}`}
           onClick={() => setDarkMode((v) => !v)}
         >
-          {darkMode ? '🌙' : '☀️'} Lights
+          {darkMode ? '🌚 night night' : '☀️ bom dia'}
         </button>
         <button className="ctrl-btn ctrl-cleanup" onClick={cleanUp}>
           🧹 Clean Up
@@ -837,60 +837,60 @@ export default function Home() {
       {/* MAIN CONTENT */}
       <div className="text-center z-20 max-w-4xl">
         {/* Logo */}
-        <div className="mb-6 animate-load-logo">
+        <div className="mb-3 md:mb-6 animate-load-logo">
           <Image
             src="/assets/already spilled main.png"
             alt="Already Spilled"
             width={200}
             height={100}
-            className="mx-auto w-[240px] sm:w-[300px] md:w-[380px]"
+            className="mx-auto w-[150px] sm:w-[240px] md:w-[380px]"
             priority
           />
         </div>
 
         {/* BIG HEADLINE - letters are draggable */}
-        <div className="mb-8 select-none">
+        <div className="mb-5 md:mb-8 select-none">
           <div className="cutout-line mb-2 md:mb-3">
             <div className="flex items-center -space-x-px">
               <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-1' : ''} ${chaos === 'fall' ? 'animate-fall-1' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>
-                <Image src="/assets/letters-v2/E1.png" alt="E" width={123} height={172} className="h-[52px] sm:h-[78px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
+                <Image src="/assets/letters-v2/E1.png" alt="E" width={123} height={172} className="h-[44px] sm:h-[70px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
               </DraggableLetter>
               <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-2' : ''} ${chaos === 'fall' ? 'animate-fall-2' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>
-                <Image src="/assets/letters-v2/M1.png" alt="M" width={173} height={172} className="h-[52px] sm:h-[78px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
+                <Image src="/assets/letters-v2/M1.png" alt="M" width={173} height={172} className="h-[44px] sm:h-[70px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
               </DraggableLetter>
               <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-3' : ''} ${chaos === 'fall' ? 'animate-fall-3' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-2' : ''}`}>
-                <Image src="/assets/letters-v2/B1.png" alt="B" width={147} height={172} className="h-[52px] sm:h-[78px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
+                <Image src="/assets/letters-v2/B1.png" alt="B" width={147} height={172} className="h-[44px] sm:h-[70px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
               </DraggableLetter>
               <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-4' : ''} ${chaos === 'fall' ? 'animate-fall-4' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>
-                <Image src="/assets/letters-v2/R1.png" alt="R" width={106} height={172} className="h-[52px] sm:h-[78px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
+                <Image src="/assets/letters-v2/R1.png" alt="R" width={106} height={172} className="h-[44px] sm:h-[70px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
               </DraggableLetter>
               <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-5' : ''} ${chaos === 'fall' ? 'animate-fall-5' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>
-                <Image src="/assets/letters-v2/A1.png" alt="A" width={146} height={172} className="h-[52px] sm:h-[78px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
+                <Image src="/assets/letters-v2/A1.png" alt="A" width={146} height={172} className="h-[44px] sm:h-[70px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
               </DraggableLetter>
               <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-6' : ''} ${chaos === 'fall' ? 'animate-fall-6' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-2' : ''}`}>
-                <Image src="/assets/letters-v2/C1.png" alt="C" width={107} height={172} className="h-[52px] sm:h-[78px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
+                <Image src="/assets/letters-v2/C1.png" alt="C" width={107} height={172} className="h-[44px] sm:h-[70px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
               </DraggableLetter>
               <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-7' : ''} ${chaos === 'fall' ? 'animate-fall-7' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>
-                <Image src="/assets/letters-v2/E2.png" alt="E" width={132} height={172} className="h-[52px] sm:h-[78px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
+                <Image src="/assets/letters-v2/E2.png" alt="E" width={132} height={172} className="h-[44px] sm:h-[70px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
               </DraggableLetter>
             </div>
           </div>
           <div className="cutout-line">
             <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-8' : ''} ${chaos === 'fall' ? 'animate-fall-3' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>
-              <Image src="/assets/letters-v2/The.png" alt="the" width={167} height={170} className="h-[52px] sm:h-[78px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
+              <Image src="/assets/letters-v2/The.png" alt="the" width={167} height={170} className="h-[44px] sm:h-[70px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
             </DraggableLetter>
             <div className="flex items-center -space-x-px">
               <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-9' : ''} ${chaos === 'fall' ? 'animate-fall-1' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>
-                <Image src="/assets/letters-v2/M2.png" alt="M" width={164} height={170} className="h-[52px] sm:h-[78px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
+                <Image src="/assets/letters-v2/M2.png" alt="M" width={164} height={170} className="h-[44px] sm:h-[70px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
               </DraggableLetter>
               <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-10' : ''} ${chaos === 'fall' ? 'animate-fall-5' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-2' : ''}`}>
-                <Image src="/assets/letters-v2/Em.png" alt="E" width={124} height={170} className="h-[52px] sm:h-[78px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
+                <Image src="/assets/letters-v2/Em.png" alt="E" width={124} height={170} className="h-[44px] sm:h-[70px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
               </DraggableLetter>
               <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-11' : ''} ${chaos === 'fall' ? 'animate-fall-2' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>
-                <Image src="/assets/letters-v2/S1.png" alt="S" width={120} height={170} className="h-[52px] sm:h-[78px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
+                <Image src="/assets/letters-v2/S1.png" alt="S" width={120} height={170} className="h-[44px] sm:h-[70px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
               </DraggableLetter>
               <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-12' : ''} ${chaos === 'fall' ? 'animate-fall-6' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>
-                <Image src="/assets/letters-v2/S2.png" alt="S" width={114} height={170} className="h-[52px] sm:h-[78px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
+                <Image src="/assets/letters-v2/S2.png" alt="S" width={114} height={170} className="h-[44px] sm:h-[70px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
               </DraggableLetter>
             </div>
           </div>
