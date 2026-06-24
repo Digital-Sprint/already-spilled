@@ -25,10 +25,27 @@ body {
 /* Light paper background */
 .paper-bg {
   min-height: 100vh;
-  background-color: #f5f0e8;
+  background-color: #ece5cf;
   background-image:
     /* Paper texture */
     url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.06'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px 200px;
+}
+
+/* Hand-painted splatter background layer (shared by both modes) */
+.bg-splatter {
+  position: fixed;
+  inset: 0;
+  background: url("/assets/splatter-bg.png") center center / cover no-repeat;
+  z-index: 0;
+  pointer-events: none;
+  transition: filter 0.5s ease;
+}
+
+/* Dark mode: invert lightness but keep hues so the splatters stay colorful */
+.bg-splatter-dark {
+  filter: invert(1) hue-rotate(180deg);
 }
 
 /* Cut-out base */
@@ -3223,4 +3240,148 @@ html.dark body {
   .fixed.bottom-4 {
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
   }
+}
+
+/* ============================================
+   CONTROL PANEL - demo toggles (sound/CRT/splatter/lights)
+   ============================================ */
+.control-panel {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  align-items: flex-start;
+}
+
+.ctrl-btn {
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 0.02em;
+  padding: 0.28rem 0.55rem;
+  border: 2px solid #1a1a1a;
+  border-radius: 6px;
+  background: #fffdf7;
+  color: #1a1a1a;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.85);
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.2s ease, opacity 0.2s ease;
+  transform: rotate(-1.5deg);
+  white-space: nowrap;
+}
+
+.ctrl-btn:nth-child(even) { transform: rotate(1.5deg); }
+
+.ctrl-btn:hover {
+  transform: rotate(0deg) scale(1.05);
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.85);
+}
+
+.ctrl-btn:active {
+  transform: translate(2px, 2px) rotate(0deg);
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0.85);
+}
+
+.ctrl-btn.ctrl-on {
+  background: #9db4e8;
+}
+
+.ctrl-btn.ctrl-off {
+  background: #e8e0d5;
+  opacity: 0.7;
+}
+
+.dark .ctrl-btn {
+  background: #2a2a2a;
+  color: #f5f0e8;
+  border-color: #f5f0e8;
+  box-shadow: 2px 2px 0 rgba(255, 255, 255, 0.25);
+}
+
+.dark .ctrl-btn.ctrl-on { background: #4a5d8a; }
+.dark .ctrl-btn.ctrl-off { background: #1f1f1f; }
+
+@media (max-width: 640px) {
+  .ctrl-btn { font-size: 0.62rem; padding: 0.22rem 0.45rem; }
+}
+
+/* ============================================
+   CRAYON SPEECH BUBBLES (blue cherub)
+   ============================================ */
+/* Anchor that fills the cherub's box; each bubble is placed independently. */
+.crayon-bubbles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.crayon-bubble {
+  position: absolute;
+  font-family: 'Comic Sans MS', 'Marker Felt', cursive;
+  font-size: 0.76rem;
+  line-height: 1.25;
+  text-align: center;
+  width: 175px;
+  padding: 0.5rem 0.6rem;
+  border: 2.5px solid #1a1a1a;
+  border-radius: 14px;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.7);
+  transform: translateX(var(--tx, 0)) translateY(var(--ty, 0)) rotate(var(--rot, 0deg));
+  animation: crayon-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Your question — pops up centered above the cherub. No tail (it's from us). */
+.crayon-bubble-you {
+  --tx: -50%;
+  --ty: 0;
+  --rot: -1.5deg;
+  left: 50%;
+  bottom: calc(100% + 14px);
+  background: #fffdf7;
+  color: #1a1a1a;
+}
+
+/* Al's reply — to the right of the cherub, tail pointing back at him. */
+.crayon-bubble-al {
+  --tx: 0;
+  --ty: -50%;
+  --rot: 1.5deg;
+  left: calc(100% + 18px);
+  top: 50%;
+  background: #9db4e8;
+  color: #1a1a1a;
+  animation-delay: 0.7s;
+}
+
+.crayon-bubble-al::after {
+  content: '';
+  position: absolute;
+  left: -9px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-right: 9px solid #1a1a1a;
+}
+
+@keyframes crayon-pop {
+  0% {
+    opacity: 0;
+    transform: translateX(var(--tx, 0)) translateY(var(--ty, 0)) scale(0.5) rotate(var(--rot, 0deg));
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(var(--tx, 0)) translateY(var(--ty, 0)) scale(1) rotate(var(--rot, 0deg));
+  }
+}
+
+@media (max-width: 640px) {
+  .crayon-bubble { width: 150px; font-size: 0.68rem; padding: 0.4rem 0.5rem; }
+  .crayon-bubble-al { left: calc(100% + 12px); }
 }
