@@ -3,6 +3,9 @@
 import Image from "next/image";
 import { useState, useEffect, useRef, useCallback } from "react";
 
+// Base background-music volume (0..1)
+const BG_VOLUME = 0.45;
+
 const storyConversation: { name: string; text: string; side: "you" | "them" }[] = [
   { name: "You", text: "so uuhhh, wtf is this?", side: "you" },
   { name: "AlreadySpilled", text: "Excellent Question. Please expand.", side: "them" },
@@ -69,6 +72,16 @@ export default function Home() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+  const [drawingMode, setDrawingMode] = useState(false);
+  const [crayonExchange, setCrayonExchange] = useState<"ask" | "return" | null>(null);
+  const [crtOn, setCrtOn] = useState(true);
+  const [stainsOn, setStainsOn] = useState(true);
+  const [soundOn, setSoundOn] = useState(true);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const jingleRef = useRef<HTMLAudioElement>(null);
+  const soundOnRef = useRef(true);
+  const bgFadeRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const crayonBubbleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [chaos, setChaos] = useState<string | null>(null);
   const [stainsKey, setStainsKey] = useState(0);
   const [postcardFlipped, setPostcardFlipped] = useState(false);
@@ -101,6 +114,94 @@ export default function Home() {
     // Trigger stain re-animation on mode change
     setStainsKey(prev => prev + 1);
   }, [darkMode]);
+
+  // Blue cherub toggles drawing mode + shows a crayon speech exchange
+  const toggleDrawing = () => {
+    setDrawingMode((prev) => {
+      const next = !prev;
+      // Asking for crayons when turning on, handing them back when turning off
+      setCrayonExchange(next ? "ask" : "return");
+      if (crayonBubbleTimer.current) clearTimeout(crayonBubbleTimer.current);
+      crayonBubbleTimer.current = setTimeout(() => setCrayonExchange(null), 5500);
+      return next;
+    });
+  };
+
+  // Smoothly ramp the background music volume from its current level to `to`.
+  const fadeBg = useCallback((to: number, ms: number, after?: () => void) => {
+    const bg = audioRef.current;
+    if (!bg) return;
+    if (bgFadeRef.current) clearInterval(bgFadeRef.current);
+    const from = bg.volume;
+    const steps = 24;
+    let i = 0;
+    bgFadeRef.current = setInterval(() => {
+      i += 1;
+      bg.volume = Math.max(0, Math.min(1, from + (to - from) * (i / steps)));
+      if (i >= steps) {
+        if (bgFadeRef.current) clearInterval(bgFadeRef.current);
+        bgFadeRef.current = null;
+        after?.();
+      }
+    }, ms / steps);
+  }, []);
+
+  // Play the Already Spilled jingle (on story / waitlist submit). Respects mute.
+  // Fades the background music down under the jingle, then fades it back up.
+  const playJingle = useCallback(() => {
+    if (!soundOnRef.current) return;
+    const j = jingleRef.current;
+    const bg = audioRef.current;
+    if (!j) return;
+    fadeBg(0, 600);
+    j.currentTime = 0;
+    j.play().catch(() => {});
+    j.onended = () => {
+      if (!soundOnRef.current || !bg) return;
+      if (bg.paused) bg.play().catch(() => {});
+      fadeBg(BG_VOLUME, 900);
+    };
+  }, [fadeBg]);
+
+  // Show a crayon cursor while drawing is active
+  useEffect(() => {
+    document.body.style.cursor = drawingMode ? "crosshair" : "";
+    return () => { document.body.style.cursor = ""; };
+  }, [drawingMode]);
+
+  // Background music — best-effort autoplay, fall back to first interaction
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.volume = BG_VOLUME;
+    audio.play().catch(() => {
+      // Autoplay blocked — start on the first user gesture
+      const start = () => {
+        audio.play().catch(() => {});
+        window.removeEventListener("pointerdown", start);
+        window.removeEventListener("keydown", start);
+      };
+      window.addEventListener("pointerdown", start);
+      window.addEventListener("keydown", start);
+    });
+  }, []);
+
+  // Sound on/off toggle (mute rather than stop so it stays in sync)
+  useEffect(() => {
+    soundOnRef.current = soundOn;
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.muted = !soundOn;
+    if (soundOn) {
+      // Cancel any in-progress fade and restore the normal level
+      if (bgFadeRef.current) {
+        clearInterval(bgFadeRef.current);
+        bgFadeRef.current = null;
+      }
+      audio.volume = BG_VOLUME;
+      audio.play().catch(() => {});
+    }
+  }, [soundOn]);
 
   // Mark initial animation as done after it completes
   useEffect(() => {
@@ -406,6 +507,8 @@ export default function Home() {
 
     // Big splat on click
     const handleClick = (e: MouseEvent) => {
+      // Don't splat when clicking buttons, links, inputs, or the control panel
+      if ((e.target as HTMLElement).closest("button, a, input, textarea, .control-panel")) return;
       const x = e.clientX;
       const y = e.clientY;
       const baseColor = sprayColorRef.current.color;
@@ -445,30 +548,40 @@ export default function Home() {
       pickNewColor();
     };
 
-    // Fade existing paint slowly
+    // Fade existing paint slowly by erasing it (destination-out) so no color
+    // is ever painted over the page — prevents a tint building up over time.
     const fadeInterval = setInterval(() => {
-      ctx.fillStyle = darkMode
-        ? "rgba(26, 26, 26, 0.012)"
-        : "rgba(245, 240, 232, 0.012)";
+      ctx.save();
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.fillStyle = "rgba(0, 0, 0, 0.04)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.restore();
     }, 100);
 
-    window.addEventListener("mousemove", handleMove);
-    window.addEventListener("mouseleave", handleLeave);
-    window.addEventListener("click", handleClick);
+    // Only draw while drawing mode is active
+    if (drawingMode) {
+      window.addEventListener("mousemove", handleMove);
+      window.addEventListener("mouseleave", handleLeave);
+      window.addEventListener("click", handleClick);
+    }
 
     return () => {
       window.removeEventListener("mousemove", handleMove);
       window.removeEventListener("mouseleave", handleLeave);
       window.removeEventListener("click", handleClick);
       clearInterval(fadeInterval);
+      lastPosRef.current = null;
     };
-  }, [darkMode]);
+  }, [drawingMode, pickNewColor]);
 
   return (
     <main className={`${darkMode ? 'dark-bg' : 'paper-bg'} min-h-screen flex flex-col items-center justify-center p-4 md:p-8 relative overflow-hidden transition-colors duration-500`}>
 
+      {/* HAND-PAINTED SPLATTER BACKGROUND (inverts in dark mode) */}
+      <div className={`bg-splatter ${darkMode ? 'bg-splatter-dark' : ''}`} />
+
       {/* ANIMATED STAINS - thrown against the wall */}
+      {stainsOn && (
       <div key={stainsKey} className="fixed inset-0 pointer-events-none z-0">
         {/* Big pink splash - top right corner */}
         <div className={`stain stain-pink-lg ${darkMode ? 'stain-dark' : ''}`} style={{ top: '-2%', right: '5%' }} />
@@ -504,22 +617,39 @@ export default function Home() {
         <div className={`stain stain-tiny-2 ${darkMode ? 'stain-dark' : ''}`} style={{ top: '70%', right: '35%' }} />
         <div className={`stain stain-tiny-3 ${darkMode ? 'stain-dark' : ''}`} style={{ bottom: '30%', left: '45%' }} />
       </div>
+      )}
 
-      {/* INTERACTIVE CHERUB - Left (Blue) - Toggles Dark Mode */}
-      <div className="fixed left-2 md:left-8 top-1/2 -translate-y-1/2 z-10 animate-load-cherub-left">
+      {/* INTERACTIVE CHERUB - Left (Blue) - Toggles Drawing Mode */}
+      <div className="fixed left-2 md:left-8 top-1/2 -translate-y-1/2 z-40 animate-load-cherub-left">
         <button
-          onClick={() => setDarkMode(!darkMode)}
+          onClick={toggleDrawing}
           className="cherub-btn animate-float-1"
-          title="Toggle lights"
+          title={drawingMode ? "Put the crayons away" : "Can I have some crayons?"}
         >
           <Image
             src="/assets/cherub-blue.png"
-            alt="Toggle dark mode"
+            alt="Toggle drawing mode"
             width={100}
             height={120}
-            className={`w-[70px] sm:w-[90px] md:w-[120px] transition-all duration-300 ${darkMode ? 'brightness-50' : 'brightness-100'}`}
+            className={`w-[70px] sm:w-[90px] md:w-[120px] transition-all duration-300 ${drawingMode ? 'drop-shadow-[0_0_10px_rgba(124,160,217,0.9)] scale-110' : ''}`}
           />
         </button>
+
+        {/* Crayon speech bubbles - stacked above the cherub */}
+        {crayonExchange && (
+          <div className="crayon-bubbles">
+            <div className="crayon-bubble crayon-bubble-you">
+              {crayonExchange === "ask"
+                ? "psst… can I have some crayons?"
+                : "here, crayons back 🖍️"}
+            </div>
+            <div className="crayon-bubble crayon-bubble-al">
+              {crayonExchange === "ask"
+                ? "knock yourself out. the messier the better 🖍️"
+                : "…why are they soggy. did you chew on these?"}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* INTERACTIVE CHERUB - Right (Pink) - Makes letters fall */}
@@ -564,7 +694,39 @@ export default function Home() {
       />
 
       {/* CRT OVERLAY - Fuzzy TV effect */}
-      <div className="crt-overlay pointer-events-none"></div>
+      {crtOn && <div className="crt-overlay pointer-events-none"></div>}
+
+      {/* BACKGROUND MUSIC + SUBMIT JINGLE */}
+      <audio ref={audioRef} src="/assets/website-ui.mp3" loop preload="auto" />
+      <audio ref={jingleRef} src="/assets/as-jingle.wav" preload="auto" />
+
+      {/* CONTROL PANEL - toggles for demo */}
+      <div className="control-panel">
+        <button
+          className={`ctrl-btn ${soundOn ? 'ctrl-on' : 'ctrl-off'}`}
+          onClick={() => setSoundOn((v) => !v)}
+        >
+          {soundOn ? '🔊' : '🔇'} Sound
+        </button>
+        <button
+          className={`ctrl-btn ${crtOn ? 'ctrl-on' : 'ctrl-off'}`}
+          onClick={() => setCrtOn((v) => !v)}
+        >
+          📺 Fuzz
+        </button>
+        <button
+          className={`ctrl-btn ${stainsOn ? 'ctrl-on' : 'ctrl-off'}`}
+          onClick={() => setStainsOn((v) => !v)}
+        >
+          🎨 Splatter
+        </button>
+        <button
+          className={`ctrl-btn ${darkMode ? 'ctrl-on' : 'ctrl-off'}`}
+          onClick={() => setDarkMode((v) => !v)}
+        >
+          {darkMode ? '🌙' : '☀️'} Lights
+        </button>
+      </div>
 
       {/* MAIN CONTENT */}
       <div className="text-center z-20 max-w-4xl">
@@ -583,46 +745,46 @@ export default function Home() {
         {/* BIG HEADLINE */}
         <div className="mb-8">
           <div className="cutout-line mb-2 md:mb-3">
-            <div className="flex items-center -space-x-0.5">
+            <div className="flex items-center -space-x-px">
               <span className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-1' : ''} ${chaos === 'fall' ? 'animate-fall-1' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>
-                <Image src="/assets/letters/embrace/E1.png" alt="E" width={80} height={100} className="h-[50px] md:h-[80px] lg:h-[100px] w-auto" draggable={false} />
+                <Image src="/assets/letters-v2/E1.png" alt="E" width={123} height={172} className="h-[46px] sm:h-[62px] md:h-[80px] lg:h-[94px] w-auto" draggable={false} priority />
               </span>
               <span className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-2' : ''} ${chaos === 'fall' ? 'animate-fall-2' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>
-                <Image src="/assets/letters/embrace/M1.png" alt="M" width={100} height={100} className="h-[50px] md:h-[80px] lg:h-[100px] w-auto" draggable={false} />
+                <Image src="/assets/letters-v2/M1.png" alt="M" width={173} height={172} className="h-[46px] sm:h-[62px] md:h-[80px] lg:h-[94px] w-auto" draggable={false} priority />
               </span>
               <span className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-3' : ''} ${chaos === 'fall' ? 'animate-fall-3' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-2' : ''}`}>
-                <Image src="/assets/letters/embrace/B1.png" alt="B" width={90} height={100} className="h-[50px] md:h-[80px] lg:h-[100px] w-auto" draggable={false} />
+                <Image src="/assets/letters-v2/B1.png" alt="B" width={147} height={172} className="h-[46px] sm:h-[62px] md:h-[80px] lg:h-[94px] w-auto" draggable={false} priority />
               </span>
               <span className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-4' : ''} ${chaos === 'fall' ? 'animate-fall-4' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>
-                <Image src="/assets/letters/embrace/R1.png" alt="R" width={70} height={100} className="h-[50px] md:h-[80px] lg:h-[100px] w-auto" draggable={false} />
+                <Image src="/assets/letters-v2/R1.png" alt="R" width={106} height={172} className="h-[46px] sm:h-[62px] md:h-[80px] lg:h-[94px] w-auto" draggable={false} priority />
               </span>
               <span className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-5' : ''} ${chaos === 'fall' ? 'animate-fall-5' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>
-                <Image src="/assets/letters/embrace/A1.png" alt="A" width={85} height={100} className="h-[50px] md:h-[80px] lg:h-[100px] w-auto" draggable={false} />
+                <Image src="/assets/letters-v2/A1.png" alt="A" width={146} height={172} className="h-[46px] sm:h-[62px] md:h-[80px] lg:h-[94px] w-auto" draggable={false} priority />
               </span>
               <span className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-6' : ''} ${chaos === 'fall' ? 'animate-fall-6' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-2' : ''}`}>
-                <Image src="/assets/letters/embrace/C1.png" alt="C" width={75} height={100} className="h-[50px] md:h-[80px] lg:h-[100px] w-auto" draggable={false} />
+                <Image src="/assets/letters-v2/C1.png" alt="C" width={107} height={172} className="h-[46px] sm:h-[62px] md:h-[80px] lg:h-[94px] w-auto" draggable={false} priority />
               </span>
               <span className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-7' : ''} ${chaos === 'fall' ? 'animate-fall-7' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>
-                <Image src="/assets/letters/embrace/E2 Row 1End.png" alt="E" width={85} height={100} className="h-[50px] md:h-[80px] lg:h-[100px] w-auto" draggable={false} />
+                <Image src="/assets/letters-v2/E2.png" alt="E" width={132} height={172} className="h-[46px] sm:h-[62px] md:h-[80px] lg:h-[94px] w-auto" draggable={false} priority />
               </span>
             </div>
           </div>
           <div className="cutout-line">
             <span className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-8' : ''} ${chaos === 'fall' ? 'animate-fall-3' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>
-              <Image src="/assets/letters/The.png" alt="the" width={140} height={80} className="h-[40px] md:h-[65px] lg:h-[80px] w-auto" draggable={false} />
+              <Image src="/assets/letters-v2/The.png" alt="the" width={167} height={170} className="h-[46px] sm:h-[62px] md:h-[80px] lg:h-[94px] w-auto" draggable={false} priority />
             </span>
-            <div className="flex items-center -space-x-0.5">
+            <div className="flex items-center -space-x-px">
               <span className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-9' : ''} ${chaos === 'fall' ? 'animate-fall-1' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>
-                <Image src="/assets/letters/mess/M2.png" alt="M" width={100} height={110} className="h-[55px] md:h-[90px] lg:h-[110px] w-auto" draggable={false} />
+                <Image src="/assets/letters-v2/M2.png" alt="M" width={164} height={170} className="h-[46px] sm:h-[62px] md:h-[80px] lg:h-[94px] w-auto" draggable={false} priority />
               </span>
               <span className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-10' : ''} ${chaos === 'fall' ? 'animate-fall-5' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-2' : ''}`}>
-                <Image src="/assets/letters/mess/E2.png" alt="E" width={95} height={110} className="h-[55px] md:h-[90px] lg:h-[110px] w-auto" draggable={false} />
+                <Image src="/assets/letters-v2/Em.png" alt="E" width={124} height={170} className="h-[46px] sm:h-[62px] md:h-[80px] lg:h-[94px] w-auto" draggable={false} priority />
               </span>
               <span className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-11' : ''} ${chaos === 'fall' ? 'animate-fall-2' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>
-                <Image src="/assets/letters/mess/S1.png" alt="S" width={75} height={110} className="h-[55px] md:h-[90px] lg:h-[110px] w-auto" draggable={false} />
+                <Image src="/assets/letters-v2/S1.png" alt="S" width={120} height={170} className="h-[46px] sm:h-[62px] md:h-[80px] lg:h-[94px] w-auto" draggable={false} priority />
               </span>
               <span className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-12' : ''} ${chaos === 'fall' ? 'animate-fall-6' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>
-                <Image src="/assets/letters/mess/S2.png" alt="S" width={70} height={110} className="h-[55px] md:h-[90px] lg:h-[110px] w-auto" draggable={false} />
+                <Image src="/assets/letters-v2/S2.png" alt="S" width={114} height={170} className="h-[46px] sm:h-[62px] md:h-[80px] lg:h-[94px] w-auto" draggable={false} priority />
               </span>
             </div>
           </div>
@@ -857,6 +1019,7 @@ export default function Home() {
                         e.preventDefault();
                         if (!waitlistEmail.trim()) return;
                         setWaitlistSubmitted(true);
+                        playJingle();
                         try {
                           await fetch("https://digitalsprint.app.n8n.cloud/webhook/already-spilled-waitlist", {
                             method: "POST",
@@ -946,6 +1109,7 @@ export default function Home() {
                           e.preventDefault();
                           if (!storyText.trim()) return;
                           setStorySubmitted(true);
+                          playJingle();
                           try {
                             await fetch("https://digitalsprint.app.n8n.cloud/webhook/already-spilled-stories", {
                               method: "POST",
@@ -1039,7 +1203,7 @@ export default function Home() {
 
       {/* FOOTER */}
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-20 animate-load-footer">
-        <Image src="/assets/2026.png" alt="© 2026 Already Spilled" width={300} height={60} className="h-[35px] md:h-[45px] w-auto" draggable={false} />
+        <Image src="/assets/2026.png" alt="© 2026 Already Spilled" width={520} height={88} className="h-[28px] md:h-[38px] w-auto" draggable={false} />
       </div>
     </main>
   );
