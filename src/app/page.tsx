@@ -1,10 +1,69 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, createContext, useContext } from "react";
 
 // Base background-music volume (0..1)
 const BG_VOLUME = 0.45;
+
+// Bumped by the "Clean Up" button to snap all dragged items back to place.
+const ResetContext = createContext(0);
+
+// Shared drag behaviour for letters and buttons: free-drag with pointer,
+// snap back smoothly when the reset signal changes.
+function useDraggable() {
+  const resetSignal = useContext(ResetContext);
+  const [pos, setPos] = useState({ x: 0, y: 0 });
+  const [grabbing, setGrabbing] = useState(false);
+  const [snapping, setSnapping] = useState(false);
+  const drag = useRef<{ sx: number; sy: number; ox: number; oy: number } | null>(null);
+  const movedRef = useRef(false);
+  const firstReset = useRef(true);
+
+  useEffect(() => {
+    if (firstReset.current) {
+      firstReset.current = false;
+      return;
+    }
+    setSnapping(true);
+    setPos({ x: 0, y: 0 });
+    const t = setTimeout(() => setSnapping(false), 450);
+    return () => clearTimeout(t);
+  }, [resetSignal]);
+
+  const onDown = (e: React.PointerEvent<HTMLElement>) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    drag.current = { sx: e.clientX, sy: e.clientY, ox: pos.x, oy: pos.y };
+    movedRef.current = false;
+    setSnapping(false);
+    setGrabbing(true);
+  };
+  const onMove = (e: React.PointerEvent<HTMLElement>) => {
+    if (!drag.current) return;
+    const dx = e.clientX - drag.current.sx;
+    const dy = e.clientY - drag.current.sy;
+    if (Math.abs(dx) > 4 || Math.abs(dy) > 4) movedRef.current = true;
+    setPos({ x: drag.current.ox + dx, y: drag.current.oy + dy });
+  };
+  const onUp = (e: React.PointerEvent<HTMLElement>) => {
+    drag.current = null;
+    setGrabbing(false);
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    }
+  };
+
+  const style: React.CSSProperties = {
+    transform: `translate(${pos.x}px, ${pos.y}px)`,
+    transition: snapping ? "transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)" : "none",
+    cursor: grabbing ? "grabbing" : "grab",
+    touchAction: "none",
+    userSelect: "none",
+    WebkitUserSelect: "none",
+  };
+
+  return { handlers: { onPointerDown: onDown, onPointerMove: onMove, onPointerUp: onUp, onPointerCancel: onUp }, style, grabbing, movedRef };
+}
 
 const storyConversation: { name: string; text: string; side: "you" | "them" }[] = [
   { name: "You", text: "so uuhhh, wtf is this?", side: "you" },
@@ -67,6 +126,41 @@ const storyConversation: { name: string; text: string; side: "you" | "them" }[] 
   { name: "Al", text: "Look down at your shirt", side: "them" },
 ];
 
+// A headline letter you can freely drag around. The drag offset lives on the
+// outer span; the inner span keeps the load/chaos animation classes so they
+// don't fight the drag transform. Letters never highlight (no text select).
+function DraggableLetter({ className, children }: { className?: string; children: React.ReactNode }) {
+  const { handlers, style, grabbing } = useDraggable();
+  return (
+    <span
+      {...handlers}
+      onPointerDownCapture={(e) => e.preventDefault()}
+      style={{ ...style, display: "inline-block", position: "relative", zIndex: grabbing ? 50 : 1 }}
+    >
+      <span className={className}>{children}</span>
+    </span>
+  );
+}
+
+// A homepage button that is both clickable and draggable. A real click only
+// fires if the pointer didn't move (so dragging doesn't open a panel).
+function DraggableButton({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
+  const { handlers, style, grabbing, movedRef } = useDraggable();
+  return (
+    <button
+      {...handlers}
+      onClick={() => {
+        if (movedRef.current) return; // it was a drag, not a tap
+        onClick();
+      }}
+      className="hover:brightness-105"
+      style={{ ...style, display: "inline-block", position: "relative", zIndex: grabbing ? 50 : "auto" }}
+    >
+      {children}
+    </button>
+  );
+}
+
 export default function Home() {
   const [activePanel, setActivePanel] = useState<string | null>(null);
   const [email, setEmail] = useState("");
@@ -74,9 +168,17 @@ export default function Home() {
   const [darkMode, setDarkMode] = useState(false);
   const [drawingMode, setDrawingMode] = useState(false);
   const [crayonExchange, setCrayonExchange] = useState<"ask" | "return" | null>(null);
-  const [crtOn, setCrtOn] = useState(true);
-  const [stainsOn, setStainsOn] = useState(true);
+  const [crtOn, setCrtOn] = useState(false);
+  const [stainsOn, setStainsOn] = useState(false);
   const [soundOn, setSoundOn] = useState(true);
+  const [resetSignal, setResetSignal] = useState(0);
+  const cleanUp = () => {
+    setResetSignal((s) => s + 1); // snap dragged letters/buttons back
+    // Erase any spray-paint lines on the canvas
+    const canvas = sprayCanvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (canvas && ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+  };
   const audioRef = useRef<HTMLAudioElement>(null);
   const jingleRef = useRef<HTMLAudioElement>(null);
   const soundOnRef = useRef(true);
@@ -575,6 +677,7 @@ export default function Home() {
   }, [drawingMode, pickNewColor]);
 
   return (
+    <ResetContext.Provider value={resetSignal}>
     <main className={`${darkMode ? 'dark-bg' : 'paper-bg'} min-h-screen flex flex-col items-center justify-center p-4 md:p-8 relative overflow-hidden transition-colors duration-500`}>
 
       {/* HAND-PAINTED SPLATTER BACKGROUND (inverts in dark mode) */}
@@ -631,7 +734,7 @@ export default function Home() {
             alt="Toggle drawing mode"
             width={100}
             height={120}
-            className={`w-[70px] sm:w-[90px] md:w-[120px] transition-all duration-300 ${drawingMode ? 'drop-shadow-[0_0_10px_rgba(124,160,217,0.9)] scale-110' : ''}`}
+            className={`w-[64px] sm:w-[100px] md:w-[150px] transition-all duration-300 ${drawingMode ? 'drop-shadow-[0_0_10px_rgba(124,160,217,0.9)] scale-110' : ''}`}
           />
         </button>
 
@@ -653,24 +756,24 @@ export default function Home() {
       </div>
 
       {/* INTERACTIVE CHERUB - Right (Pink) - Makes letters fall */}
-      <div className="fixed right-2 md:right-8 top-1/2 -translate-y-1/2 z-10 animate-load-cherub-right">
+      <div className="fixed right-2 md:right-8 top-1/2 -translate-y-1/2 z-40 animate-load-cherub-right">
         <button
-          onClick={() => triggerChaos('fall')}
+          onClick={() => { triggerChaos('fall'); cleanUp(); }}
           className="cherub-btn animate-float-2"
-          title="Cause chaos"
+          title="Shake it back into place"
         >
           <Image
             src="/assets/cherub-pink.png"
             alt="Shake things up"
             width={100}
             height={120}
-            className="w-[70px] sm:w-[90px] md:w-[120px] hover:animate-shake"
+            className="w-[64px] sm:w-[100px] md:w-[150px] hover:animate-shake"
           />
         </button>
       </div>
 
       {/* INTERACTIVE CHERUB - Top (Green) - Spins letters */}
-      <div className="fixed top-4 md:top-8 right-4 md:left-1/4 md:right-auto z-10 animate-load-cherub-top">
+      <div className="fixed top-4 md:top-8 right-4 md:left-1/4 md:right-auto z-40 animate-load-cherub-top">
         <button
           onClick={() => triggerChaos('spin')}
           className="cherub-btn animate-float-3"
@@ -681,7 +784,7 @@ export default function Home() {
             alt="Spin letters"
             width={80}
             height={100}
-            className="w-[50px] sm:w-[65px] md:w-[80px] opacity-90 hover:animate-spin-slow"
+            className="w-[68px] sm:w-[95px] md:w-[125px] opacity-90 hover:animate-spin-slow"
           />
         </button>
       </div>
@@ -726,6 +829,9 @@ export default function Home() {
         >
           {darkMode ? '🌙' : '☀️'} Lights
         </button>
+        <button className="ctrl-btn ctrl-cleanup" onClick={cleanUp}>
+          🧹 Clean Up
+        </button>
       </div>
 
       {/* MAIN CONTENT */}
@@ -737,79 +843,70 @@ export default function Home() {
             alt="Already Spilled"
             width={200}
             height={100}
-            className="mx-auto w-[160px] sm:w-[180px] md:w-[200px]"
+            className="mx-auto w-[240px] sm:w-[300px] md:w-[380px]"
             priority
           />
         </div>
 
-        {/* BIG HEADLINE */}
-        <div className="mb-8">
+        {/* BIG HEADLINE - letters are draggable */}
+        <div className="mb-8 select-none">
           <div className="cutout-line mb-2 md:mb-3">
             <div className="flex items-center -space-x-px">
-              <span className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-1' : ''} ${chaos === 'fall' ? 'animate-fall-1' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>
-                <Image src="/assets/letters-v2/E1.png" alt="E" width={123} height={172} className="h-[46px] sm:h-[62px] md:h-[80px] lg:h-[94px] w-auto" draggable={false} priority />
-              </span>
-              <span className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-2' : ''} ${chaos === 'fall' ? 'animate-fall-2' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>
-                <Image src="/assets/letters-v2/M1.png" alt="M" width={173} height={172} className="h-[46px] sm:h-[62px] md:h-[80px] lg:h-[94px] w-auto" draggable={false} priority />
-              </span>
-              <span className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-3' : ''} ${chaos === 'fall' ? 'animate-fall-3' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-2' : ''}`}>
-                <Image src="/assets/letters-v2/B1.png" alt="B" width={147} height={172} className="h-[46px] sm:h-[62px] md:h-[80px] lg:h-[94px] w-auto" draggable={false} priority />
-              </span>
-              <span className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-4' : ''} ${chaos === 'fall' ? 'animate-fall-4' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>
-                <Image src="/assets/letters-v2/R1.png" alt="R" width={106} height={172} className="h-[46px] sm:h-[62px] md:h-[80px] lg:h-[94px] w-auto" draggable={false} priority />
-              </span>
-              <span className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-5' : ''} ${chaos === 'fall' ? 'animate-fall-5' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>
-                <Image src="/assets/letters-v2/A1.png" alt="A" width={146} height={172} className="h-[46px] sm:h-[62px] md:h-[80px] lg:h-[94px] w-auto" draggable={false} priority />
-              </span>
-              <span className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-6' : ''} ${chaos === 'fall' ? 'animate-fall-6' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-2' : ''}`}>
-                <Image src="/assets/letters-v2/C1.png" alt="C" width={107} height={172} className="h-[46px] sm:h-[62px] md:h-[80px] lg:h-[94px] w-auto" draggable={false} priority />
-              </span>
-              <span className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-7' : ''} ${chaos === 'fall' ? 'animate-fall-7' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>
-                <Image src="/assets/letters-v2/E2.png" alt="E" width={132} height={172} className="h-[46px] sm:h-[62px] md:h-[80px] lg:h-[94px] w-auto" draggable={false} priority />
-              </span>
+              <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-1' : ''} ${chaos === 'fall' ? 'animate-fall-1' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>
+                <Image src="/assets/letters-v2/E1.png" alt="E" width={123} height={172} className="h-[52px] sm:h-[78px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
+              </DraggableLetter>
+              <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-2' : ''} ${chaos === 'fall' ? 'animate-fall-2' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>
+                <Image src="/assets/letters-v2/M1.png" alt="M" width={173} height={172} className="h-[52px] sm:h-[78px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
+              </DraggableLetter>
+              <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-3' : ''} ${chaos === 'fall' ? 'animate-fall-3' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-2' : ''}`}>
+                <Image src="/assets/letters-v2/B1.png" alt="B" width={147} height={172} className="h-[52px] sm:h-[78px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
+              </DraggableLetter>
+              <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-4' : ''} ${chaos === 'fall' ? 'animate-fall-4' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>
+                <Image src="/assets/letters-v2/R1.png" alt="R" width={106} height={172} className="h-[52px] sm:h-[78px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
+              </DraggableLetter>
+              <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-5' : ''} ${chaos === 'fall' ? 'animate-fall-5' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>
+                <Image src="/assets/letters-v2/A1.png" alt="A" width={146} height={172} className="h-[52px] sm:h-[78px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
+              </DraggableLetter>
+              <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-6' : ''} ${chaos === 'fall' ? 'animate-fall-6' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-2' : ''}`}>
+                <Image src="/assets/letters-v2/C1.png" alt="C" width={107} height={172} className="h-[52px] sm:h-[78px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
+              </DraggableLetter>
+              <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-7' : ''} ${chaos === 'fall' ? 'animate-fall-7' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>
+                <Image src="/assets/letters-v2/E2.png" alt="E" width={132} height={172} className="h-[52px] sm:h-[78px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
+              </DraggableLetter>
             </div>
           </div>
           <div className="cutout-line">
-            <span className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-8' : ''} ${chaos === 'fall' ? 'animate-fall-3' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>
-              <Image src="/assets/letters-v2/The.png" alt="the" width={167} height={170} className="h-[46px] sm:h-[62px] md:h-[80px] lg:h-[94px] w-auto" draggable={false} priority />
-            </span>
+            <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-8' : ''} ${chaos === 'fall' ? 'animate-fall-3' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>
+              <Image src="/assets/letters-v2/The.png" alt="the" width={167} height={170} className="h-[52px] sm:h-[78px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
+            </DraggableLetter>
             <div className="flex items-center -space-x-px">
-              <span className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-9' : ''} ${chaos === 'fall' ? 'animate-fall-1' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>
-                <Image src="/assets/letters-v2/M2.png" alt="M" width={164} height={170} className="h-[46px] sm:h-[62px] md:h-[80px] lg:h-[94px] w-auto" draggable={false} priority />
-              </span>
-              <span className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-10' : ''} ${chaos === 'fall' ? 'animate-fall-5' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-2' : ''}`}>
-                <Image src="/assets/letters-v2/Em.png" alt="E" width={124} height={170} className="h-[46px] sm:h-[62px] md:h-[80px] lg:h-[94px] w-auto" draggable={false} priority />
-              </span>
-              <span className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-11' : ''} ${chaos === 'fall' ? 'animate-fall-2' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>
-                <Image src="/assets/letters-v2/S1.png" alt="S" width={120} height={170} className="h-[46px] sm:h-[62px] md:h-[80px] lg:h-[94px] w-auto" draggable={false} priority />
-              </span>
-              <span className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-12' : ''} ${chaos === 'fall' ? 'animate-fall-6' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>
-                <Image src="/assets/letters-v2/S2.png" alt="S" width={114} height={170} className="h-[46px] sm:h-[62px] md:h-[80px] lg:h-[94px] w-auto" draggable={false} priority />
-              </span>
+              <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-9' : ''} ${chaos === 'fall' ? 'animate-fall-1' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>
+                <Image src="/assets/letters-v2/M2.png" alt="M" width={164} height={170} className="h-[52px] sm:h-[78px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
+              </DraggableLetter>
+              <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-10' : ''} ${chaos === 'fall' ? 'animate-fall-5' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-2' : ''}`}>
+                <Image src="/assets/letters-v2/Em.png" alt="E" width={124} height={170} className="h-[52px] sm:h-[78px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
+              </DraggableLetter>
+              <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-11' : ''} ${chaos === 'fall' ? 'animate-fall-2' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>
+                <Image src="/assets/letters-v2/S1.png" alt="S" width={120} height={170} className="h-[52px] sm:h-[78px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
+              </DraggableLetter>
+              <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-12' : ''} ${chaos === 'fall' ? 'animate-fall-6' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>
+                <Image src="/assets/letters-v2/S2.png" alt="S" width={114} height={170} className="h-[52px] sm:h-[78px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
+              </DraggableLetter>
             </div>
           </div>
         </div>
 
-        {/* BUTTONS */}
+        {/* BUTTONS - clickable and draggable */}
         <div className="flex flex-wrap justify-center items-center gap-3 md:gap-4 animate-load-buttons">
-          <button
-            onClick={() => setActivePanel("story")}
-            className="cursor-pointer hover:scale-105 transition-transform"
-          >
-            <Image src="/assets/buttons/story-time.png" alt="Story Time" width={1331} height={426} className="h-[50px] md:h-[65px] lg:h-[75px] w-auto" draggable={false} />
-          </button>
-          <button
-            onClick={() => setActivePanel("collection")}
-            className="cursor-pointer hover:scale-105 transition-transform"
-          >
-            <Image src="/assets/buttons/el-boletin.png" alt="El Boletín" width={1326} height={456} className="h-[50px] md:h-[65px] lg:h-[75px] w-auto" draggable={false} />
-          </button>
-          <button
-            onClick={() => setActivePanel("signup")}
-            className="cursor-pointer hover:scale-105 transition-transform"
-          >
-            <Image src="/assets/buttons/spill-it.png" alt="Spill It" width={1316} height={599} className="h-[50px] md:h-[65px] lg:h-[75px] w-auto" draggable={false} />
-          </button>
+          <DraggableButton onClick={() => setActivePanel("story")}>
+            <Image src="/assets/buttons/story-time.png" alt="Story Time" width={1331} height={426} className="h-[44px] md:h-[56px] lg:h-[66px] w-auto" draggable={false} />
+          </DraggableButton>
+          <DraggableButton onClick={() => setActivePanel("collection")}>
+            <Image src="/assets/buttons/el-boletin.png" alt="El Boletín" width={1326} height={456} className="h-[44px] md:h-[56px] lg:h-[66px] w-auto" draggable={false} />
+          </DraggableButton>
+          <DraggableButton onClick={() => setActivePanel("signup")}>
+            <Image src="/assets/buttons/spill-it.png" alt="Spill It" width={1334} height={617} className="h-[44px] md:h-[56px] lg:h-[66px] w-auto" draggable={false} />
+          </DraggableButton>
         </div>
       </div>
 
@@ -1206,5 +1303,6 @@ export default function Home() {
         <Image src="/assets/2026.png" alt="© 2026 Already Spilled" width={520} height={88} className="h-[28px] md:h-[38px] w-auto" draggable={false} />
       </div>
     </main>
+    </ResetContext.Provider>
   );
 }
