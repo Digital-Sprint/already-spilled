@@ -796,19 +796,19 @@ export default function Home() {
             onClick={() => setActivePanel("story")}
             className="cursor-pointer hover:scale-105 transition-transform"
           >
-            <Image src="/assets/buttons/Story.png" alt="The Story" width={200} height={90} className="h-[50px] md:h-[65px] lg:h-[75px] w-auto" draggable={false} />
+            <Image src="/assets/buttons/story-time.png" alt="Story Time" width={1331} height={426} className="h-[50px] md:h-[65px] lg:h-[75px] w-auto" draggable={false} />
           </button>
           <button
             onClick={() => setActivePanel("collection")}
             className="cursor-pointer hover:scale-105 transition-transform"
           >
-            <Image src="/assets/buttons/Collection.png" alt="Collection" width={250} height={90} className="h-[50px] md:h-[65px] lg:h-[75px] w-auto" draggable={false} />
+            <Image src="/assets/buttons/el-boletin.png" alt="El Boletín" width={1326} height={456} className="h-[50px] md:h-[65px] lg:h-[75px] w-auto" draggable={false} />
           </button>
           <button
             onClick={() => setActivePanel("signup")}
             className="cursor-pointer hover:scale-105 transition-transform"
           >
-            <Image src="/assets/buttons/Spill it.png" alt="Spill It" width={180} height={90} className="h-[50px] md:h-[65px] lg:h-[75px] w-auto" draggable={false} />
+            <Image src="/assets/buttons/spill-it.png" alt="Spill It" width={1316} height={599} className="h-[50px] md:h-[65px] lg:h-[75px] w-auto" draggable={false} />
           </button>
         </div>
       </div>
