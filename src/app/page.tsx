@@ -839,10 +839,10 @@ export default function Home() {
         {/* Logo */}
         <div className="mb-3 md:mb-6 animate-load-logo">
           <Image
-            src="/assets/already spilled main.png"
+            src="/assets/already-spilled-logo.png"
             alt="Already Spilled"
-            width={200}
-            height={100}
+            width={2375}
+            height={1545}
             className="mx-auto w-[150px] sm:w-[240px] md:w-[380px]"
             priority
           />
