@@ -793,7 +793,7 @@ export default function Home() {
       <canvas
         ref={sprayCanvasRef}
         className="fixed inset-0 pointer-events-none z-10"
-        style={{ mixBlendMode: "multiply" }}
+        style={{ mixBlendMode: darkMode ? "screen" : "multiply" }}
       />
 
       {/* CRT OVERLAY - Fuzzy TV effect */}
