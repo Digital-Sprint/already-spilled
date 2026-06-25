@@ -3342,24 +3342,25 @@ html.dark body {
   animation: crayon-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
-/* Your question — pops up centered above the cherub. No tail (it's from us). */
+/* Your question — pops up above the cherub. No tail (it's from us). */
 .crayon-bubble-you {
   --tx: -50%;
   --ty: 0;
   --rot: -1.5deg;
-  left: 50%;
-  bottom: calc(100% + 14px);
+  left: calc(50% - 8px);
+  bottom: calc(100% + 64px);
   background: #fffdf7;
   color: #1a1a1a;
 }
 
-/* Al's reply — to the right of the cherub, tail pointing back at him. */
+/* Al's reply — tucked just under the question and a touch to the right,
+   with a little tail pointing down at the cherub. */
 .crayon-bubble-al {
-  --tx: 0;
-  --ty: -50%;
+  --tx: -50%;
+  --ty: 0;
   --rot: 1.5deg;
-  left: calc(100% + 18px);
-  top: 50%;
+  left: calc(50% + 26px);
+  bottom: calc(100% + 14px);
   background: #9db4e8;
   color: #1a1a1a;
   animation-delay: 0.7s;
@@ -3368,14 +3369,14 @@ html.dark body {
 .crayon-bubble-al::after {
   content: '';
   position: absolute;
-  left: -9px;
-  top: 50%;
-  transform: translateY(-50%);
+  left: 50%;
+  bottom: -9px;
+  transform: translateX(-50%);
   width: 0;
   height: 0;
-  border-top: 6px solid transparent;
-  border-bottom: 6px solid transparent;
-  border-right: 9px solid #1a1a1a;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 9px solid #1a1a1a;
 }
 
 @keyframes crayon-pop {
@@ -3391,7 +3392,8 @@ html.dark body {
 
 @media (max-width: 640px) {
   .crayon-bubble { width: 150px; font-size: 0.68rem; padding: 0.4rem 0.5rem; }
-  .crayon-bubble-al { left: calc(100% + 12px); }
+  .crayon-bubble-you { bottom: calc(100% + 58px); }
+  .crayon-bubble-al { left: calc(50% + 20px); }
 }
 
 
