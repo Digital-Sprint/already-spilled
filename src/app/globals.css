@@ -3358,7 +3358,7 @@ html.dark body {
   --tx: 0;
   --ty: 0;
   --rot: 1.5deg;
-  left: calc(100% + 16px);
+  left: calc(100% - 2px);
   top: -6px;
   background: #9db4e8;
   color: #1a1a1a;
@@ -3390,7 +3390,7 @@ html.dark body {
 
 @media (max-width: 640px) {
   .crayon-bubble { width: 150px; font-size: 0.68rem; padding: 0.4rem 0.5rem; }
-  .crayon-bubble-al { left: calc(100% + 12px); }
+  .crayon-bubble-al { left: calc(100% - 2px); }
 }
 
 
@@ -3402,7 +3402,7 @@ html.dark body {
 .tour-dim {
   position: absolute;
   inset: 0;
-  background: rgba(236, 229, 207, 0.86);
+  background: rgba(26, 26, 26, 0.72);
   z-index: 81;
   pointer-events: none;
   transition: background 0.4s ease;
@@ -3412,7 +3412,7 @@ html.dark body {
   z-index: 81;
   border-radius: 14px;
   border: 3px dashed #ff6b9d;
-  box-shadow: 0 0 0 9999px rgba(236, 229, 207, 0.86);
+  box-shadow: 0 0 0 9999px rgba(26, 26, 26, 0.66);
   pointer-events: none;
   transition: all 0.45s cubic-bezier(0.4, 0, 0.2, 1);
 }
