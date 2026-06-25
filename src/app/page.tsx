@@ -749,7 +749,7 @@ export default function Home() {
       )}
 
       {/* INTERACTIVE CHERUB - Left (Blue) - Toggles Drawing Mode */}
-      <div className="fixed left-2 md:left-8 top-1/2 -translate-y-1/2 z-40 animate-load-cherub-left">
+      <div className={`fixed left-2 md:left-8 top-1/2 -translate-y-1/2 z-40 animate-load-cherub-left transition-opacity duration-700 ${showTour ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
         <button
           onClick={toggleDrawing}
           className="cherub-btn animate-float-1"
@@ -782,7 +782,7 @@ export default function Home() {
       </div>
 
       {/* INTERACTIVE CHERUB - Right (Pink) - Makes letters fall */}
-      <div className="fixed right-2 md:right-8 top-1/2 -translate-y-1/2 z-40 animate-load-cherub-right">
+      <div className={`fixed right-2 md:right-8 top-1/2 -translate-y-1/2 z-40 animate-load-cherub-right transition-opacity duration-700 ${showTour ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
         <button
           onClick={() => { triggerChaos('fall'); cleanUp(); }}
           className="cherub-btn animate-float-2"
@@ -799,7 +799,7 @@ export default function Home() {
       </div>
 
       {/* INTERACTIVE CHERUB - Top (Green) - Spins letters */}
-      <div className="fixed top-4 md:top-8 right-4 md:left-1/4 md:right-auto z-40 animate-load-cherub-top">
+      <div className={`fixed top-4 md:top-8 right-4 md:left-1/4 md:right-auto z-40 animate-load-cherub-top transition-opacity duration-700 ${showTour ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
         <button
           onClick={() => triggerChaos('spin')}
           className="cherub-btn animate-float-3"
@@ -1352,7 +1352,7 @@ export default function Home() {
                 fontSize: `${18 + (i % 4) * 8}px`,
               }}
             >
-              {i % 3 === 0 ? "🫘" : i % 3 === 1 ? "☕" : "💧"}
+              🫘
             </span>
           ))}
         </div>
