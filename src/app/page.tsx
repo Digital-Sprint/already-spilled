@@ -760,7 +760,7 @@ export default function Home() {
             alt="Toggle drawing mode"
             width={100}
             height={120}
-            className={`w-[64px] sm:w-[100px] md:w-[150px] transition-all duration-300 ${drawingMode ? 'drop-shadow-[0_0_10px_rgba(124,160,217,0.9)] scale-110' : ''}`}
+            className={`w-[64px] sm:w-[88px] md:w-[100px] lg:w-[150px] transition-all duration-300 ${drawingMode ? 'drop-shadow-[0_0_10px_rgba(124,160,217,0.9)] scale-110' : ''}`}
           />
         </button>
 
@@ -793,7 +793,7 @@ export default function Home() {
             alt="Shake things up"
             width={100}
             height={120}
-            className="w-[64px] sm:w-[100px] md:w-[150px] hover:animate-shake"
+            className="w-[64px] sm:w-[88px] md:w-[100px] lg:w-[150px] hover:animate-shake"
           />
         </button>
       </div>
@@ -810,7 +810,7 @@ export default function Home() {
             alt="Spin letters"
             width={80}
             height={100}
-            className="w-[68px] sm:w-[95px] md:w-[125px] opacity-90 hover:animate-spin-slow"
+            className="w-[68px] sm:w-[85px] md:w-[95px] lg:w-[125px] opacity-90 hover:animate-spin-slow"
           />
         </button>
       </div>

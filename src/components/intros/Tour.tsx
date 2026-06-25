@@ -64,14 +64,16 @@ export default function Tour({ onDone }: { onDone: () => void }) {
   px = Math.max(HALF_W, Math.min(vp.w - HALF_W, px));
   py = Math.max(90, Math.min(vp.h - 110, py));
 
-  // Blue and green: clustered in hero, then fly to their home corners
+  // Blue and green: clustered in hero, then fly to their home corners.
+  // Spread the cluster wider on narrow screens so they don't pile up.
+  const narrow = vp.w > 0 && vp.w <= 640;
   const blueStyle =
     phase === "hero"
-      ? { left: "37%", top: "37%" }
+      ? { left: narrow ? "26%" : "37%", top: "36%" }
       : { left: "6%", top: "50%" };
   const greenStyle =
     phase === "hero"
-      ? { left: "63%", top: "37%" }
+      ? { left: narrow ? "74%" : "63%", top: "36%" }
       : { left: "20%", top: "9%" };
 
   return (
