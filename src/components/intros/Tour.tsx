@@ -13,7 +13,7 @@ const STEPS: Step[] = [
   { target: null, text: "That's the tour. Now click around — the cherubs, the letters, all of it. There's mess hidden everywhere. 👀" },
 ];
 
-const HALF_W = 150; // half the bubble width, for clamping to screen
+const HALF_W = 180; // half the cherub+bubble width, for clamping to screen
 
 export default function Tour({ onDone }: { onDone: () => void }) {
   const [phase, setPhase] = useState<"hero" | "tour">("hero");
