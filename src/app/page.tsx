@@ -2,6 +2,10 @@
 
 import Image from "next/image";
 import { useState, useEffect, useRef, useCallback, createContext, useContext } from "react";
+import VersionNav, { type VersionId } from "@/components/intros/VersionNav";
+import TourIntro from "@/components/intros/TourIntro";
+import SpillTest from "@/components/intros/SpillTest";
+import BootScreen from "@/components/intros/BootScreen";
 
 // Base background-music volume (0..1)
 const BG_VOLUME = 0.45;
@@ -172,6 +176,28 @@ export default function Home() {
   const [stainsOn, setStainsOn] = useState(false);
   const [soundOn, setSoundOn] = useState(true);
   const [resetSignal, setResetSignal] = useState(0);
+  // Preview versions: which "way in" is active, and whether its intro is playing
+  const [version, setVersion] = useState<VersionId>("classic");
+  const [introActive, setIntroActive] = useState(false);
+
+  // Read the version from the URL on load so ?v=tour links are shareable
+  useEffect(() => {
+    const v = new URLSearchParams(window.location.search).get("v");
+    if (v === "tour" || v === "test" || v === "boot") {
+      setVersion(v);
+      setIntroActive(true);
+    }
+  }, []);
+
+  const selectVersion = (v: VersionId) => {
+    setVersion(v);
+    setIntroActive(v !== "classic");
+    const url = new URL(window.location.href);
+    if (v === "classic") url.searchParams.delete("v");
+    else url.searchParams.set("v", v);
+    window.history.replaceState({}, "", url.toString());
+  };
+
   const cleanUp = () => {
     setResetSignal((s) => s + 1); // snap dragged letters/buttons back
     // Erase any spray-paint lines on the canvas
@@ -682,6 +708,12 @@ export default function Home() {
 
       {/* HAND-PAINTED SPLATTER BACKGROUND (inverts in dark mode) */}
       <div className={`bg-splatter ${darkMode ? 'bg-splatter-dark' : ''}`} />
+
+      {/* PREVIEW VERSION SWITCHER + INTRO OVERLAYS (temporary, for owner demo) */}
+      <VersionNav version={version} onSelect={selectVersion} />
+      {introActive && version === "tour" && <TourIntro onDone={() => setIntroActive(false)} />}
+      {introActive && version === "test" && <SpillTest onDone={() => setIntroActive(false)} />}
+      {introActive && version === "boot" && <BootScreen onDone={() => setIntroActive(false)} />}
 
       {/* ANIMATED STAINS - thrown against the wall */}
       {stainsOn && (
