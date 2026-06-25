@@ -3342,7 +3342,7 @@ html.dark body {
   animation: crayon-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
-/* Your question — pops up centered above the cherub. No tail (it's from us). */
+/* Your question — pops up centered right above the cherub. No tail (it's us). */
 .crayon-bubble-you {
   --tx: -50%;
   --ty: 0;
@@ -3353,13 +3353,13 @@ html.dark body {
   color: #1a1a1a;
 }
 
-/* Al's reply — to the right of the cherub, tail pointing back at him. */
+/* Al's reply — off to the right, up near the cherub's head, tail pointing back. */
 .crayon-bubble-al {
   --tx: 0;
-  --ty: -50%;
+  --ty: 0;
   --rot: 1.5deg;
-  left: calc(100% + 18px);
-  top: 50%;
+  left: calc(100% - 2px);
+  top: -6px;
   background: #9db4e8;
   color: #1a1a1a;
   animation-delay: 0.7s;
@@ -3369,8 +3369,7 @@ html.dark body {
   content: '';
   position: absolute;
   left: -9px;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 20px;
   width: 0;
   height: 0;
   border-top: 6px solid transparent;
@@ -3391,5 +3390,207 @@ html.dark body {
 
 @media (max-width: 640px) {
   .crayon-bubble { width: 150px; font-size: 0.68rem; padding: 0.4rem 0.5rem; }
-  .crayon-bubble-al { left: calc(100% + 12px); }
+  .crayon-bubble-al { left: calc(100% - 2px); }
+}
+
+
+/* ============================================================
+   AL'S GUIDED TOUR — big hero, flying cherubs, spotlight steps
+   ============================================================ */
+.tour-root { position: fixed; inset: 0; z-index: 80; }
+.tour-blocker { position: absolute; inset: 0; z-index: 80; }
+.tour-dim {
+  position: absolute;
+  inset: 0;
+  background: rgba(26, 26, 26, 0.72);
+  z-index: 81;
+  pointer-events: none;
+  transition: background 0.4s ease;
+}
+.tour-spotlight {
+  position: fixed;
+  z-index: 81;
+  border-radius: 14px;
+  border: 3px dashed #ff6b9d;
+  box-shadow: 0 0 0 9999px rgba(26, 26, 26, 0.66);
+  pointer-events: none;
+  transition: all 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Blue + green cherubs: clustered big in the hero, then fly to their corners */
+.tour-cherub-fly {
+  position: fixed;
+  z-index: 82;
+  transform: translate(-50%, -50%);
+  transition: left 0.9s cubic-bezier(0.34, 1.15, 0.64, 1),
+              top 0.9s cubic-bezier(0.34, 1.15, 0.64, 1),
+              width 0.9s ease;
+  pointer-events: none;
+}
+.tour-cherub-fly img {
+  width: 100%;
+  height: auto;
+  display: block;
+  filter: drop-shadow(2px 4px 3px rgba(0, 0, 0, 0.3));
+}
+.tour-cherub-fly.hero { width: clamp(110px, 25vw, 180px); }
+.tour-cherub-fly.tour { width: clamp(60px, 12vw, 140px); }
+
+/* Pink cherub = Al, the guide */
+.tour-al {
+  position: fixed;
+  z-index: 84;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transform: translate(-50%, -50%);
+  transition: left 0.6s cubic-bezier(0.34, 1.15, 0.64, 1),
+              top 0.6s cubic-bezier(0.34, 1.15, 0.64, 1);
+}
+.tour-al.tour.is-below { transform: translate(-50%, 0); }
+.tour-al.tour.is-above { transform: translate(-50%, -100%); }
+.tour-al-cherub {
+  height: auto;
+  flex-shrink: 0;
+  filter: drop-shadow(2px 4px 3px rgba(0, 0, 0, 0.35));
+  transition: width 0.6s ease;
+}
+.tour-al.hero .tour-al-cherub { width: clamp(120px, 27vw, 185px); }
+.tour-al.tour .tour-al-cherub { width: clamp(56px, 13vw, 84px); }
+
+.tour-floater-bubble {
+  background: #fffdf7;
+  border: 3px solid #1a1a1a;
+  border-radius: 18px;
+  box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.78);
+  padding: 0.95rem 1.05rem 0.85rem;
+  width: 290px;
+  animation: crayon-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.tour-floater-text {
+  font-family: 'Comic Sans MS', 'Marker Felt', cursive;
+  font-size: 1rem;
+  line-height: 1.4;
+  color: #1a1a1a;
+  margin-bottom: 0.7rem;
+}
+.tour-floater-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+}
+.tour-count { font-family: 'Courier New', monospace; font-size: 0.68rem; color: #999; }
+
+/* Hero greeting */
+.tour-hero {
+  position: fixed;
+  left: 50%;
+  top: 56%;
+  transform: translateX(-50%);
+  z-index: 85;
+  width: min(560px, 92vw);
+  text-align: center;
+  padding: 1.5rem 1.6rem 1.35rem;
+  background: #fffdf7;
+  border: 3px solid #1a1a1a;
+  border-radius: 20px;
+  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.7);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.tour-hero.gone { opacity: 0; transform: translate(-50%, 20px); pointer-events: none; }
+.tour-hero-title {
+  font-family: 'Cabin Sketch', cursive;
+  font-weight: 700;
+  font-size: clamp(2.3rem, 9vw, 4rem);
+  line-height: 0.95;
+  color: #1a1a1a;
+  text-shadow: 2px 2px 0 #ff6b9d;
+  margin-bottom: 0.7rem;
+}
+.tour-hero-sub {
+  font-family: 'Comic Sans MS', cursive;
+  font-size: clamp(0.9rem, 3vw, 1.1rem);
+  line-height: 1.45;
+  color: #444;
+  margin: 0 auto 1.3rem;
+  max-width: 30rem;
+}
+.tour-hero-actions { display: flex; gap: 1rem; justify-content: center; align-items: center; }
+.tour-hero .intro-skip { color: #888; font-size: 0.85rem; }
+.tour-hero-go { font-size: 1.05rem; padding: 0.6rem 1.4rem; }
+
+.intro-skip {
+  font-family: 'Courier New', monospace;
+  font-size: 0.72rem;
+  color: #888;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+.intro-skip:hover { color: #1a1a1a; }
+.intro-next {
+  font-family: 'Cabin Sketch', 'Comic Sans MS', cursive;
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 0.35rem 0.85rem;
+  background: #ff6b9d;
+  color: #1a1a1a;
+  border: 2px solid #1a1a1a;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  white-space: nowrap;
+}
+.intro-next:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.8); }
+.intro-next:active { transform: translate(2px, 2px); box-shadow: 0 0 0 rgba(0, 0, 0, 0.8); }
+
+@media (max-width: 640px) {
+  .tour-cherub-fly.hero { width: clamp(76px, 22vw, 110px); }
+  .tour-al.hero .tour-al-cherub { width: clamp(84px, 24vw, 122px); }
+  .tour-floater-bubble { width: 228px; }
+  .tour-floater-text { font-size: 0.88rem; }
+  .tour-hero { padding: 1.2rem 1.1rem 1.1rem; top: 58%; }
+}
+
+/* Tour replay chip in the control panel */
+.ctrl-btn.ctrl-tour { background: #7cb860; color: #1a1a1a; }
+.dark .ctrl-btn.ctrl-tour { background: #4a7a3a; color: #f5f0e8; }
+
+/* ============================================================
+   EASTER EGG — tip the © badge, spill the beans
+   ============================================================ */
+.footer-badge {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  transform-origin: bottom left;
+}
+.footer-badge:hover { transform: rotate(-3deg); }
+.footer-badge-tip { animation: badge-tip 0.6s ease; }
+@keyframes badge-tip {
+  0% { transform: rotate(0); }
+  30% { transform: rotate(-18deg); }
+  60% { transform: rotate(8deg); }
+  100% { transform: rotate(0); }
+}
+.bean-rain { position: fixed; inset: 0; z-index: 95; pointer-events: none; overflow: hidden; }
+.bean {
+  position: absolute;
+  top: -8%;
+  animation-name: bean-fall;
+  animation-timing-function: cubic-bezier(0.4, 0.1, 0.7, 1);
+  animation-iteration-count: 1;
+  will-change: transform;
+}
+@keyframes bean-fall {
+  0% { transform: translateY(-10vh) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(112vh) rotate(540deg); opacity: 0.9; }
 }

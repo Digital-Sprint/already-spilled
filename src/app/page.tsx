@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState, useEffect, useRef, useCallback, createContext, useContext } from "react";
+import Tour from "@/components/intros/Tour";
 
 // Base background-music volume (0..1)
 const BG_VOLUME = 0.45;
@@ -144,10 +145,11 @@ function DraggableLetter({ className, children }: { className?: string; children
 
 // A homepage button that is both clickable and draggable. A real click only
 // fires if the pointer didn't move (so dragging doesn't open a panel).
-function DraggableButton({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
+function DraggableButton({ onClick, children, id }: { onClick: () => void; children: React.ReactNode; id?: string }) {
   const { handlers, style, grabbing, movedRef } = useDraggable();
   return (
     <button
+      id={id}
       {...handlers}
       onClick={() => {
         if (movedRef.current) return; // it was a drag, not a tap
@@ -172,6 +174,27 @@ export default function Home() {
   const [stainsOn, setStainsOn] = useState(false);
   const [soundOn, setSoundOn] = useState(true);
   const [resetSignal, setResetSignal] = useState(0);
+  const [showTour, setShowTour] = useState(false);
+  const [beansSpilled, setBeansSpilled] = useState(false);
+
+  // Auto-play Al's tour on a visitor's first visit (or when forced via ?tour=1)
+  useEffect(() => {
+    const forced = new URLSearchParams(window.location.search).get("tour") === "1";
+    const seen = localStorage.getItem("as_tour_seen");
+    if (forced || !seen) setShowTour(true);
+  }, []);
+
+  const finishTour = () => {
+    setShowTour(false);
+    localStorage.setItem("as_tour_seen", "1");
+  };
+
+  // Easter egg: tip over the © badge and the beans spill everywhere
+  const spillBeans = () => {
+    setBeansSpilled(true);
+    setTimeout(() => setBeansSpilled(false), 4500);
+  };
+
   const cleanUp = () => {
     setResetSignal((s) => s + 1); // snap dragged letters/buttons back
     // Erase any spray-paint lines on the canvas
@@ -683,6 +706,9 @@ export default function Home() {
       {/* HAND-PAINTED SPLATTER BACKGROUND (inverts in dark mode) */}
       <div className={`bg-splatter ${darkMode ? 'bg-splatter-dark' : ''}`} />
 
+      {/* AL'S GUIDED TOUR (first visit; replay via the button) */}
+      {showTour && <Tour onDone={finishTour} />}
+
       {/* ANIMATED STAINS - thrown against the wall */}
       {stainsOn && (
       <div key={stainsKey} className="fixed inset-0 pointer-events-none z-0">
@@ -723,7 +749,7 @@ export default function Home() {
       )}
 
       {/* INTERACTIVE CHERUB - Left (Blue) - Toggles Drawing Mode */}
-      <div className="fixed left-2 md:left-8 top-1/2 -translate-y-1/2 z-40 animate-load-cherub-left">
+      <div className={`fixed left-2 md:left-8 top-1/2 -translate-y-1/2 z-40 animate-load-cherub-left ${showTour ? 'hidden' : ''}`}>
         <button
           onClick={toggleDrawing}
           className="cherub-btn animate-float-1"
@@ -734,7 +760,7 @@ export default function Home() {
             alt="Toggle drawing mode"
             width={100}
             height={120}
-            className={`w-[64px] sm:w-[100px] md:w-[150px] transition-all duration-300 ${drawingMode ? 'drop-shadow-[0_0_10px_rgba(124,160,217,0.9)] scale-110' : ''}`}
+            className={`w-[64px] sm:w-[88px] md:w-[100px] lg:w-[150px] transition-all duration-300 ${drawingMode ? 'drop-shadow-[0_0_10px_rgba(124,160,217,0.9)] scale-110' : ''}`}
           />
         </button>
 
@@ -756,7 +782,7 @@ export default function Home() {
       </div>
 
       {/* INTERACTIVE CHERUB - Right (Pink) - Makes letters fall */}
-      <div className="fixed right-2 md:right-8 top-1/2 -translate-y-1/2 z-40 animate-load-cherub-right">
+      <div className={`fixed right-2 md:right-8 top-1/2 -translate-y-1/2 z-40 animate-load-cherub-right ${showTour ? 'hidden' : ''}`}>
         <button
           onClick={() => { triggerChaos('fall'); cleanUp(); }}
           className="cherub-btn animate-float-2"
@@ -767,13 +793,13 @@ export default function Home() {
             alt="Shake things up"
             width={100}
             height={120}
-            className="w-[64px] sm:w-[100px] md:w-[150px] hover:animate-shake"
+            className="w-[64px] sm:w-[88px] md:w-[100px] lg:w-[150px] hover:animate-shake"
           />
         </button>
       </div>
 
       {/* INTERACTIVE CHERUB - Top (Green) - Spins letters */}
-      <div className="fixed top-4 md:top-8 right-4 md:left-1/4 md:right-auto z-40 animate-load-cherub-top">
+      <div className={`fixed top-4 md:top-8 right-4 md:left-1/4 md:right-auto z-40 animate-load-cherub-top ${showTour ? 'hidden' : ''}`}>
         <button
           onClick={() => triggerChaos('spin')}
           className="cherub-btn animate-float-3"
@@ -784,7 +810,7 @@ export default function Home() {
             alt="Spin letters"
             width={80}
             height={100}
-            className="w-[68px] sm:w-[95px] md:w-[125px] opacity-90 hover:animate-spin-slow"
+            className="w-[68px] sm:w-[85px] md:w-[95px] lg:w-[125px] opacity-90 hover:animate-spin-slow"
           />
         </button>
       </div>
@@ -832,6 +858,9 @@ export default function Home() {
         <button className="ctrl-btn ctrl-cleanup" onClick={cleanUp}>
           🧹 Clean Up
         </button>
+        <button className="ctrl-btn ctrl-tour" onClick={() => setShowTour(true)}>
+          👋 tour
+        </button>
       </div>
 
       {/* MAIN CONTENT */}
@@ -849,7 +878,7 @@ export default function Home() {
         </div>
 
         {/* BIG HEADLINE - letters are draggable */}
-        <div className="mb-5 md:mb-8 select-none">
+        <div id="tour-headline" className="mb-5 md:mb-8 select-none">
           <div className="cutout-line mb-2 md:mb-3">
             <div className="flex items-center -space-x-px">
               <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-1' : ''} ${chaos === 'fall' ? 'animate-fall-1' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>
@@ -898,13 +927,13 @@ export default function Home() {
 
         {/* BUTTONS - clickable and draggable */}
         <div className="flex flex-wrap justify-center items-center gap-3 md:gap-4 animate-load-buttons">
-          <DraggableButton onClick={() => setActivePanel("story")}>
+          <DraggableButton id="tour-story" onClick={() => setActivePanel("story")}>
             <Image src="/assets/buttons/story-time.png" alt="Story Time" width={1331} height={426} className="h-[44px] md:h-[56px] lg:h-[66px] w-auto" draggable={false} />
           </DraggableButton>
-          <DraggableButton onClick={() => setActivePanel("collection")}>
+          <DraggableButton id="tour-boletin" onClick={() => setActivePanel("collection")}>
             <Image src="/assets/buttons/el-boletin.png" alt="El Boletín" width={1326} height={456} className="h-[44px] md:h-[56px] lg:h-[66px] w-auto" draggable={false} />
           </DraggableButton>
-          <DraggableButton onClick={() => setActivePanel("signup")}>
+          <DraggableButton id="tour-spill" onClick={() => setActivePanel("signup")}>
             <Image src="/assets/buttons/spill-it.png" alt="Spill It" width={1334} height={617} className="h-[44px] md:h-[56px] lg:h-[66px] w-auto" draggable={false} />
           </DraggableButton>
         </div>
@@ -1298,10 +1327,36 @@ export default function Home() {
         </div>
       )}
 
-      {/* FOOTER */}
+      {/* FOOTER - secret: tip the badge over to spill the beans */}
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-20 animate-load-footer">
-        <Image src="/assets/2026.png" alt="© 2026 Already Spilled" width={520} height={88} className="h-[28px] md:h-[38px] w-auto" draggable={false} />
+        <button
+          onClick={spillBeans}
+          className={`footer-badge ${beansSpilled ? 'footer-badge-tip' : ''}`}
+          title="don't"
+        >
+          <Image src="/assets/2026.png" alt="© 2026 Already Spilled" width={520} height={88} className="h-[28px] md:h-[38px] w-auto" draggable={false} />
+        </button>
       </div>
+
+      {/* EASTER EGG: spilled beans raining down */}
+      {beansSpilled && (
+        <div className="bean-rain" aria-hidden="true">
+          {Array.from({ length: 40 }).map((_, i) => (
+            <span
+              key={i}
+              className="bean"
+              style={{
+                left: `${(i * 2.5 + (i % 5) * 3) % 100}%`,
+                animationDelay: `${(i % 10) * 0.18}s`,
+                animationDuration: `${2.2 + (i % 6) * 0.4}s`,
+                fontSize: `${18 + (i % 4) * 8}px`,
+              }}
+            >
+              🫘
+            </span>
+          ))}
+        </div>
+      )}
     </main>
     </ResetContext.Provider>
   );
