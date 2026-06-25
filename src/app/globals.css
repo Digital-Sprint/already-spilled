@@ -1494,7 +1494,7 @@ body {
 }
 
 .construction-hardhat {
-  font-family: 'Comic Sans MS', cursive;
+  font-family: 'Comic Sans MS', 'Comic Neue', sans-serif;
   font-size: 16px;
   font-weight: bold;
   color: #333;
@@ -1559,7 +1559,7 @@ body {
 }
 
 .construction-confirmed {
-  font-family: 'Comic Sans MS', cursive;
+  font-family: 'Comic Sans MS', 'Comic Neue', sans-serif;
   font-size: 14px;
   color: #008800;
   font-weight: bold;
@@ -1637,7 +1637,7 @@ body {
 }
 
 .construction-phrase {
-  font-family: 'Comic Sans MS', cursive;
+  font-family: 'Comic Sans MS', 'Comic Neue', sans-serif;
   font-size: 13px;
   color: #666;
   font-style: italic;
@@ -1784,7 +1784,7 @@ body {
 .ransom-yellow {
   background: var(--paper-yellow);
   color: #222;
-  font-family: 'Comic Sans MS', cursive;
+  font-family: 'Comic Sans MS', 'Comic Neue', sans-serif;
   transform: rotate(1deg);
 }
 
@@ -2188,7 +2188,7 @@ body {
 
 /* Comic sans for extra 90s */
 .web95-comic {
-  font-family: 'Comic Sans MS', cursive;
+  font-family: 'Comic Sans MS', 'Comic Neue', sans-serif;
 }
 
 /* Visitor badge */
@@ -3329,7 +3329,7 @@ html.dark body {
 
 .crayon-bubble {
   position: absolute;
-  font-family: 'Comic Sans MS', 'Marker Felt', cursive;
+  font-family: 'Comic Sans MS', 'Comic Neue', sans-serif;
   font-size: 0.76rem;
   line-height: 1.25;
   text-align: center;
@@ -3468,7 +3468,7 @@ html.dark body {
   animation: crayon-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 .tour-floater-text {
-  font-family: 'Comic Sans MS', 'Marker Felt', cursive;
+  font-family: 'Comic Sans MS', 'Comic Neue', sans-serif;
   font-size: 1rem;
   line-height: 1.4;
   color: #1a1a1a;
@@ -3509,7 +3509,7 @@ html.dark body {
   margin-bottom: 0.7rem;
 }
 .tour-hero-sub {
-  font-family: 'Comic Sans MS', cursive;
+  font-family: 'Comic Sans MS', 'Comic Neue', sans-serif;
   font-size: clamp(0.9rem, 3vw, 1.1rem);
   line-height: 1.45;
   color: #444;
@@ -3532,7 +3532,7 @@ html.dark body {
 }
 .intro-skip:hover { color: #1a1a1a; }
 .intro-next {
-  font-family: 'Cabin Sketch', 'Comic Sans MS', cursive;
+  font-family: 'Cabin Sketch', 'Comic Sans MS', 'Comic Neue', sans-serif;
   font-weight: 700;
   font-size: 0.85rem;
   padding: 0.35rem 0.85rem;
