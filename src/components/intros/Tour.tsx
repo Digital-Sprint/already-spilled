@@ -9,7 +9,7 @@ const STEPS: Step[] = [
   { target: "#tour-headline", text: "The whole idea: embrace the mess. Spilling's inevitable, so we made it a lifestyle." },
   { target: "#tour-story", text: "Start here — the whole dumb, beautiful story of how this began." },
   { target: "#tour-spill", text: "Then spill yours. Your finest disaster. The messier the better." },
-  { target: "#tour-boletin", text: "And this is el Boletín. Drop your email and you'll be first when the collection drops — rarely, no spam, just mess." },
+  { target: "#tour-boletin", text: "And this is el Boletín. Drop your email and you'll be first when the collection drops. Low volume, high chaos." },
   { target: null, text: "That's the tour. Now go click around — the cherubs, the letters, all of it. There's mess hidden everywhere. 👀" },
 ];
 
