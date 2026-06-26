@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState, useEffect, useRef, useCallback, createContext, useContext } from "react";
 import Tour from "@/components/intros/Tour";
+import TaskBar from "@/components/TaskBar";
 
 // Base background-music volume (0..1)
 const BG_VOLUME = 0.45;
@@ -168,14 +169,119 @@ export default function Home() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
-  const [drawingMode, setDrawingMode] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [controlsOpen, setControlsOpen] = useState(false);
+  const [controlStyle, setControlStyle] = useState<"knob" | "taskbar">("knob");
+  // Window system (taskbar mode): multiple panels open as draggable windows
+  type WinState = { id: string; min: boolean; max: boolean; x: number; y: number; z: number };
+  const [windows, setWindows] = useState<WinState[]>([]);
+  const zTopRef = useRef(50);
+  const winDrag = useRef<{ id: string; sx: number; sy: number; ox: number; oy: number } | null>(null);
+
+  const focusWindow = (id: string) => {
+    zTopRef.current += 1;
+    const z = zTopRef.current;
+    setWindows((ws) => ws.map((w) => (w.id === id ? { ...w, z, min: false } : w)));
+  };
+  const closeWindow = (id: string) => setWindows((ws) => ws.filter((w) => w.id !== id));
+  const minimizeWindow = (id: string) => setWindows((ws) => ws.map((w) => (w.id === id ? { ...w, min: true } : w)));
+  const maximizeWindow = (id: string) => setWindows((ws) => ws.map((w) => (w.id === id ? { ...w, max: !w.max } : w)));
+  const toggleWindow = (id: string) => {
+    const w = windows.find((x) => x.id === id);
+    if (!w) return;
+    if (w.min) focusWindow(id);
+    else minimizeWindow(id);
+  };
+
+  const openWindow = (id: string) => {
+    if (controlStyle !== "taskbar") {
+      setActivePanel(id);
+      return;
+    }
+    zTopRef.current += 1;
+    const z = zTopRef.current;
+    setWindows((ws) => {
+      if (ws.some((w) => w.id === id)) return ws.map((w) => (w.id === id ? { ...w, min: false, z } : w));
+      const n = ws.length;
+      return [...ws, { id, min: false, max: false, x: (n % 4) * 30 - 45, y: (n % 4) * 26 - 36, z }];
+    });
+  };
+
+  const onWinPointerDown = (e: React.PointerEvent, id: string) => {
+    focusWindow(id);
+    if (!(e.target as HTMLElement).closest(".win-drag")) return;
+    if ((e.target as HTMLElement).closest("button")) return; // let titlebar buttons work
+    const w = windows.find((x) => x.id === id);
+    winDrag.current = { id, sx: e.clientX, sy: e.clientY, ox: w?.x ?? 0, oy: w?.y ?? 0 };
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  };
+  const onWinPointerMove = (e: React.PointerEvent, id: string) => {
+    const d = winDrag.current;
+    if (!d || d.id !== id) return;
+    setWindows((ws) => ws.map((w) => (w.id === id ? { ...w, x: d.ox + (e.clientX - d.sx), y: d.oy + (e.clientY - d.sy) } : w)));
+  };
+  const onWinPointerUp = () => { winDrag.current = null; };
+
+  const taskbarMode = controlStyle === "taskbar";
+  const storyOpen = taskbarMode ? windows.some((w) => w.id === "story") : activePanel === "story";
+  const collectionOpen = taskbarMode ? windows.some((w) => w.id === "collection") : activePanel === "collection";
+
+  // MS Paint window (taskbar mode) — draw inside the window with a solid brush
+  const [paintColor, setPaintColor] = useState("rgba(255, 107, 157,");
+  const paintCanvasRef = useRef<HTMLCanvasElement>(null);
+  const paintDownRef = useRef(false);
+  const paintLastRef = useRef<{ x: number; y: number } | null>(null);
+  const paintStroke = (x: number, y: number) => {
+    const ctx = paintCanvasRef.current?.getContext("2d");
+    if (!ctx) return;
+    ctx.fillStyle = `${paintColor} 1)`;
+    ctx.beginPath();
+    ctx.arc(x, y, 6, 0, Math.PI * 2);
+    ctx.fill();
+  };
+  const paintCoords = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    const c = e.currentTarget;
+    const r = c.getBoundingClientRect();
+    return { x: (e.clientX - r.left) * (c.width / r.width), y: (e.clientY - r.top) * (c.height / r.height) };
+  };
+  const onPaintDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    paintDownRef.current = true;
+    const p = paintCoords(e);
+    paintLastRef.current = p;
+    paintStroke(p.x, p.y);
+  };
+  const onPaintMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!paintDownRef.current) return;
+    const p = paintCoords(e);
+    const last = paintLastRef.current;
+    if (last) {
+      const dx = p.x - last.x, dy = p.y - last.y;
+      const steps = Math.max(1, Math.floor(Math.hypot(dx, dy) / 3));
+      for (let s = 0; s <= steps; s++) paintStroke(last.x + (dx * s) / steps, last.y + (dy * s) / steps);
+    }
+    paintLastRef.current = p;
+  };
+  const onPaintUp = () => { paintDownRef.current = false; paintLastRef.current = null; };
+  const clearPaint = () => {
+    const c = paintCanvasRef.current;
+    const ctx = c?.getContext("2d");
+    if (c && ctx) ctx.clearRect(0, 0, c.width, c.height);
+  };
+
   const [crayonExchange, setCrayonExchange] = useState<"ask" | "return" | null>(null);
   const [crtOn, setCrtOn] = useState(false);
   const [stainsOn, setStainsOn] = useState(false);
   const [soundOn, setSoundOn] = useState(true);
   const [resetSignal, setResetSignal] = useState(0);
   const [showTour, setShowTour] = useState(false);
+  const [quickCherubs, setQuickCherubs] = useState(false);
   const [beansSpilled, setBeansSpilled] = useState(false);
+  // SpillMail inbox (taskbar mode) — spotlights the collection for conversion
+  const [spamEmail, setSpamEmail] = useState("");
+  const [spamJoined, setSpamJoined] = useState(false);
+  const [clockHands, setClockHands] = useState({ h: 0, m: 0 });
 
   // Auto-play Al's tour on a visitor's first visit (or when forced via ?tour=1)
   useEffect(() => {
@@ -186,13 +292,63 @@ export default function Home() {
 
   const finishTour = () => {
     setShowTour(false);
+    setQuickCherubs(true); // bring the cherubs in fast after the tour
     localStorage.setItem("as_tour_seen", "1");
   };
+
+  // Live analog clock for the corner control
+  useEffect(() => {
+    const update = () => {
+      const d = new Date();
+      const m = d.getMinutes();
+      const h = d.getHours() % 12;
+      setClockHands({ h: h * 30 + m * 0.5, m: m * 6 });
+    };
+    update();
+    const id = setInterval(update, 20000);
+    return () => clearInterval(id);
+  }, []);
 
   // Easter egg: tip over the © badge and the beans spill everywhere
   const spillBeans = () => {
     setBeansSpilled(true);
     setTimeout(() => setBeansSpilled(false), 4500);
+  };
+
+  // The SpillMail inbox slides open a few seconds into the desktop, once
+  const inboxShownRef = useRef(false);
+  useEffect(() => {
+    if (!taskbarMode || inboxShownRef.current) return;
+    const t = setTimeout(() => { inboxShownRef.current = true; openWindow("inbox"); }, 6500);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [taskbarMode]);
+
+  // Welcome window opens once when you enter the Spillville desktop
+  const welcomeShownRef = useRef(false);
+  useEffect(() => {
+    if (taskbarMode && !welcomeShownRef.current) {
+      welcomeShownRef.current = true;
+      openWindow("welcome");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [taskbarMode]);
+
+  const spamJoin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!spamEmail.trim()) return;
+    setSpamJoined(true);
+    playJingle();
+    try {
+      await fetch("https://digitalsprint.app.n8n.cloud/webhook/already-spilled-waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: spamEmail, source: "inbox" }),
+      });
+    } catch {
+      // still confirm
+    }
+    setTimeout(() => closeWindow("inbox"), 2200);
   };
 
   const cleanUp = () => {
@@ -231,7 +387,9 @@ export default function Home() {
   const [storyText, setStoryText] = useState("");
   const [storySubmitted, setStorySubmitted] = useState(false);
   const sprayCanvasRef = useRef<HTMLCanvasElement>(null);
-  const sprayColorRef = useRef({ h: 0, color: "" });
+  const selectedColorRef = useRef<string | null>(null);
+  const paintingRef = useRef(false);
+  const pendingTourRef = useRef(false);
   const lastPosRef = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
@@ -241,15 +399,25 @@ export default function Home() {
   }, [darkMode]);
 
   // Blue cherub toggles drawing mode + shows a crayon speech exchange
-  const toggleDrawing = () => {
-    setDrawingMode((prev) => {
+  // Blue cherub opens a paint palette; pick a color, then hold to paint.
+  const togglePalette = () => {
+    setPaletteOpen((prev) => {
       const next = !prev;
       // Asking for crayons when turning on, handing them back when turning off
       setCrayonExchange(next ? "ask" : "return");
       if (crayonBubbleTimer.current) clearTimeout(crayonBubbleTimer.current);
       crayonBubbleTimer.current = setTimeout(() => setCrayonExchange(null), 5500);
+      if (!next) {
+        setSelectedColor(null);
+        selectedColorRef.current = null;
+      }
       return next;
     });
+  };
+
+  const selectColor = (c: string) => {
+    setSelectedColor(c);
+    selectedColorRef.current = c;
   };
 
   // Smoothly ramp the background music volume from its current level to `to`.
@@ -288,11 +456,11 @@ export default function Home() {
     };
   }, [fadeBg]);
 
-  // Show a crayon cursor while drawing is active
+  // Crosshair cursor once a paint color is picked
   useEffect(() => {
-    document.body.style.cursor = drawingMode ? "crosshair" : "";
+    document.body.style.cursor = selectedColor ? "crosshair" : "";
     return () => { document.body.style.cursor = ""; };
-  }, [drawingMode]);
+  }, [selectedColor]);
 
   // Background music — best-effort autoplay, fall back to first interaction
   useEffect(() => {
@@ -362,14 +530,14 @@ export default function Home() {
     setTimeout(() => setChaos(null), 3000);
   };
 
-  // Story auto-play: start when panel opens, advance one message at a time
+  // Story auto-play: start when the story window opens, advance one at a time
   useEffect(() => {
-    if (activePanel === "story" && visibleCount === 0 && !isAutoPlaying) {
+    if (storyOpen && visibleCount === 0 && !isAutoPlaying) {
       setIsAutoPlaying(true);
       setVisibleCount(1);
     }
-    if (activePanel !== "story") {
-      // Reset when panel closes
+    if (!storyOpen) {
+      // Reset when the story window closes
       setVisibleCount(0);
       setIsAutoPlaying(false);
       setChatMessages([]);
@@ -378,7 +546,7 @@ export default function Home() {
       setBoopRevealed(false);
       setChatInput("");
     }
-  }, [activePanel]);
+  }, [storyOpen]);
 
   useEffect(() => {
     if (!isAutoPlaying || visibleCount === 0) return;
@@ -507,7 +675,7 @@ export default function Home() {
   ];
 
   useEffect(() => {
-    if (activePanel !== "collection") {
+    if (!collectionOpen) {
       setProgressPhase("loading");
       setPhraseIndex(0);
       return;
@@ -525,7 +693,7 @@ export default function Home() {
       clearTimeout(timeoutTimer);
       clearTimeout(phraseTimer);
     };
-  }, [activePanel]);
+  }, [collectionOpen]);
 
   useEffect(() => {
     if (progressPhase !== "phrases") return;
@@ -535,48 +703,32 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [progressPhase, progressPhrases.length]);
 
-  // Spray paint colors from brand palette
-  const sprayColors = useRef([
-    "rgba(255, 107, 157,",  // pink
-    "rgba(74, 144, 217,",   // blue
-    "rgba(245, 224, 80,",   // yellow
-    "rgba(124, 184, 96,",   // green
-    "rgba(255, 140, 66,",   // orange
-    "rgba(157, 78, 221,",   // purple
-    "rgba(230, 57, 70,",    // red
-    "rgba(46, 196, 182,",   // teal
+  // Paint palette — brand colors (rgba prefixes, opacity appended when painting)
+  const PAINTS = useRef([
+    { name: "pink", c: "rgba(255, 107, 157," },
+    { name: "blue", c: "rgba(74, 144, 217," },
+    { name: "yellow", c: "rgba(245, 224, 80," },
+    { name: "green", c: "rgba(124, 184, 96," },
+    { name: "orange", c: "rgba(255, 140, 66," },
+    { name: "purple", c: "rgba(157, 78, 221," },
+    { name: "red", c: "rgba(230, 57, 70," },
+    { name: "teal", c: "rgba(46, 196, 182," },
   ]);
 
-  const pickNewColor = useCallback(() => {
-    const colors = sprayColors.current;
-    let idx = Math.floor(Math.random() * colors.length);
-    if (sprayColorRef.current.h === idx) idx = (idx + 1) % colors.length;
-    sprayColorRef.current = { h: idx, color: colors[idx] };
-  }, []);
-
-  // Initialize spray paint canvas
+  // Size the canvas to the window
   useEffect(() => {
     const canvas = sprayCanvasRef.current;
     if (!canvas) return;
-
     const resize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     };
     resize();
     window.addEventListener("resize", resize);
+    return () => window.removeEventListener("resize", resize);
+  }, []);
 
-    pickNewColor();
-
-    const colorInterval = setInterval(pickNewColor, 3000 + Math.random() * 2000);
-
-    return () => {
-      window.removeEventListener("resize", resize);
-      clearInterval(colorInterval);
-    };
-  }, [pickNewColor]);
-
-  // Spray paint draw handler
+  // Hold-to-paint with the selected color (slowly fades so it never tints the page)
   useEffect(() => {
     const canvas = sprayCanvasRef.current;
     if (!canvas) return;
@@ -584,93 +736,53 @@ export default function Home() {
     if (!ctx) return;
 
     const spray = (x: number, y: number, density: number) => {
-      const baseColor = sprayColorRef.current.color;
+      const baseColor = selectedColorRef.current;
+      if (!baseColor) return;
       const radius = 18;
-
       for (let i = 0; i < density; i++) {
         const angle = Math.random() * Math.PI * 2;
         const dist = Math.random() * Math.random() * radius;
-        const dx = Math.cos(angle) * dist;
-        const dy = Math.sin(angle) * dist;
         const size = Math.random() * 2.5 + 0.5;
         const opacity = 0.15 + Math.random() * 0.25;
-
-        ctx.beginPath();
-        ctx.arc(x + dx, y + dy, size, 0, Math.PI * 2);
-        ctx.fillStyle = `${baseColor} ${opacity})`;
-        ctx.fill();
-      }
-    };
-
-    const handleMove = (e: MouseEvent) => {
-      const x = e.clientX;
-      const y = e.clientY;
-      const last = lastPosRef.current;
-
-      if (last) {
-        const dx = x - last.x;
-        const dy = y - last.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        const steps = Math.max(1, Math.floor(dist / 4));
-
-        for (let s = 0; s <= steps; s++) {
-          const t = s / steps;
-          const ix = last.x + dx * t;
-          const iy = last.y + dy * t;
-          spray(ix, iy, 8);
-        }
-      } else {
-        spray(x, y, 12);
-      }
-
-      lastPosRef.current = { x, y };
-    };
-
-    const handleLeave = () => {
-      lastPosRef.current = null;
-    };
-
-    // Big splat on click
-    const handleClick = (e: MouseEvent) => {
-      // Don't splat when clicking buttons, links, inputs, or the control panel
-      if ((e.target as HTMLElement).closest("button, a, input, textarea, .control-panel")) return;
-      const x = e.clientX;
-      const y = e.clientY;
-      const baseColor = sprayColorRef.current.color;
-
-      for (let i = 0; i < 80; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        const dist = Math.random() * Math.random() * 35;
-        const size = Math.random() * 4 + 1;
-        const opacity = 0.2 + Math.random() * 0.35;
         ctx.beginPath();
         ctx.arc(x + Math.cos(angle) * dist, y + Math.sin(angle) * dist, size, 0, Math.PI * 2);
         ctx.fillStyle = `${baseColor} ${opacity})`;
         ctx.fill();
       }
+    };
 
-      const dropletCount = 12 + Math.floor(Math.random() * 10);
-      for (let i = 0; i < dropletCount; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        const flingDist = 30 + Math.random() * 60;
-        const dx = Math.cos(angle) * flingDist;
-        const dy = Math.sin(angle) * flingDist;
-        const size = Math.random() * 3 + 0.8;
-        const opacity = 0.25 + Math.random() * 0.3;
+    const isUi = (t: EventTarget | null) =>
+      (t as HTMLElement | null)?.closest("button, a, input, textarea, .control-panel, .paint-palette");
 
-        const trailSteps = 3 + Math.floor(Math.random() * 3);
-        for (let s = 0; s <= trailSteps; s++) {
-          const t = s / trailSteps;
-          const trailSize = size * (0.3 + t * 0.7);
-          const trailOpacity = opacity * (0.2 + t * 0.8);
-          ctx.beginPath();
-          ctx.arc(x + dx * t, y + dy * t, trailSize, 0, Math.PI * 2);
-          ctx.fillStyle = `${baseColor} ${trailOpacity})`;
-          ctx.fill();
+    const handleDown = (e: PointerEvent) => {
+      if (!selectedColorRef.current || isUi(e.target)) return;
+      paintingRef.current = true;
+      lastPosRef.current = { x: e.clientX, y: e.clientY };
+      spray(e.clientX, e.clientY, 14);
+    };
+
+    const handleMove = (e: PointerEvent) => {
+      if (!paintingRef.current) return;
+      const x = e.clientX;
+      const y = e.clientY;
+      const last = lastPosRef.current;
+      if (last) {
+        const dx = x - last.x;
+        const dy = y - last.y;
+        const steps = Math.max(1, Math.floor(Math.sqrt(dx * dx + dy * dy) / 4));
+        for (let s = 0; s <= steps; s++) {
+          const t = s / steps;
+          spray(last.x + dx * t, last.y + dy * t, 8);
         }
+      } else {
+        spray(x, y, 10);
       }
+      lastPosRef.current = { x, y };
+    };
 
-      pickNewColor();
+    const handleUp = () => {
+      paintingRef.current = false;
+      lastPosRef.current = null;
     };
 
     // Fade existing paint slowly by erasing it (destination-out) so no color
@@ -678,26 +790,29 @@ export default function Home() {
     const fadeInterval = setInterval(() => {
       ctx.save();
       ctx.globalCompositeOperation = "destination-out";
-      ctx.fillStyle = "rgba(0, 0, 0, 0.04)";
+      ctx.fillStyle = "rgba(0, 0, 0, 0.025)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.restore();
     }, 100);
 
-    // Only draw while drawing mode is active
-    if (drawingMode) {
-      window.addEventListener("mousemove", handleMove);
-      window.addEventListener("mouseleave", handleLeave);
-      window.addEventListener("click", handleClick);
+    // Only listen for painting once a color is picked
+    if (selectedColor) {
+      window.addEventListener("pointerdown", handleDown);
+      window.addEventListener("pointermove", handleMove);
+      window.addEventListener("pointerup", handleUp);
+      window.addEventListener("pointercancel", handleUp);
     }
 
     return () => {
-      window.removeEventListener("mousemove", handleMove);
-      window.removeEventListener("mouseleave", handleLeave);
-      window.removeEventListener("click", handleClick);
+      window.removeEventListener("pointerdown", handleDown);
+      window.removeEventListener("pointermove", handleMove);
+      window.removeEventListener("pointerup", handleUp);
+      window.removeEventListener("pointercancel", handleUp);
       clearInterval(fadeInterval);
+      paintingRef.current = false;
       lastPosRef.current = null;
     };
-  }, [drawingMode, pickNewColor]);
+  }, [selectedColor]);
 
   return (
     <ResetContext.Provider value={resetSignal}>
@@ -705,6 +820,35 @@ export default function Home() {
 
       {/* HAND-PAINTED SPLATTER BACKGROUND (inverts in dark mode) */}
       <div className={`bg-splatter ${darkMode ? 'bg-splatter-dark' : ''}`} />
+
+      {/* DESKTOP SHORTCUTS (taskbar mode) — custom lettering as desktop icons */}
+      {taskbarMode && (
+        <div className="desk-icons">
+          <button id="tour-story" className="desk-icon" onClick={() => openWindow("story")} onDoubleClick={() => openWindow("story")}>
+            <svg className="desk-svg" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+              <path d="M16 7C13 5 8 5 5 6v20c3-1 8-1 11 1 3-2 8-2 11-1V6c-3-1-8-1-11 1z" fill="#fdf8ec" stroke="#1a1a1a" strokeWidth="1.6" strokeLinejoin="round" />
+              <path d="M16 7v21" stroke="#1a1a1a" strokeWidth="1.6" />
+              <path d="M8 11c2-.4 4-.4 6 0M8 15c2-.4 4-.4 6 0M18 11c2-.4 4-.4 6 0M18 15c2-.4 4-.4 6 0" stroke="#4a90d9" strokeWidth="1.4" strokeLinecap="round" />
+            </svg>
+            <Image src="/assets/buttons/story-time.png" alt="Story Time" width={1331} height={426} className="desk-icon-art" draggable={false} />
+          </button>
+          <button id="tour-boletin" className="desk-icon" onClick={() => openWindow("collection")} onDoubleClick={() => openWindow("collection")}>
+            <svg className="desk-svg" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+              <rect x="4" y="8" width="24" height="17" rx="1.5" fill="#f5e050" stroke="#1a1a1a" strokeWidth="1.6" />
+              <path d="M5 9l11 8 11-8" stroke="#1a1a1a" strokeWidth="1.6" fill="none" strokeLinejoin="round" />
+            </svg>
+            <Image src="/assets/buttons/el-boletin.png" alt="El Boletín" width={1326} height={456} className="desk-icon-art" draggable={false} />
+          </button>
+          <button id="tour-spill" className="desk-icon" onClick={() => openWindow("signup")} onDoubleClick={() => openWindow("signup")}>
+            <svg className="desk-svg" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+              <path d="M6 26l1.5-5L21 7.5l3.5 3.5L11 24.5 6 26z" fill="#f5e050" stroke="#1a1a1a" strokeWidth="1.6" strokeLinejoin="round" />
+              <path d="M21 7.5l2-2 3.5 3.5-2 2z" fill="#ff6b9d" stroke="#1a1a1a" strokeWidth="1.6" strokeLinejoin="round" />
+              <path d="M6 26l1.5-5 3.5 3.5z" fill="#1a1a1a" />
+            </svg>
+            <Image src="/assets/buttons/spill-it.png" alt="Spill It" width={1334} height={617} className="desk-icon-art" draggable={false} />
+          </button>
+        </div>
+      )}
 
       {/* AL'S GUIDED TOUR (first visit; replay via the button) */}
       {showTour && <Tour onDone={finishTour} onJoin={playJingle} />}
@@ -748,49 +892,82 @@ export default function Home() {
       </div>
       )}
 
-      {/* INTERACTIVE CHERUB - Left (Blue) - Toggles Drawing Mode */}
-      <div className={`fixed left-2 md:left-8 top-1/2 -translate-y-1/2 z-40 animate-load-cherub-left ${showTour ? 'hidden' : ''}`}>
-        <button
-          onClick={toggleDrawing}
-          className="cherub-btn animate-float-1"
-          title={drawingMode ? "Put the crayons away" : "Can I have some crayons?"}
-        >
-          <Image
-            src="/assets/cherub-blue.png"
-            alt="Toggle drawing mode"
-            width={100}
-            height={120}
-            className={`w-[64px] sm:w-[88px] md:w-[100px] lg:w-[150px] transition-all duration-300 ${drawingMode ? 'drop-shadow-[0_0_10px_rgba(124,160,217,0.9)] scale-110' : ''}`}
-          />
-        </button>
+      {/* INTERACTIVE CHERUB - Left (Blue) - Opens the paint palette / Paint window */}
+      <div className={`fixed left-2 md:left-8 ${taskbarMode ? 'top-[78%]' : 'top-1/2'} -translate-y-1/2 z-40 animate-load-cherub-left ${quickCherubs ? 'cherub-quick' : ''} ${showTour ? 'hidden' : ''}`}>
+        {/* cherub + palette float together so the palette looks held */}
+        <div className="cherub-hold animate-float-1">
+          <button
+            onClick={taskbarMode ? () => openWindow("paint") : togglePalette}
+            className="cherub-btn"
+            title={paletteOpen ? "Put the paints away" : "Can I have some paint?"}
+          >
+            <Image
+              src="/assets/cherub-blue.png"
+              alt="Open paint palette"
+              width={100}
+              height={120}
+              className={`w-[64px] sm:w-[88px] md:w-[100px] lg:w-[150px] transition-all duration-300 ${paletteOpen ? 'drop-shadow-[0_0_10px_rgba(124,160,217,0.9)] scale-110' : ''}`}
+            />
+          </button>
+
+          {/* Paint palette — pick a color, then hold to paint */}
+          {paletteOpen && (
+            <div className="paint-palette">
+              <svg className="palette-shape" viewBox="0 0 200 180" aria-hidden="true">
+                <defs>
+                  <radialGradient id="palette-wood" cx="42%" cy="36%" r="78%">
+                    <stop offset="0%" stopColor="#cd9156" />
+                    <stop offset="100%" stopColor="#a4642d" />
+                  </radialGradient>
+                  <mask id="palette-thumb">
+                    <rect width="200" height="180" fill="#fff" />
+                    <ellipse cx="48" cy="130" rx="20" ry="18" fill="#000" />
+                  </mask>
+                </defs>
+                <ellipse cx="100" cy="88" rx="94" ry="80" fill="url(#palette-wood)" stroke="#6f4419" strokeWidth="6" mask="url(#palette-thumb)" />
+                <ellipse cx="48" cy="130" rx="20" ry="18" fill="none" stroke="#6f4419" strokeWidth="4" />
+              </svg>
+              {PAINTS.current.map((p) => (
+                <button
+                  key={p.name}
+                  className={`paint-swatch ${selectedColor === p.c ? 'selected' : ''}`}
+                  style={{ background: `${p.c} 1)` }}
+                  onClick={() => selectColor(p.c)}
+                  title={p.name}
+                  aria-label={`${p.name} paint`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Crayon speech bubbles - stacked above the cherub */}
         {crayonExchange && (
           <div className="crayon-bubbles">
             <div className="crayon-bubble crayon-bubble-you">
               {crayonExchange === "ask"
-                ? "psst… can I have some crayons?"
-                : "here, crayons back 🖍️"}
+                ? "psst… can I get the paints?"
+                : "okay, paints away 🎨"}
             </div>
             <div className="crayon-bubble crayon-bubble-al">
               {crayonExchange === "ask"
-                ? "knock yourself out. the messier the better 🖍️"
-                : "…why are they soggy. did you chew on these?"}
+                ? "pick a color. hold to paint. make a mess 🎨"
+                : "…it's in your hair. anyway, nice work."}
             </div>
           </div>
         )}
       </div>
 
       {/* INTERACTIVE CHERUB - Right (Pink) - Makes letters fall */}
-      <div className={`fixed right-2 md:right-8 top-1/2 -translate-y-1/2 z-40 animate-load-cherub-right ${showTour ? 'hidden' : ''}`}>
+      <div className={`fixed right-2 md:right-8 top-1/2 -translate-y-1/2 z-40 animate-load-cherub-right ${quickCherubs ? 'cherub-quick' : ''} ${showTour ? 'hidden' : ''}`}>
         <button
-          onClick={() => { triggerChaos('fall'); cleanUp(); }}
+          onClick={() => { triggerChaos('fall'); cleanUp(); pendingTourRef.current = true; }}
           className="cherub-btn animate-float-2"
-          title="Shake it back into place"
+          title="Shake it up & take the tour"
         >
           <Image
             src="/assets/cherub-pink.png"
-            alt="Shake things up"
+            alt="Take the tour"
             width={100}
             height={120}
             className="w-[64px] sm:w-[88px] md:w-[100px] lg:w-[150px] hover:animate-shake"
@@ -799,15 +976,15 @@ export default function Home() {
       </div>
 
       {/* INTERACTIVE CHERUB - Top (Green) - Spins letters */}
-      <div className={`fixed top-4 md:top-8 right-4 md:left-1/4 md:right-auto z-40 animate-load-cherub-top ${showTour ? 'hidden' : ''}`}>
+      <div className={`fixed top-4 md:top-8 right-4 md:left-1/4 md:right-auto z-40 animate-load-cherub-top ${quickCherubs ? 'cherub-quick' : ''} ${showTour ? 'hidden' : ''}`}>
         <button
-          onClick={() => triggerChaos('spin')}
+          onClick={() => { cleanUp(); triggerChaos('spin'); }}
           className="cherub-btn animate-float-3"
-          title="Spin it"
+          title="Tidy up the mess"
         >
           <Image
             src="/assets/cherub-green.png"
-            alt="Spin letters"
+            alt="Clean up"
             width={80}
             height={100}
             className="w-[68px] sm:w-[85px] md:w-[95px] lg:w-[125px] opacity-90 hover:animate-spin-slow"
@@ -829,56 +1006,124 @@ export default function Home() {
       <audio ref={audioRef} src="/assets/website-ui.mp3" loop preload="auto" />
       <audio ref={jingleRef} src="/assets/as-jingle.wav" preload="auto" />
 
-      {/* CONTROL PANEL - toggles for demo */}
-      <div className="control-panel">
-        <button
-          className={`ctrl-btn ${soundOn ? 'ctrl-on' : 'ctrl-off'}`}
-          onClick={() => setSoundOn((v) => !v)}
-        >
-          🐮 moosic
-        </button>
-        <button
-          className={`ctrl-btn ${crtOn ? 'ctrl-on' : 'ctrl-off'}`}
-          onClick={() => setCrtOn((v) => !v)}
-        >
-          🍑 fuzz
-        </button>
-        <button
-          className={`ctrl-btn ${stainsOn ? 'ctrl-on' : 'ctrl-off'}`}
-          onClick={() => setStainsOn((v) => !v)}
-        >
-          💦 plop
-        </button>
-        <button
-          className={`ctrl-btn ${darkMode ? 'ctrl-on' : 'ctrl-off'}`}
-          onClick={() => setDarkMode((v) => !v)}
-        >
-          {darkMode ? '🌚 night night' : '☀️ bom dia'}
-        </button>
-        <button className="ctrl-btn ctrl-cleanup" onClick={cleanUp}>
-          🧹 Clean Up
-        </button>
-        <button className="ctrl-btn ctrl-tour" onClick={() => setShowTour(true)}>
-          👋 tour
-        </button>
+      {/* PREVIEW: switch between the two control styles */}
+      <div className="ui-switch">
+        <span className="ui-switch-label">controls:</span>
+        <button className={controlStyle === 'knob' ? 'on' : ''} onClick={() => setControlStyle('knob')}>knob</button>
+        <button className={controlStyle === 'taskbar' ? 'on' : ''} onClick={() => setControlStyle('taskbar')}>taskbar</button>
       </div>
 
+      {/* OPTION 2: Spillville 95 taskbar */}
+      {controlStyle === 'taskbar' && (
+        <TaskBar
+          soundOn={soundOn} setSoundOn={setSoundOn}
+          crtOn={crtOn} setCrtOn={setCrtOn}
+          stainsOn={stainsOn} setStainsOn={setStainsOn}
+          darkMode={darkMode} setDarkMode={setDarkMode}
+          onTour={() => setShowTour(true)}
+          onCleanUp={cleanUp}
+          windows={windows}
+          onWindowClick={toggleWindow}
+        />
+      )}
+
+      {/* OPTION 1: knob — tucked away, expands on click */}
+      {controlStyle === 'knob' && (
+      <div className={`control-panel ${controlsOpen ? 'is-open' : ''}`}>
+        <button
+          className="control-knob"
+          onClick={() => setControlsOpen((v) => !v)}
+          title={controlsOpen ? "Hide controls" : "Controls"}
+          aria-label="Toggle controls"
+        >
+          <svg className="knob-dial" viewBox="0 0 44 44" aria-hidden="true">
+            <defs>
+              <radialGradient id="knobgrad" cx="38%" cy="32%" r="72%">
+                <stop offset="0%" stopColor="#fffdf7" />
+                <stop offset="100%" stopColor="#ece2cd" />
+              </radialGradient>
+            </defs>
+            <circle cx="22" cy="22" r="18" fill="url(#knobgrad)" stroke="#1a1a1a" strokeWidth="2.5" />
+            <g stroke="#1a1a1a" strokeLinecap="round">
+              {Array.from({ length: 12 }).map((_, i) => {
+                const a = (i * 30) * Math.PI / 180;
+                const r1 = i % 3 === 0 ? 13 : 15;
+                const round = (n: number) => Number(n.toFixed(2));
+                return (
+                  <line
+                    key={i}
+                    x1={round(22 + Math.sin(a) * r1)}
+                    y1={round(22 - Math.cos(a) * r1)}
+                    x2={round(22 + Math.sin(a) * 16.5)}
+                    y2={round(22 - Math.cos(a) * 16.5)}
+                    strokeWidth={i % 3 === 0 ? 1.8 : 1}
+                  />
+                );
+              })}
+            </g>
+            <line className="clock-hand" x1="22" y1="22" x2="22" y2="14" stroke="#1a1a1a" strokeWidth="2.4" strokeLinecap="round" transform={`rotate(${clockHands.h} 22 22)`} />
+            <line className="clock-hand" x1="22" y1="22" x2="22" y2="9.5" stroke="#1a1a1a" strokeWidth="1.6" strokeLinecap="round" transform={`rotate(${clockHands.m} 22 22)`} />
+            <circle cx="22" cy="22" r="1.7" fill="#1a1a1a" />
+          </svg>
+        </button>
+        <div className="control-chips">
+          <button
+            className={`ctrl-btn ${soundOn ? 'ctrl-on' : 'ctrl-off'}`}
+            onClick={() => setSoundOn((v) => !v)}
+          >
+            🐮 moosic
+          </button>
+          <button
+            className={`ctrl-btn ${crtOn ? 'ctrl-on' : 'ctrl-off'}`}
+            onClick={() => setCrtOn((v) => !v)}
+          >
+            🍑 fuzz
+          </button>
+          <button
+            className={`ctrl-btn ${stainsOn ? 'ctrl-on' : 'ctrl-off'}`}
+            onClick={() => setStainsOn((v) => !v)}
+          >
+            💦 plop
+          </button>
+          <button
+            className={`ctrl-btn ${darkMode ? 'ctrl-on' : 'ctrl-off'}`}
+            onClick={() => setDarkMode((v) => !v)}
+          >
+            {darkMode ? '🌚 night night' : '☀️ bom dia'}
+          </button>
+        </div>
+      </div>
+      )}
+
       {/* MAIN CONTENT */}
-      <div className="text-center z-20 max-w-4xl">
-        {/* Logo */}
+      <div className={`text-center z-20 max-w-4xl ${taskbarMode ? '-translate-y-12 md:-translate-y-20' : ''}`}>
+        {/* Logo — hidden in taskbar mode; the Welcome window carries the logo there */}
+        {!taskbarMode && (
         <div className="mb-3 md:mb-6 animate-load-logo">
           <Image
             src="/assets/already-spilled-logo.png"
             alt="Already Spilled"
             width={2375}
             height={1545}
-            className="mx-auto w-[150px] sm:w-[240px] md:w-[380px]"
+            className="mx-auto w-[150px] sm:w-[240px] md:w-[380px] select-none pointer-events-none"
+            draggable={false}
             priority
           />
         </div>
+        )}
 
         {/* BIG HEADLINE - letters are draggable */}
-        <div id="tour-headline" className="mb-5 md:mb-8 select-none">
+        <div
+          id="tour-headline"
+          className="mb-5 md:mb-8 select-none"
+          onAnimationEnd={(e) => {
+            // When the letters finish falling back into place, kick off the tour
+            if (pendingTourRef.current && (e as React.AnimationEvent).animationName === "fall-letter") {
+              pendingTourRef.current = false;
+              setShowTour(true);
+            }
+          }}
+        >
           <div className="cutout-line mb-2 md:mb-3">
             <div className="flex items-center -space-x-px">
               <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-1' : ''} ${chaos === 'fall' ? 'animate-fall-1' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>
@@ -925,36 +1170,158 @@ export default function Home() {
           </div>
         </div>
 
-        {/* BUTTONS - clickable and draggable */}
+        {/* BUTTONS - clickable and draggable (knob mode only; taskbar uses desktop icons) */}
+        {!taskbarMode && (
         <div className="flex flex-wrap justify-center items-center gap-3 md:gap-4 animate-load-buttons">
-          <DraggableButton id="tour-story" onClick={() => setActivePanel("story")}>
+          <DraggableButton id="tour-story" onClick={() => openWindow("story")}>
             <Image src="/assets/buttons/story-time.png" alt="Story Time" width={1331} height={426} className="h-[44px] md:h-[56px] lg:h-[66px] w-auto" draggable={false} />
           </DraggableButton>
-          <DraggableButton id="tour-boletin" onClick={() => setActivePanel("collection")}>
+          <DraggableButton id="tour-boletin" onClick={() => openWindow("collection")}>
             <Image src="/assets/buttons/el-boletin.png" alt="El Boletín" width={1326} height={456} className="h-[44px] md:h-[56px] lg:h-[66px] w-auto" draggable={false} />
           </DraggableButton>
-          <DraggableButton id="tour-spill" onClick={() => setActivePanel("signup")}>
+          <DraggableButton id="tour-spill" onClick={() => openWindow("signup")}>
             <Image src="/assets/buttons/spill-it.png" alt="Spill It" width={1334} height={617} className="h-[44px] md:h-[56px] lg:h-[66px] w-auto" draggable={false} />
           </DraggableButton>
         </div>
+        )}
       </div>
 
-      {/* EXPANDABLE PANELS */}
-      {activePanel && (
+      {/* EXPANDABLE PANELS — modal (knob) or floating windows (taskbar) */}
+      {(taskbarMode ? windows : activePanel ? [{ id: activePanel, min: false, max: false, x: 0, y: 0, z: 0 }] : []).map((w) => {
+        if (taskbarMode && w.min) return null;
+        const which = w.id;
+        const onClose = taskbarMode ? () => closeWindow(w.id) : closePanel;
+        const onMinimize = taskbarMode ? () => minimizeWindow(w.id) : undefined;
+        const onMaximize = taskbarMode ? () => maximizeWindow(w.id) : undefined;
+        return (
         <div
-          className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
-          onClick={closePanel}
+          key={w.id}
+          className={
+            taskbarMode
+              ? "win-layer"
+              : "fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+          }
+          style={taskbarMode ? { zIndex: w.z } : undefined}
+          onClick={taskbarMode ? undefined : closePanel}
         >
           <div
-            className="relative max-w-[95vw] sm:max-w-md md:max-w-lg w-full animate-panel-in"
+            className={
+              taskbarMode
+                ? `win-frame win-${which} ${w.max ? "win-max" : ""}`
+                : "relative max-w-[95vw] sm:max-w-md md:max-w-lg w-full animate-panel-in"
+            }
+            style={taskbarMode && !w.max ? { transform: `translate(calc(-50% + ${w.x}px), calc(-50% + ${w.y}px))` } : undefined}
             onClick={(e) => e.stopPropagation()}
+            onPointerDown={(e) => taskbarMode && onWinPointerDown(e, w.id)}
+            onPointerMove={(e) => taskbarMode && onWinPointerMove(e, w.id)}
+            onPointerUp={onWinPointerUp}
+            onPointerCancel={onWinPointerUp}
           >
+            {/* WELCOME PANEL - logo + tagline, opens on the desktop */}
+            {which === "welcome" && (
+              <div className="welcome-win">
+                <div className="welcome-titlebar win-drag">
+                  <span>👋 Welcome to Spillville 95</span>
+                  <span className="win-btns">
+                    {onMinimize && <button onClick={onMinimize} className="welcome-x win-min" title="Minimize" aria-label="Minimize">–</button>}
+                    {onMaximize && <button onClick={onMaximize} className="welcome-x win-max-btn" title="Maximize" aria-label="Maximize">▢</button>}
+                    <button onClick={onClose} className="welcome-x" aria-label="Close">×</button>
+                  </span>
+                </div>
+                <div className="welcome-body">
+                  <Image src="/assets/already-spilled-logo.png" alt="Already Spilled" width={2375} height={1545} className="welcome-logo" draggable={false} />
+                  <p className="welcome-tagline">embrace the mess.</p>
+                  <p className="welcome-sub">coffee got on everything, so we made it the whole point. perfection is boring — you&apos;re already spilled.</p>
+                  <div className="welcome-actions">
+                    <button className="welcome-cta" onClick={() => openWindow("collection")}>see the collection →</button>
+                    <button className="welcome-ghost" onClick={onClose}>poke around the desktop</button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* INBOX PANEL - SpillMail email client (conversion) */}
+            {which === "inbox" && (
+              <div className="mail">
+                <div className="mail-titlebar win-drag">
+                  <span>📬 SpillMail — Inbox</span>
+                  <span className="win-btns">
+                    {onMinimize && <button onClick={onMinimize} className="mail-x win-min" title="Minimize" aria-label="Minimize">–</button>}
+                    {onMaximize && <button onClick={onMaximize} className="mail-x win-max-btn" title="Maximize" aria-label="Maximize">▢</button>}
+                    <button onClick={onClose} className="mail-x" aria-label="Close">×</button>
+                  </span>
+                </div>
+                <div className="mail-toolbar">
+                  <span className="mail-tool">✉ New</span>
+                  <span className="mail-tool">↩ Reply</span>
+                  <span className="mail-tool">↪ Forward</span>
+                  <span className="mail-tool">🗑 Delete</span>
+                  <span className="mail-tool mail-tool-end">Inbox (1 unread)</span>
+                </div>
+                <div className="mail-main">
+                  <ul className="mail-list">
+                    <li className="mail-row unread active">
+                      <span className="mail-dot">●</span>
+                      <span className="mail-from">Al @ Already Spilled</span>
+                      <span className="mail-subj">first dibs on the drop 🫘</span>
+                      <span className="mail-time">now</span>
+                    </li>
+                    <li className="mail-row">
+                      <span className="mail-dot" />
+                      <span className="mail-from">SpillNet Support</span>
+                      <span className="mail-subj">Re: your stain warranty</span>
+                      <span className="mail-time">Tue</span>
+                    </li>
+                    <li className="mail-row">
+                      <span className="mail-dot" />
+                      <span className="mail-from">no-reply</span>
+                      <span className="mail-subj">your coffee order is ready ☕</span>
+                      <span className="mail-time">Mon</span>
+                    </li>
+                  </ul>
+                  <div className="mail-reading">
+                    {spamJoined ? (
+                      <div className="mail-done">✅ you&apos;re on the list.<br /><span>watch your inbox (and your shirt).</span></div>
+                    ) : (
+                      <>
+                        <div className="mail-head">
+                          <h3 className="mail-head-subj">first dibs on the drop 🫘</h3>
+                          <div className="mail-meta"><b>From:</b> Al @ Already Spilled &lt;al@alreadyspilled.com&gt;</div>
+                          <div className="mail-meta"><b>To:</b> you</div>
+                        </div>
+                        <div className="mail-bodytext">
+                          <p>hey —</p>
+                          <p>the collection drops soon, and i wanted you to hear it first. leave your email and i&apos;ll ping you the <i>second</i> it spills. no spam, just the drop.</p>
+                          <form className="mail-form" onSubmit={spamJoin}>
+                            <input
+                              type="email"
+                              className="mail-input"
+                              placeholder="you@email.com"
+                              value={spamEmail}
+                              onChange={(e) => setSpamEmail(e.target.value)}
+                              required
+                            />
+                            <button type="submit" className="mail-cta">count me in</button>
+                          </form>
+                          <p className="mail-sig">— Al, court jester of spillville</p>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* STORY PANEL - AIM Chat Style */}
-            {activePanel === "story" && (
+            {which === "story" && (
               <div className="aim-window">
-                <div className="aim-titlebar">
+                <div className="aim-titlebar win-drag">
                   <span>AlreadySpilled - Instant Message</span>
-                  <button onClick={closePanel} className="aim-close">×</button>
+                  <span className="win-btns">
+                    {onMinimize && <button onClick={onMinimize} className="aim-close win-min" title="Minimize" aria-label="Minimize">–</button>}
+                    {onMaximize && <button onClick={onMaximize} className="aim-close win-max-btn" title="Maximize" aria-label="Maximize">▢</button>}
+                    <button onClick={onClose} className="aim-close">×</button>
+                  </span>
                 </div>
                 <div className="aim-toolbar">
                   <div className="aim-menu-wrapper">
@@ -969,7 +1336,7 @@ export default function Home() {
                         <div className="aim-dropdown-item" onClick={() => setActiveMenu(null)}>New Message</div>
                         <div className="aim-dropdown-item" onClick={() => setActiveMenu(null)}>Save Chat</div>
                         <div className="aim-dropdown-divider"></div>
-                        <div className="aim-dropdown-item" onClick={closePanel}>Close Window</div>
+                        <div className="aim-dropdown-item" onClick={onClose}>Close Window</div>
                       </div>
                     )}
                   </div>
@@ -1100,11 +1467,15 @@ export default function Home() {
             )}
 
             {/* COLLECTION PANEL - Under Construction */}
-            {activePanel === "collection" && (
+            {which === "collection" && (
               <div className="construction-popup">
-                <div className="construction-titlebar">
+                <div className="construction-titlebar win-drag">
                   <span>🚧 http://www.alreadyspilled.com/collection 🚧</span>
-                  <button onClick={closePanel} className="construction-close">×</button>
+                  <span className="win-btns">
+                    {onMinimize && <button onClick={onMinimize} className="construction-close win-min" title="Minimize" aria-label="Minimize">–</button>}
+                    {onMaximize && <button onClick={onMaximize} className="construction-close win-max-btn" title="Maximize" aria-label="Maximize">▢</button>}
+                    <button onClick={onClose} className="construction-close">×</button>
+                  </span>
                 </div>
                 <div className="construction-content">
                   <div className="construction-tape construction-tape-top">
@@ -1209,11 +1580,15 @@ export default function Home() {
             )}
 
             {/* SIGNUP PANEL - Spill Your Story */}
-            {activePanel === "signup" && (
+            {which === "signup" && (
               <div className="web95">
-                <div className="web95-titlebar">
+                <div className="web95-titlebar win-drag">
                   <span>☕ Already Spilled - Guestbook</span>
-                  <button onClick={closePanel} className="web95-close">×</button>
+                  <span className="win-btns">
+                    {onMinimize && <button onClick={onMinimize} className="web95-close win-min" title="Minimize" aria-label="Minimize">–</button>}
+                    {onMaximize && <button onClick={onMaximize} className="web95-close win-max-btn" title="Maximize" aria-label="Maximize">▢</button>}
+                    <button onClick={onClose} className="web95-close">×</button>
+                  </span>
                 </div>
 
                 <div className="web95-content">
@@ -1323,11 +1698,53 @@ export default function Home() {
                 </div>
               </div>
             )}
+            {which === "paint" && (
+              <div className="mspaint">
+                <div className="mspaint-titlebar win-drag">
+                  <span>🎨 untitled — Paint</span>
+                  <span className="win-btns">
+                    {onMinimize && <button onClick={onMinimize} className="mspaint-x win-min" title="Minimize" aria-label="Minimize">–</button>}
+                    {onMaximize && <button onClick={onMaximize} className="mspaint-x win-max-btn" title="Maximize" aria-label="Maximize">▢</button>}
+                    <button onClick={onClose} className="mspaint-x">×</button>
+                  </span>
+                </div>
+                <div className="mspaint-menubar"><span>File</span><span>Edit</span><span>View</span><span>Image</span></div>
+                <div className="mspaint-body">
+                  <div className="mspaint-tools">
+                    {PAINTS.current.map((p) => (
+                      <button
+                        key={p.name}
+                        className={`mspaint-swatch ${paintColor === p.c ? "sel" : ""}`}
+                        style={{ background: `${p.c} 1)` }}
+                        onClick={() => setPaintColor(p.c)}
+                        title={p.name}
+                        aria-label={p.name}
+                      />
+                    ))}
+                    <button className="mspaint-clear" onClick={clearPaint} title="Clear canvas" aria-label="Clear">🧽</button>
+                  </div>
+                  <div className="mspaint-canvas-wrap">
+                    <canvas
+                      ref={paintCanvasRef}
+                      width={640}
+                      height={430}
+                      className="mspaint-canvas"
+                      onPointerDown={onPaintDown}
+                      onPointerMove={onPaintMove}
+                      onPointerUp={onPaintUp}
+                      onPointerCancel={onPaintUp}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
-      )}
+        );
+      })}
 
-      {/* FOOTER - secret: tip the badge over to spill the beans */}
+      {/* FOOTER - secret: tip the badge over to spill the beans (hidden in taskbar mode; © lives in the bar) */}
+      {controlStyle !== 'taskbar' && (
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-20 animate-load-footer">
         <button
           onClick={spillBeans}
@@ -1337,6 +1754,7 @@ export default function Home() {
           <Image src="/assets/2026.png" alt="© 2026 Already Spilled" width={520} height={88} className="h-[28px] md:h-[38px] w-auto" draggable={false} />
         </button>
       </div>
+      )}
 
       {/* EASTER EGG: spilled beans raining down */}
       {beansSpilled && (
