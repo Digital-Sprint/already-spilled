@@ -164,6 +164,63 @@ function DraggableButton({ onClick, children, id }: { onClick: () => void; child
   );
 }
 
+// "EMBRACE THE MESS" as individual draggable letter images. Reused in the
+// hero (knob), inside the Welcome window, or loose on the desktop. Letters
+// drag via transform, so with an overflow-visible parent they can be pulled
+// right out of a window and played with on the background.
+const EMBRACE_LETTERS = [
+  ["E1", "E", 123], ["M1", "M", 173], ["B1", "B", 147], ["R1", "R", 106],
+  ["A1", "A", 146], ["C1", "C", 107], ["E2", "E", 132],
+] as const;
+const MESS_LETTERS = [
+  ["M2", "M", 164], ["Em", "E", 124], ["S1", "S", 120], ["S2", "S", 114],
+] as const;
+
+function HeadlineLetters({
+  initialAnimationDone,
+  chaos,
+  h = "h-[44px] sm:h-[70px] md:h-[104px] lg:h-[122px]",
+}: {
+  initialAnimationDone: boolean;
+  chaos: string | null;
+  h?: string;
+}) {
+  let idx = 0;
+  const cls = (i: number) =>
+    `inline-block letter-hover ${!initialAnimationDone ? `animate-letter letter-delay-${i}` : ""} ${chaos === "fall" ? `animate-fall-${(i % 7) + 1}` : ""} ${chaos === "spin" ? `animate-spin-letter${i % 3 === 1 ? "-delay-1" : i % 3 === 2 ? "-delay-2" : ""}` : ""}`;
+  return (
+    <>
+      <div className="cutout-line mb-2 md:mb-3">
+        <div className="flex items-center justify-center -space-x-px">
+          {EMBRACE_LETTERS.map(([src, alt, w]) => {
+            const i = ++idx;
+            return (
+              <DraggableLetter key={src} className={cls(i)}>
+                <Image src={`/assets/letters-v2/${src}.png`} alt={alt} width={w} height={172} className={`${h} w-auto`} draggable={false} priority />
+              </DraggableLetter>
+            );
+          })}
+        </div>
+      </div>
+      <div className="cutout-line flex items-center justify-center">
+        <DraggableLetter className={cls(++idx)}>
+          <Image src="/assets/letters-v2/The.png" alt="the" width={167} height={170} className={`${h} w-auto`} draggable={false} priority />
+        </DraggableLetter>
+        <div className="flex items-center -space-x-px">
+          {MESS_LETTERS.map(([src, alt, w]) => {
+            const i = ++idx;
+            return (
+              <DraggableLetter key={src} className={cls(i)}>
+                <Image src={`/assets/letters-v2/${src}.png`} alt={alt} width={w} height={170} className={`${h} w-auto`} draggable={false} priority />
+              </DraggableLetter>
+            );
+          })}
+        </div>
+      </div>
+    </>
+  );
+}
+
 export default function Home() {
   const [activePanel, setActivePanel] = useState<string | null>(null);
   const [email, setEmail] = useState("");
@@ -172,7 +229,7 @@ export default function Home() {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [controlsOpen, setControlsOpen] = useState(false);
-  const [controlStyle, setControlStyle] = useState<"knob" | "taskbar">("knob");
+  const [controlStyle, setControlStyle] = useState<"knob" | "deskLogo" | "deskLetters">("knob");
   // Window system (taskbar mode): multiple panels open as draggable windows
   type WinState = { id: string; min: boolean; max: boolean; x: number; y: number; z: number };
   const [windows, setWindows] = useState<WinState[]>([]);
@@ -195,7 +252,7 @@ export default function Home() {
   };
 
   const openWindow = (id: string) => {
-    if (controlStyle !== "taskbar") {
+    if (controlStyle === "knob") {
       setActivePanel(id);
       return;
     }
@@ -223,7 +280,10 @@ export default function Home() {
   };
   const onWinPointerUp = () => { winDrag.current = null; };
 
-  const taskbarMode = controlStyle === "taskbar";
+  const taskbarMode = controlStyle !== "knob";
+  // Which asset sits loose on the desktop (bottom-right); the Welcome window
+  // shows the opposite. deskLogo => logo on desktop, letters in the window.
+  const deskLettersLoose = controlStyle === "deskLetters";
   const storyOpen = taskbarMode ? windows.some((w) => w.id === "story") : activePanel === "story";
   const collectionOpen = taskbarMode ? windows.some((w) => w.id === "collection") : activePanel === "collection";
 
@@ -850,6 +910,22 @@ export default function Home() {
         </div>
       )}
 
+      {/* DESKTOP CORNER — the brand asset that lives loose on the background.
+          deskLogo => the logo sits here; deskLetters => the draggable
+          EMBRACE THE MESS lettering sits here (the Welcome window shows the
+          opposite of whichever this is). */}
+      {taskbarMode && (
+        deskLettersLoose ? (
+          <div className="desk-corner desk-corner-letters select-none">
+            <HeadlineLetters initialAnimationDone={initialAnimationDone} chaos={chaos} h="h-[26px] sm:h-[34px] md:h-[44px]" />
+          </div>
+        ) : (
+          <div className="desk-corner desk-corner-logo">
+            <Image src="/assets/already-spilled-logo.png" alt="Already Spilled" width={2375} height={1545} className="w-[150px] md:w-[210px] select-none pointer-events-none" draggable={false} />
+          </div>
+        )
+      )}
+
       {/* AL'S GUIDED TOUR (first visit; replay via the button) */}
       {showTour && <Tour onDone={finishTour} onJoin={playJingle} />}
 
@@ -1008,13 +1084,14 @@ export default function Home() {
 
       {/* PREVIEW: switch between the two control styles */}
       <div className="ui-switch">
-        <span className="ui-switch-label">controls:</span>
+        <span className="ui-switch-label">version:</span>
         <button className={controlStyle === 'knob' ? 'on' : ''} onClick={() => setControlStyle('knob')}>knob</button>
-        <button className={controlStyle === 'taskbar' ? 'on' : ''} onClick={() => setControlStyle('taskbar')}>taskbar</button>
+        <button className={controlStyle === 'deskLogo' ? 'on' : ''} onClick={() => setControlStyle('deskLogo')}>desktop · logo</button>
+        <button className={controlStyle === 'deskLetters' ? 'on' : ''} onClick={() => setControlStyle('deskLetters')}>desktop · letters</button>
       </div>
 
-      {/* OPTION 2: Spillville 95 taskbar */}
-      {controlStyle === 'taskbar' && (
+      {/* OPTION 2: Spillville 95 taskbar (both desktop variants) */}
+      {taskbarMode && (
         <TaskBar
           soundOn={soundOn} setSoundOn={setSoundOn}
           crtOn={crtOn} setCrtOn={setCrtOn}
@@ -1112,7 +1189,9 @@ export default function Home() {
         </div>
         )}
 
-        {/* BIG HEADLINE - letters are draggable */}
+        {/* BIG HEADLINE - letters are draggable (knob only; desktop puts them
+            in the Welcome window or loose on the background) */}
+        {!taskbarMode && (
         <div
           id="tour-headline"
           className="mb-5 md:mb-8 select-none"
@@ -1124,51 +1203,9 @@ export default function Home() {
             }
           }}
         >
-          <div className="cutout-line mb-2 md:mb-3">
-            <div className="flex items-center -space-x-px">
-              <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-1' : ''} ${chaos === 'fall' ? 'animate-fall-1' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>
-                <Image src="/assets/letters-v2/E1.png" alt="E" width={123} height={172} className="h-[44px] sm:h-[70px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
-              </DraggableLetter>
-              <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-2' : ''} ${chaos === 'fall' ? 'animate-fall-2' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>
-                <Image src="/assets/letters-v2/M1.png" alt="M" width={173} height={172} className="h-[44px] sm:h-[70px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
-              </DraggableLetter>
-              <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-3' : ''} ${chaos === 'fall' ? 'animate-fall-3' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-2' : ''}`}>
-                <Image src="/assets/letters-v2/B1.png" alt="B" width={147} height={172} className="h-[44px] sm:h-[70px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
-              </DraggableLetter>
-              <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-4' : ''} ${chaos === 'fall' ? 'animate-fall-4' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>
-                <Image src="/assets/letters-v2/R1.png" alt="R" width={106} height={172} className="h-[44px] sm:h-[70px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
-              </DraggableLetter>
-              <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-5' : ''} ${chaos === 'fall' ? 'animate-fall-5' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>
-                <Image src="/assets/letters-v2/A1.png" alt="A" width={146} height={172} className="h-[44px] sm:h-[70px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
-              </DraggableLetter>
-              <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-6' : ''} ${chaos === 'fall' ? 'animate-fall-6' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-2' : ''}`}>
-                <Image src="/assets/letters-v2/C1.png" alt="C" width={107} height={172} className="h-[44px] sm:h-[70px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
-              </DraggableLetter>
-              <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-7' : ''} ${chaos === 'fall' ? 'animate-fall-7' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>
-                <Image src="/assets/letters-v2/E2.png" alt="E" width={132} height={172} className="h-[44px] sm:h-[70px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
-              </DraggableLetter>
-            </div>
-          </div>
-          <div className="cutout-line">
-            <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-8' : ''} ${chaos === 'fall' ? 'animate-fall-3' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>
-              <Image src="/assets/letters-v2/The.png" alt="the" width={167} height={170} className="h-[44px] sm:h-[70px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
-            </DraggableLetter>
-            <div className="flex items-center -space-x-px">
-              <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-9' : ''} ${chaos === 'fall' ? 'animate-fall-1' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>
-                <Image src="/assets/letters-v2/M2.png" alt="M" width={164} height={170} className="h-[44px] sm:h-[70px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
-              </DraggableLetter>
-              <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-10' : ''} ${chaos === 'fall' ? 'animate-fall-5' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-2' : ''}`}>
-                <Image src="/assets/letters-v2/Em.png" alt="E" width={124} height={170} className="h-[44px] sm:h-[70px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
-              </DraggableLetter>
-              <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-11' : ''} ${chaos === 'fall' ? 'animate-fall-2' : ''} ${chaos === 'spin' ? 'animate-spin-letter-delay-1' : ''}`}>
-                <Image src="/assets/letters-v2/S1.png" alt="S" width={120} height={170} className="h-[44px] sm:h-[70px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
-              </DraggableLetter>
-              <DraggableLetter className={`inline-block letter-hover ${!initialAnimationDone ? 'animate-letter letter-delay-12' : ''} ${chaos === 'fall' ? 'animate-fall-6' : ''} ${chaos === 'spin' ? 'animate-spin-letter' : ''}`}>
-                <Image src="/assets/letters-v2/S2.png" alt="S" width={114} height={170} className="h-[44px] sm:h-[70px] md:h-[104px] lg:h-[122px] w-auto" draggable={false} priority />
-              </DraggableLetter>
-            </div>
-          </div>
+          <HeadlineLetters initialAnimationDone={initialAnimationDone} chaos={chaos} />
         </div>
+        )}
 
         {/* BUTTONS - clickable and draggable (knob mode only; taskbar uses desktop icons) */}
         {!taskbarMode && (
@@ -1228,10 +1265,18 @@ export default function Home() {
                     <button onClick={onClose} className="welcome-x" aria-label="Close">×</button>
                   </span>
                 </div>
-                <div className="welcome-body">
-                  <Image src="/assets/already-spilled-logo.png" alt="Already Spilled" width={2375} height={1545} className="welcome-logo" draggable={false} />
-                  <p className="welcome-tagline">embrace the mess.</p>
-                  <p className="welcome-sub">coffee got on everything, so we made it the whole point. perfection is boring — you&apos;re already spilled.</p>
+                <div className={`welcome-body ${deskLettersLoose ? "" : "welcome-body-letters"}`}>
+                  {deskLettersLoose ? (
+                    <>
+                      <Image src="/assets/already-spilled-logo.png" alt="Already Spilled" width={2375} height={1545} className="welcome-logo" draggable={false} />
+                      <p className="welcome-sub">coffee got on everything, so we made it the whole point. perfection is boring — you&apos;re already spilled.</p>
+                    </>
+                  ) : (
+                    <div className="welcome-letters select-none">
+                      <HeadlineLetters initialAnimationDone={initialAnimationDone} chaos={chaos} h="h-[30px] sm:h-[40px] md:h-[50px]" />
+                      <p className="welcome-hint">psst — drag the letters right off the window and play with them on the desktop.</p>
+                    </div>
+                  )}
                   <div className="welcome-actions">
                     <button className="welcome-cta" onClick={() => openWindow("collection")}>see the collection →</button>
                     <button className="welcome-ghost" onClick={onClose}>poke around the desktop</button>
@@ -1744,7 +1789,7 @@ export default function Home() {
       })}
 
       {/* FOOTER - secret: tip the badge over to spill the beans (hidden in taskbar mode; © lives in the bar) */}
-      {controlStyle !== 'taskbar' && (
+      {!taskbarMode && (
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-20 animate-load-footer">
         <button
           onClick={spillBeans}

@@ -4255,3 +4255,28 @@ html.dark body {
 }
 .win-frame.win-max .welcome-logo { width: min(52vh, 560px); }
 .win-frame.win-max .welcome-tagline { font-size: clamp(2.3rem, 6vh, 4rem); }
+
+/* ============================================================
+   PITCH VARIANTS — loose brand asset bottom-right + escapable letters
+   ============================================================ */
+.ui-switch { flex-wrap: wrap; max-width: 92vw; }
+
+.desk-corner {
+  position: fixed;
+  right: 20px;
+  bottom: 52px;
+  z-index: 32;
+}
+.desk-corner-logo { filter: drop-shadow(2px 3px 4px rgba(0, 0, 0, 0.22)); }
+.desk-corner-letters { transform: rotate(-3deg); transform-origin: bottom right; }
+
+/* Letters shown inside the Welcome window can be dragged clean out of it */
+.welcome-body-letters { overflow: visible; }
+.welcome-letters { margin: 4px 0 14px; overflow: visible; }
+.welcome-hint {
+  font-family: 'Comic Neue', sans-serif;
+  font-size: 0.76rem; color: #9a9a9a; font-style: italic;
+  margin-top: 14px;
+}
+/* don't let the window frame clip an escaping letter */
+.win-welcome, .win-welcome .welcome-win, .win-welcome .welcome-body { overflow: visible; }
