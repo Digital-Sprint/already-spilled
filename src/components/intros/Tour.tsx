@@ -9,15 +9,17 @@ const STEPS: Step[] = [
   { target: "#tour-headline", text: "The whole idea: embrace the mess. Spilling's inevitable, so we made it a lifestyle." },
   { target: "#tour-story", text: "Start here — the whole dumb, beautiful story of how this began." },
   { target: "#tour-spill", text: "Then spill yours. Your finest disaster. The messier the better." },
-  { target: "#tour-boletin", text: "Drop your email in the Boletín so you actually hear from us. Rarely." },
-  { target: null, text: "That's the tour. Now click around — the cherubs, the letters, all of it. There's mess hidden everywhere. 👀" },
+  { target: "#tour-boletin", text: "And this is el Boletín. Drop your email and you'll be first when the collection drops — rarely, no spam, just mess." },
+  { target: null, text: "That's the tour. Now go click around — the cherubs, the letters, all of it. There's mess hidden everywhere. 👀" },
 ];
 
 const HALF_W = 180; // half the cherub+bubble width, for clamping to screen
 
-export default function Tour({ onDone }: { onDone: () => void }) {
+export default function Tour({ onDone, onJoin }: { onDone: () => void; onJoin?: () => void }) {
   const [phase, setPhase] = useState<"hero" | "tour">("hero");
   const [step, setStep] = useState(0);
+  const [email, setEmail] = useState("");
+  const [joined, setJoined] = useState(false);
   const [rect, setRect] = useState<DOMRect | null>(null);
   const [vp, setVp] = useState({ w: 0, h: 0 });
 
@@ -46,6 +48,23 @@ export default function Tour({ onDone }: { onDone: () => void }) {
 
   const start = () => setPhase("tour");
   const advance = () => (last ? onDone() : setStep((s) => s + 1));
+
+  const isBoletin = cur.target === "#tour-boletin";
+  const join = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+    setJoined(true);
+    onJoin?.();
+    try {
+      await fetch("https://digitalsprint.app.n8n.cloud/webhook/already-spilled-waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, source: "tour" }),
+      });
+    } catch {
+      // still show the confirmation even if the webhook fails
+    }
+  };
 
   // --- Pink (Al) position: cluster center in hero, beside the target in tour ---
   let px = vp.w / 2;
@@ -120,16 +139,52 @@ export default function Tour({ onDone }: { onDone: () => void }) {
         />
         {phase === "tour" && (
           <div className="tour-floater-bubble" onClick={(e) => e.stopPropagation()}>
-            <p className="tour-floater-text">{cur.text}</p>
-            <div className="tour-floater-actions">
-              <button className="intro-skip" onClick={(e) => { e.stopPropagation(); onDone(); }}>
-                Skip
-              </button>
-              <span className="tour-count">{step + 1}/{STEPS.length}</span>
-              <button className="intro-next" onClick={(e) => { e.stopPropagation(); advance(); }}>
-                {last ? "Got it" : "Next"}
-              </button>
-            </div>
+            {isBoletin && joined ? (
+              <>
+                <p className="tour-floater-text">🫘 you&apos;re in. welcome to the mess.</p>
+                <div className="tour-floater-actions">
+                  <span className="tour-count">{step + 1}/{STEPS.length}</span>
+                  <button className="intro-next" onClick={(e) => { e.stopPropagation(); advance(); }}>
+                    Next
+                  </button>
+                </div>
+              </>
+            ) : isBoletin ? (
+              <>
+                <p className="tour-floater-text">{cur.text}</p>
+                <form className="tour-join" onSubmit={join}>
+                  <input
+                    type="email"
+                    className="tour-join-input"
+                    placeholder="you@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    onClick={(e) => e.stopPropagation()}
+                    required
+                  />
+                  <button type="submit" className="intro-next tour-join-btn">I&apos;m in →</button>
+                </form>
+                <div className="tour-floater-actions">
+                  <button className="intro-skip" onClick={(e) => { e.stopPropagation(); advance(); }}>
+                    maybe later
+                  </button>
+                  <span className="tour-count">{step + 1}/{STEPS.length}</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="tour-floater-text">{cur.text}</p>
+                <div className="tour-floater-actions">
+                  <button className="intro-skip" onClick={(e) => { e.stopPropagation(); onDone(); }}>
+                    Skip
+                  </button>
+                  <span className="tour-count">{step + 1}/{STEPS.length}</span>
+                  <button className="intro-next" onClick={(e) => { e.stopPropagation(); advance(); }}>
+                    {last ? "Got it" : "Next"}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>

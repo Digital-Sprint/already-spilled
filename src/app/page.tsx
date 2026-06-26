@@ -707,7 +707,7 @@ export default function Home() {
       <div className={`bg-splatter ${darkMode ? 'bg-splatter-dark' : ''}`} />
 
       {/* AL'S GUIDED TOUR (first visit; replay via the button) */}
-      {showTour && <Tour onDone={finishTour} />}
+      {showTour && <Tour onDone={finishTour} onJoin={playJingle} />}
 
       {/* ANIMATED STAINS - thrown against the wall */}
       {stainsOn && (

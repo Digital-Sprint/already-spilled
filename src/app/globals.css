@@ -3482,6 +3482,26 @@ html.dark body {
 }
 .tour-count { font-family: 'Courier New', monospace; font-size: 0.68rem; color: #999; }
 
+/* Email capture on the Boletín step */
+.tour-join {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 0.55rem;
+}
+.tour-join-input {
+  flex: 1;
+  min-width: 0;
+  font-family: 'Comic Sans MS', 'Comic Neue', sans-serif;
+  font-size: 0.85rem;
+  padding: 0.4rem 0.55rem;
+  border: 2px solid #1a1a1a;
+  border-radius: 9px;
+  background: #fff;
+  color: #1a1a1a;
+}
+.tour-join-input:focus { outline: none; border-color: #ff6b9d; }
+.tour-join-btn { flex-shrink: 0; }
+
 /* Hero greeting */
 .tour-hero {
   position: fixed;
