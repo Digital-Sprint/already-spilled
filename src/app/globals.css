@@ -4051,72 +4051,83 @@ html.dark body {
 }
 
 /* ============================================================
-   CONVERSION — email-style pop-up (taskbar mode), calm + personal
+   CONVERSION — SpillMail inbox window (email client), calm + personal
    ============================================================ */
-.email-popup {
-  position: fixed;
-  top: 16%;
-  right: 5%;
-  z-index: 96;
-  width: min(92vw, 320px);
-  background: #ffffff;
+.mail {
+  width: 100%;
+  background: #d6cbb0;
   border: 2px solid;
   border-color: #fdf8ec #6f6750 #6f6750 #fdf8ec;
-  box-shadow: 5px 7px 16px rgba(0, 0, 0, 0.35);
   font-family: 'Comic Neue', 'Segoe UI', sans-serif;
-  animation: email-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
-@keyframes email-in { 0% { opacity: 0; transform: translateY(-10px) scale(0.97); } 100% { opacity: 1; transform: none; } }
-.email-titlebar {
+.mail-titlebar {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 4px 6px 4px 9px;
-  background: linear-gradient(90deg, #4a90d9, #7ca0d9);
-  color: #fff; font-weight: 700; font-size: 0.78rem;
+  padding: 3px 5px 3px 9px;
+  background: linear-gradient(90deg, #4a90d9, #9db4e8);
+  color: #fff; font-weight: 700; font-size: 0.82rem;
   font-family: 'Courier New', monospace;
 }
-.email-x {
+.mail-x {
   width: 20px; height: 18px;
+  display: inline-flex; align-items: center; justify-content: center;
   background: #d6cbb0; color: #1a1a1a;
-  border: 2px solid; border-color: #fff #6f6750 #6f6750 #fff;
-  font-weight: 700; cursor: pointer; line-height: 1;
+  border: 2px solid; border-color: #fdf8ec #6f6750 #6f6750 #fdf8ec;
+  font-weight: 700; font-size: 0.85rem; line-height: 1; cursor: pointer;
 }
-.email-head {
-  padding: 8px 14px;
-  background: #f3f1ea;
-  border-bottom: 1px solid #d8d2c2;
-  font-size: 0.78rem; color: #444;
+.mail-x:active { border-color: #6f6750 #fdf8ec #fdf8ec #6f6750; }
+.mail-toolbar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 4px 10px;
+  font-size: 0.74rem; color: #3a3a3a;
+  background: #cdc2a6;
+  border-bottom: 1px solid #6f6750;
+  box-shadow: 0 1px 0 #fdf8ec;
 }
-.email-row { display: flex; gap: 8px; line-height: 1.6; }
-.email-label {
-  display: inline-block; width: 52px; flex: none;
-  color: #999; font-weight: 700; text-transform: lowercase;
+.mail-tool { cursor: default; white-space: nowrap; }
+.mail-tool-end { margin-left: auto; color: #6f6750; font-style: italic; }
+.mail-main { background: #fffdf7; margin: 4px; border: 2px solid; border-color: #6f6750 #fdf8ec #fdf8ec #6f6750; }
+.mail-list { list-style: none; margin: 0; padding: 0; border-bottom: 2px solid #d8d2c2; }
+.mail-row {
+  display: grid;
+  grid-template-columns: 14px minmax(110px, 1.1fr) 2fr auto;
+  align-items: center; gap: 8px;
+  padding: 6px 12px;
+  font-size: 0.78rem; color: #555;
+  border-bottom: 1px solid #ece8dd;
 }
-.email-subj { font-weight: 700; color: #1a1a1a; }
-.email-body { padding: 13px 16px 15px; color: #2a2a2a; }
-.email-hi { font-size: 0.9rem; margin-bottom: 6px; }
-.email-msg { font-size: 0.86rem; line-height: 1.5; margin-bottom: 13px; }
-.email-form { display: flex; flex-direction: column; gap: 7px; margin-bottom: 11px; }
-.email-input {
-  font-family: inherit; font-size: 0.86rem; padding: 8px 10px;
+.mail-row.active { background: #d9e6f7; color: #1a1a1a; }
+.mail-row.unread { font-weight: 700; color: #1a1a1a; }
+.mail-dot { color: #4a90d9; font-size: 0.6rem; }
+.mail-from { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.mail-subj { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.mail-time { color: #999; font-size: 0.72rem; }
+.mail-reading { padding: 14px 18px 18px; color: #2a2a2a; }
+.mail-head { padding-bottom: 10px; margin-bottom: 12px; border-bottom: 1px dashed #cfc8b6; }
+.mail-head-subj { font-family: 'Cabin Sketch', cursive; font-weight: 700; font-size: 1.3rem; color: #1a1a1a; margin-bottom: 6px; }
+.mail-meta { font-size: 0.76rem; color: #777; line-height: 1.6; font-family: 'Courier New', monospace; }
+.mail-meta b { color: #555; }
+.mail-bodytext p { font-size: 0.9rem; line-height: 1.55; margin-bottom: 11px; }
+.mail-form { display: flex; gap: 8px; margin: 14px 0 12px; flex-wrap: wrap; }
+.mail-input {
+  flex: 1; min-width: 160px;
+  font-family: inherit; font-size: 0.9rem; padding: 9px 11px;
   border: 1.5px solid #b8b2a2; border-radius: 4px; background: #fff;
 }
-.email-input:focus { outline: none; border-color: #4a90d9; }
-.email-cta {
+.mail-input:focus { outline: none; border-color: #4a90d9; }
+.mail-cta {
   font-family: 'Comic Neue', sans-serif; font-weight: 700; font-size: 0.92rem;
-  padding: 8px; cursor: pointer; color: #fff;
+  padding: 9px 20px; cursor: pointer; color: #fff;
   background: #4a90d9; border: 1.5px solid #2f6fb5; border-radius: 5px;
   transition: background 0.15s ease;
 }
-.email-cta:hover { background: #3a7fc8; }
-.email-cta:active { transform: translateY(1px); }
-.email-sig { font-size: 0.78rem; color: #888; font-style: italic; margin-bottom: 10px; }
-.email-decline { font-size: 0.74rem; color: #aaa; background: none; border: none; text-decoration: underline; cursor: pointer; }
-.email-decline:hover { color: #555; }
-.email-done {
-  font-family: 'Cabin Sketch', cursive; font-weight: 700; font-size: 1.15rem;
-  color: #1a8a3a; line-height: 1.4; padding: 10px 0; text-align: center;
+.mail-cta:hover { background: #3a7fc8; }
+.mail-cta:active { transform: translateY(1px); }
+.mail-sig { font-size: 0.82rem; color: #888; font-style: italic; }
+.mail-done {
+  font-family: 'Cabin Sketch', cursive; font-weight: 700; font-size: 1.3rem;
+  color: #1a8a3a; line-height: 1.4; padding: 24px 0; text-align: center;
 }
-.email-done span { display: block; font-size: 0.82rem; color: #888; font-family: 'Comic Neue', sans-serif; font-weight: 400; margin-top: 4px; }
+.mail-done span { display: block; font-size: 0.86rem; color: #888; font-family: 'Comic Neue', sans-serif; font-weight: 400; margin-top: 6px; }
 
 /* ============================================================
    SPILLVILLE 95 — maximized windows (full-screen, above desktop)
@@ -4188,10 +4199,10 @@ html.dark body {
   padding: 22px 24px 24px;
   text-align: center;
 }
-.welcome-logo { width: 280px; max-width: 80%; height: auto; margin: 2px auto 8px; display: block; }
+.welcome-logo { width: 360px; max-width: 82%; height: auto; margin: 4px auto 10px; display: block; }
 .welcome-tagline {
   font-family: 'Cabin Sketch', cursive; font-weight: 700;
-  font-size: 1.9rem; color: #1a1a1a; line-height: 1;
+  font-size: 2.3rem; color: #1a1a1a; line-height: 1;
 }
 .welcome-sub {
   font-family: 'Comic Neue', sans-serif; font-size: 0.86rem; color: #555;
@@ -4212,3 +4223,35 @@ html.dark body {
   background: none; border: none; text-decoration: underline; cursor: pointer;
 }
 .welcome-ghost:hover { color: #555; }
+
+/* ============================================================
+   SPILLVILLE 95 — per-window sizes + maximized fill
+   ============================================================ */
+.win-welcome { width: min(95vw, 660px); }
+.win-inbox { width: min(95vw, 560px); }
+
+/* Maximized: each panel becomes a full-height flex column that fills */
+.win-frame.win-max .aim-window,
+.win-frame.win-max .construction-popup,
+.win-frame.win-max .web95,
+.win-frame.win-max .welcome-win,
+.win-frame.win-max .mail {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.win-frame.win-max .aim-chat,
+.win-frame.win-max .construction-content,
+.win-frame.win-max .web95-content,
+.win-frame.win-max .mail-main {
+  flex: 1;
+  min-height: 0;
+}
+.win-frame.win-max .welcome-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.win-frame.win-max .welcome-logo { width: min(52vh, 560px); }
+.win-frame.win-max .welcome-tagline { font-size: clamp(2.3rem, 6vh, 4rem); }

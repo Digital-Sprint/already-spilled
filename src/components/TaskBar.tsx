@@ -6,6 +6,7 @@ type Toggle = Dispatch<SetStateAction<boolean>>;
 
 const WINDOW_NAMES: Record<string, string> = {
   welcome: "Welcome",
+  inbox: "SpillMail",
   story: "AlreadySpilled",
   collection: "Collection",
   signup: "Guestbook",

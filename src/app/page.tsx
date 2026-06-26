@@ -278,9 +278,7 @@ export default function Home() {
   const [showTour, setShowTour] = useState(false);
   const [quickCherubs, setQuickCherubs] = useState(false);
   const [beansSpilled, setBeansSpilled] = useState(false);
-  // Retro spam pop-up (taskbar mode) — spotlights the collection for conversion
-  const [spamPopup, setSpamPopup] = useState(false);
-  const [spamClosed, setSpamClosed] = useState(false);
+  // SpillMail inbox (taskbar mode) — spotlights the collection for conversion
   const [spamEmail, setSpamEmail] = useState("");
   const [spamJoined, setSpamJoined] = useState(false);
   const [clockHands, setClockHands] = useState({ h: 0, m: 0 });
@@ -317,12 +315,14 @@ export default function Home() {
     setTimeout(() => setBeansSpilled(false), 4500);
   };
 
-  // Spam pop-up pops up a few seconds into the desktop, once
+  // The SpillMail inbox slides open a few seconds into the desktop, once
+  const inboxShownRef = useRef(false);
   useEffect(() => {
-    if (!taskbarMode || spamClosed) return;
-    const t = setTimeout(() => setSpamPopup(true), 6500);
+    if (!taskbarMode || inboxShownRef.current) return;
+    const t = setTimeout(() => { inboxShownRef.current = true; openWindow("inbox"); }, 6500);
     return () => clearTimeout(t);
-  }, [taskbarMode, spamClosed]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [taskbarMode]);
 
   // Welcome window opens once when you enter the Spillville desktop
   const welcomeShownRef = useRef(false);
@@ -334,7 +334,6 @@ export default function Home() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [taskbarMode]);
 
-  const closeSpam = () => { setSpamPopup(false); setSpamClosed(true); };
   const spamJoin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!spamEmail.trim()) return;
@@ -344,12 +343,12 @@ export default function Home() {
       await fetch("https://digitalsprint.app.n8n.cloud/webhook/already-spilled-waitlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: spamEmail, source: "popup" }),
+        body: JSON.stringify({ email: spamEmail, source: "inbox" }),
       });
     } catch {
       // still confirm
     }
-    setTimeout(() => { setSpamPopup(false); setSpamClosed(true); }, 2000);
+    setTimeout(() => closeWindow("inbox"), 2200);
   };
 
   const cleanUp = () => {
@@ -1208,7 +1207,7 @@ export default function Home() {
           <div
             className={
               taskbarMode
-                ? `win-frame ${w.max ? "win-max" : ""}`
+                ? `win-frame win-${which} ${w.max ? "win-max" : ""}`
                 : "relative max-w-[95vw] sm:max-w-md md:max-w-lg w-full animate-panel-in"
             }
             style={taskbarMode && !w.max ? { transform: `translate(calc(-50% + ${w.x}px), calc(-50% + ${w.y}px))` } : undefined}
@@ -1236,6 +1235,78 @@ export default function Home() {
                   <div className="welcome-actions">
                     <button className="welcome-cta" onClick={() => openWindow("collection")}>see the collection →</button>
                     <button className="welcome-ghost" onClick={onClose}>poke around the desktop</button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* INBOX PANEL - SpillMail email client (conversion) */}
+            {which === "inbox" && (
+              <div className="mail">
+                <div className="mail-titlebar win-drag">
+                  <span>📬 SpillMail — Inbox</span>
+                  <span className="win-btns">
+                    {onMinimize && <button onClick={onMinimize} className="mail-x win-min" title="Minimize" aria-label="Minimize">–</button>}
+                    {onMaximize && <button onClick={onMaximize} className="mail-x win-max-btn" title="Maximize" aria-label="Maximize">▢</button>}
+                    <button onClick={onClose} className="mail-x" aria-label="Close">×</button>
+                  </span>
+                </div>
+                <div className="mail-toolbar">
+                  <span className="mail-tool">✉ New</span>
+                  <span className="mail-tool">↩ Reply</span>
+                  <span className="mail-tool">↪ Forward</span>
+                  <span className="mail-tool">🗑 Delete</span>
+                  <span className="mail-tool mail-tool-end">Inbox (1 unread)</span>
+                </div>
+                <div className="mail-main">
+                  <ul className="mail-list">
+                    <li className="mail-row unread active">
+                      <span className="mail-dot">●</span>
+                      <span className="mail-from">Al @ Already Spilled</span>
+                      <span className="mail-subj">first dibs on the drop 🫘</span>
+                      <span className="mail-time">now</span>
+                    </li>
+                    <li className="mail-row">
+                      <span className="mail-dot" />
+                      <span className="mail-from">SpillNet Support</span>
+                      <span className="mail-subj">Re: your stain warranty</span>
+                      <span className="mail-time">Tue</span>
+                    </li>
+                    <li className="mail-row">
+                      <span className="mail-dot" />
+                      <span className="mail-from">no-reply</span>
+                      <span className="mail-subj">your coffee order is ready ☕</span>
+                      <span className="mail-time">Mon</span>
+                    </li>
+                  </ul>
+                  <div className="mail-reading">
+                    {spamJoined ? (
+                      <div className="mail-done">✅ you&apos;re on the list.<br /><span>watch your inbox (and your shirt).</span></div>
+                    ) : (
+                      <>
+                        <div className="mail-head">
+                          <h3 className="mail-head-subj">first dibs on the drop 🫘</h3>
+                          <div className="mail-meta"><b>From:</b> Al @ Already Spilled &lt;al@alreadyspilled.com&gt;</div>
+                          <div className="mail-meta"><b>To:</b> you</div>
+                        </div>
+                        <div className="mail-bodytext">
+                          <p>hey —</p>
+                          <p>the collection drops soon, and i wanted you to hear it first. leave your email and i&apos;ll ping you the <i>second</i> it spills. no spam, just the drop.</p>
+                          <form className="mail-form" onSubmit={spamJoin}>
+                            <input
+                              type="email"
+                              className="mail-input"
+                              placeholder="you@email.com"
+                              value={spamEmail}
+                              onChange={(e) => setSpamEmail(e.target.value)}
+                              required
+                            />
+                            <button type="submit" className="mail-cta">count me in</button>
+                          </form>
+                          <p className="mail-sig">— Al, court jester of spillville</p>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1683,44 +1754,6 @@ export default function Home() {
           <Image src="/assets/2026.png" alt="© 2026 Already Spilled" width={520} height={88} className="h-[28px] md:h-[38px] w-auto" draggable={false} />
         </button>
       </div>
-      )}
-
-      {/* CONVERSION: retro spam pop-up spotlighting the collection (taskbar mode) */}
-      {taskbarMode && spamPopup && (
-        <div className="email-popup">
-          <div className="email-titlebar">
-            <span>📬 Inbox — 1 new message</span>
-            <button onClick={closeSpam} className="email-x" aria-label="Close">×</button>
-          </div>
-          <div className="email-head">
-            <div className="email-row"><span className="email-label">From</span> Al @ Already Spilled</div>
-            <div className="email-row"><span className="email-label">To</span> you</div>
-            <div className="email-row email-subj"><span className="email-label">Subject</span> first dibs on the drop 🫘</div>
-          </div>
-          <div className="email-body">
-            {spamJoined ? (
-              <div className="email-done">✅ you&apos;re on the list.<br /><span>watch your inbox (and your shirt).</span></div>
-            ) : (
-              <>
-                <p className="email-hi">hey —</p>
-                <p className="email-msg">the collection drops soon, and i wanted you to hear it first. leave your email and i&apos;ll ping you the second it spills. no spam, just the drop.</p>
-                <form className="email-form" onSubmit={spamJoin}>
-                  <input
-                    type="email"
-                    className="email-input"
-                    placeholder="you@email.com"
-                    value={spamEmail}
-                    onChange={(e) => setSpamEmail(e.target.value)}
-                    required
-                  />
-                  <button type="submit" className="email-cta">count me in</button>
-                </form>
-                <p className="email-sig">— Al, court jester of spillville</p>
-                <button className="email-decline" onClick={closeSpam}>maybe later</button>
-              </>
-            )}
-          </div>
-        </div>
       )}
 
       {/* EASTER EGG: spilled beans raining down */}
