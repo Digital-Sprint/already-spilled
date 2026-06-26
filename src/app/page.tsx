@@ -942,7 +942,7 @@ export default function Home() {
       {taskbarMode && (
         deskLettersLoose ? (
           <div className="desk-corner desk-corner-letters select-none">
-            <HeadlineLetters initialAnimationDone={initialAnimationDone} chaos={chaos} h="h-[48px] sm:h-[72px] md:h-[96px] lg:h-[112px]" />
+            <HeadlineLetters initialAnimationDone={initialAnimationDone} chaos={chaos} h="h-[24px] sm:h-[32px] md:h-[40px]" />
           </div>
         ) : (
           <div className="desk-corner desk-corner-logo">
@@ -1298,7 +1298,7 @@ export default function Home() {
                     </>
                   ) : (
                     <div className="welcome-letters select-none">
-                      <HeadlineLetters initialAnimationDone={initialAnimationDone} chaos={chaos} h="h-[30px] sm:h-[40px] md:h-[50px]" />
+                      <HeadlineLetters initialAnimationDone={initialAnimationDone} chaos={chaos} h="h-[48px] sm:h-[64px] md:h-[80px]" />
                       <p className="welcome-hint">psst — drag the letters right off the window and play with them on the desktop.</p>
                     </div>
                   )}
