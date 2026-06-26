@@ -144,6 +144,25 @@ function DraggableLetter({ className, children }: { className?: string; children
   );
 }
 
+// A desktop shortcut icon you can drag anywhere on the desktop. A real click
+// (to open its window) only fires if the pointer didn't move.
+function DraggableShortcut({ id, onOpen, children }: { id?: string; onOpen: () => void; children: React.ReactNode }) {
+  const { handlers, style, grabbing, movedRef } = useDraggable();
+  const open = () => { if (!movedRef.current) onOpen(); };
+  return (
+    <button
+      id={id}
+      {...handlers}
+      onClick={open}
+      onDoubleClick={open}
+      className="desk-icon"
+      style={{ ...style, zIndex: grabbing ? 60 : undefined }}
+    >
+      {children}
+    </button>
+  );
+}
+
 // A homepage button that is both clickable and draggable. A real click only
 // fires if the pointer didn't move (so dragging doesn't open a panel).
 function DraggableButton({ onClick, children, id }: { onClick: () => void; children: React.ReactNode; id?: string }) {
@@ -261,7 +280,13 @@ export default function Home() {
     setWindows((ws) => {
       if (ws.some((w) => w.id === id)) return ws.map((w) => (w.id === id ? { ...w, min: false, z } : w));
       const n = ws.length;
-      return [...ws, { id, min: false, max: false, x: (n % 4) * 30 - 45, y: (n % 4) * 26 - 36, z }];
+      // The SpillMail inbox opens off to the right so it doesn't sit on top
+      // of the centered Welcome window.
+      const pos =
+        id === "inbox"
+          ? { x: 290, y: -40 }
+          : { x: (n % 4) * 30 - 45, y: (n % 4) * 26 - 36 };
+      return [...ws, { id, min: false, max: false, ...pos, z }];
     });
   };
 
@@ -884,29 +909,29 @@ export default function Home() {
       {/* DESKTOP SHORTCUTS (taskbar mode) — custom lettering as desktop icons */}
       {taskbarMode && (
         <div className="desk-icons">
-          <button id="tour-story" className="desk-icon" onClick={() => openWindow("story")} onDoubleClick={() => openWindow("story")}>
+          <DraggableShortcut id="tour-story" onOpen={() => openWindow("story")}>
             <svg className="desk-svg" viewBox="0 0 32 32" fill="none" aria-hidden="true">
               <path d="M16 7C13 5 8 5 5 6v20c3-1 8-1 11 1 3-2 8-2 11-1V6c-3-1-8-1-11 1z" fill="#fdf8ec" stroke="#1a1a1a" strokeWidth="1.6" strokeLinejoin="round" />
               <path d="M16 7v21" stroke="#1a1a1a" strokeWidth="1.6" />
               <path d="M8 11c2-.4 4-.4 6 0M8 15c2-.4 4-.4 6 0M18 11c2-.4 4-.4 6 0M18 15c2-.4 4-.4 6 0" stroke="#4a90d9" strokeWidth="1.4" strokeLinecap="round" />
             </svg>
             <Image src="/assets/buttons/story-time.png" alt="Story Time" width={1331} height={426} className="desk-icon-art" draggable={false} />
-          </button>
-          <button id="tour-boletin" className="desk-icon" onClick={() => openWindow("collection")} onDoubleClick={() => openWindow("collection")}>
+          </DraggableShortcut>
+          <DraggableShortcut id="tour-boletin" onOpen={() => openWindow("collection")}>
             <svg className="desk-svg" viewBox="0 0 32 32" fill="none" aria-hidden="true">
               <rect x="4" y="8" width="24" height="17" rx="1.5" fill="#f5e050" stroke="#1a1a1a" strokeWidth="1.6" />
               <path d="M5 9l11 8 11-8" stroke="#1a1a1a" strokeWidth="1.6" fill="none" strokeLinejoin="round" />
             </svg>
             <Image src="/assets/buttons/el-boletin.png" alt="El Boletín" width={1326} height={456} className="desk-icon-art" draggable={false} />
-          </button>
-          <button id="tour-spill" className="desk-icon" onClick={() => openWindow("signup")} onDoubleClick={() => openWindow("signup")}>
+          </DraggableShortcut>
+          <DraggableShortcut id="tour-spill" onOpen={() => openWindow("signup")}>
             <svg className="desk-svg" viewBox="0 0 32 32" fill="none" aria-hidden="true">
               <path d="M6 26l1.5-5L21 7.5l3.5 3.5L11 24.5 6 26z" fill="#f5e050" stroke="#1a1a1a" strokeWidth="1.6" strokeLinejoin="round" />
               <path d="M21 7.5l2-2 3.5 3.5-2 2z" fill="#ff6b9d" stroke="#1a1a1a" strokeWidth="1.6" strokeLinejoin="round" />
               <path d="M6 26l1.5-5 3.5 3.5z" fill="#1a1a1a" />
             </svg>
             <Image src="/assets/buttons/spill-it.png" alt="Spill It" width={1334} height={617} className="desk-icon-art" draggable={false} />
-          </button>
+          </DraggableShortcut>
         </div>
       )}
 
@@ -917,7 +942,7 @@ export default function Home() {
       {taskbarMode && (
         deskLettersLoose ? (
           <div className="desk-corner desk-corner-letters select-none">
-            <HeadlineLetters initialAnimationDone={initialAnimationDone} chaos={chaos} h="h-[26px] sm:h-[34px] md:h-[44px]" />
+            <HeadlineLetters initialAnimationDone={initialAnimationDone} chaos={chaos} h="h-[48px] sm:h-[72px] md:h-[96px] lg:h-[112px]" />
           </div>
         ) : (
           <div className="desk-corner desk-corner-logo">
