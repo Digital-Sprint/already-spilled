@@ -4339,3 +4339,42 @@ html.dark body {
   background: #d6cbb0;
   border: 2px solid; border-color: #fff #6f6750 #6f6750 #fff;
 }
+
+/* ============================================================
+   WELCOME readme — scrollable "what is this / how to navigate"
+   ============================================================ */
+.welcome-readme {
+  margin-top: 16px;
+  padding: 14px 6px 4px;
+  border-top: 1px dashed #cfc8b6;
+  max-height: 172px;
+  overflow-y: auto;
+  text-align: left;
+  font-family: 'Comic Neue', sans-serif;
+  font-size: 0.84rem;
+  color: #4a4a4a;
+  line-height: 1.5;
+}
+.welcome-readme-h {
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  font-size: 0.78rem;
+  color: #1a1a1a;
+  text-transform: lowercase;
+  letter-spacing: 0.02em;
+  margin: 12px 0 5px;
+}
+.welcome-readme-h:first-child { margin-top: 0; }
+.welcome-readme p { margin-bottom: 9px; }
+.welcome-links { list-style: none; margin: 0 0 9px; padding: 0; }
+.welcome-links li { margin-bottom: 6px; }
+.welcome-link {
+  color: #2f6fb5;
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 700;
+}
+.welcome-link:hover { color: #e85d8a; }
+.welcome-readme-tip { font-size: 0.78rem; color: #8a8a8a; font-style: italic; margin-bottom: 0; }
+/* keep the scroll panel readable when the window is maximized */
+.win-frame.win-max .welcome-readme { max-height: 38vh; }

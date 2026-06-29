@@ -1347,6 +1347,27 @@ export default function Home() {
                     <button className="welcome-cta" onClick={() => openWindow("collection")}>see the collection →</button>
                     <button className="welcome-ghost" onClick={onClose}>poke around the desktop</button>
                   </div>
+
+                  {/* Scrollable readme: what it is + how to get around + links */}
+                  <div className="welcome-readme">
+                    <h4 className="welcome-readme-h">what is this?</h4>
+                    <p>
+                      <b>Already Spilled</b> is a brand for people who make a mess and own it —
+                      coffee on the shirt, beans on the floor, perfection nowhere in sight.
+                      What you&apos;re looking at is <b>Spillville 95</b>, our little desktop. poke around, click stuff, drag stuff.
+                    </p>
+                    <h4 className="welcome-readme-h">how to get around</h4>
+                    <ul className="welcome-links">
+                      <li><span className="welcome-link" onClick={() => openWindow("story")}>📖 Story Time</span> — read (and add) real spill stories</li>
+                      <li><span className="welcome-link" onClick={() => openWindow("collection")}>📬 El Boletín</span> — the drop is coming; get on the list</li>
+                      <li><span className="welcome-link" onClick={() => openWindow("signup")}>✍️ Spill It</span> — sign the guestbook with your worst stain</li>
+                      <li><span className="welcome-link" onClick={() => openWindow("paint")}>🎨 Paint</span> — make an actual mess on a canvas</li>
+                    </ul>
+                    <p className="welcome-readme-tip">
+                      tip: drag the desktop icons (and the letters) anywhere, poke the cherubs for chaos,
+                      and the <b>taskbar</b> at the bottom shows everything that&apos;s open. that&apos;s it — go make a mess.
+                    </p>
+                  </div>
                 </div>
               </div>
             )}
