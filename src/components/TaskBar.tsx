@@ -19,7 +19,7 @@ export default function TaskBar({
   stainsOn, setStainsOn,
   darkMode, setDarkMode,
   onTour, onCleanUp,
-  windows, onWindowClick,
+  windows, onWindowClick, unread,
 }: {
   soundOn: boolean; setSoundOn: Toggle;
   crtOn: boolean; setCrtOn: Toggle;
@@ -29,6 +29,7 @@ export default function TaskBar({
   onCleanUp: () => void;
   windows: { id: string; min: boolean }[];
   onWindowClick: (id: string) => void;
+  unread?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [clock, setClock] = useState("");
@@ -96,10 +97,10 @@ export default function TaskBar({
           {windows.map((w) => (
             <button
               key={w.id}
-              className={`sb-window ${w.min ? "" : "active"}`}
+              className={`sb-window ${w.min ? "" : "active"} ${unread === w.id ? "unread" : ""}`}
               onClick={() => onWindowClick(w.id)}
             >
-              <span className="sb-window-ico">▪</span>
+              <span className="sb-window-ico">{unread === w.id ? "📬" : "▪"}</span>
               {WINDOW_NAMES[w.id] ?? w.id}
             </button>
           ))}

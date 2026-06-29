@@ -4280,3 +4280,62 @@ html.dark body {
 }
 /* don't let the window frame clip an escaping letter */
 .win-welcome, .win-welcome .welcome-win, .win-welcome .welcome-body { overflow: visible; }
+
+/* ============================================================
+   NEW MAIL — taskbar tab flash + "you've got mail" tray balloon
+   ============================================================ */
+.sb-window.unread {
+  animation: sb-unread 1s steps(1) infinite;
+  font-weight: 700;
+}
+@keyframes sb-unread {
+  50% { background: #f5e050; border-color: #fdf8ec #6f6750 #6f6750 #fdf8ec; }
+}
+
+.mail-notif {
+  position: fixed;
+  right: 12px;
+  bottom: 48px;
+  z-index: 95;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 300px;
+  padding: 10px 11px;
+  text-align: left;
+  cursor: pointer;
+  background: #fffdf7;
+  border: 2px solid;
+  border-color: #fdf8ec #6f6750 #6f6750 #fdf8ec;
+  box-shadow: 4px 5px 12px rgba(0, 0, 0, 0.35);
+  font-family: 'Comic Neue', 'Segoe UI', sans-serif;
+  animation: mail-notif-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes mail-notif-in {
+  0% { opacity: 0; transform: translateY(16px) scale(0.96); }
+  100% { opacity: 1; transform: none; }
+}
+.mail-notif-ico {
+  font-size: 1.5rem;
+  line-height: 1;
+  animation: mail-wiggle 1.2s ease-in-out infinite;
+}
+@keyframes mail-wiggle {
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(-9deg); }
+  75% { transform: rotate(9deg); }
+}
+.mail-notif-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.mail-notif-title { font-weight: 700; font-size: 0.86rem; color: #1a1a1a; }
+.mail-notif-sub {
+  font-size: 0.74rem; color: #777;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.mail-notif-x {
+  align-self: flex-start;
+  width: 17px; height: 16px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 0.8rem; font-weight: 700; line-height: 1; color: #1a1a1a;
+  background: #d6cbb0;
+  border: 2px solid; border-color: #fff #6f6750 #6f6750 #fff;
+}

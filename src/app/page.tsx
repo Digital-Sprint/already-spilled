@@ -264,6 +264,7 @@ export default function Home() {
   const minimizeWindow = (id: string) => setWindows((ws) => ws.map((w) => (w.id === id ? { ...w, min: true } : w)));
   const maximizeWindow = (id: string) => setWindows((ws) => ws.map((w) => (w.id === id ? { ...w, max: !w.max } : w)));
   const toggleWindow = (id: string) => {
+    if (id === "inbox") { setMailNotif(false); setMailUnread(false); }
     const w = windows.find((x) => x.id === id);
     if (!w) return;
     if (w.min) focusWindow(id);
@@ -366,6 +367,8 @@ export default function Home() {
   // SpillMail inbox (taskbar mode) — spotlights the collection for conversion
   const [spamEmail, setSpamEmail] = useState("");
   const [spamJoined, setSpamJoined] = useState(false);
+  const [mailNotif, setMailNotif] = useState(false); // "you've got mail" toast
+  const [mailUnread, setMailUnread] = useState(false); // taskbar tab flashes
   const [clockHands, setClockHands] = useState({ h: 0, m: 0 });
 
   // Auto-play Al's tour on a visitor's first visit (or when forced via ?tour=1)
@@ -400,14 +403,32 @@ export default function Home() {
     setTimeout(() => setBeansSpilled(false), 4500);
   };
 
-  // The SpillMail inbox slides open a few seconds into the desktop, once
+  // New mail "arrives" a few seconds in: it lands as a (minimized) SpillMail
+  // tab in the taskbar with a "you've got mail" notification — not a window
+  // popping open in your face. Clicking the tab or the notification opens it.
   const inboxShownRef = useRef(false);
   useEffect(() => {
     if (!taskbarMode || inboxShownRef.current) return;
-    const t = setTimeout(() => { inboxShownRef.current = true; openWindow("inbox"); }, 6500);
+    const t = setTimeout(() => {
+      inboxShownRef.current = true;
+      zTopRef.current += 1;
+      const z = zTopRef.current;
+      setWindows((ws) => (ws.some((w) => w.id === "inbox") ? ws : [...ws, { id: "inbox", min: true, max: false, x: 290, y: -40, z }]));
+      setMailUnread(true);
+      setMailNotif(true);
+    }, 6500);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [taskbarMode]);
+
+  // Auto-dismiss the notification toast after a while (the tab keeps flashing)
+  useEffect(() => {
+    if (!mailNotif) return;
+    const t = setTimeout(() => setMailNotif(false), 9000);
+    return () => clearTimeout(t);
+  }, [mailNotif]);
+
+  const openMail = () => { focusWindow("inbox"); setMailNotif(false); setMailUnread(false); };
 
   // Welcome window opens once when you enter the Spillville desktop
   const welcomeShownRef = useRef(false);
@@ -951,6 +972,25 @@ export default function Home() {
         )
       )}
 
+      {/* NEW MAIL notification — Win95 tray balloon; click to open SpillMail */}
+      {taskbarMode && mailNotif && (
+        <button className="mail-notif" onClick={openMail}>
+          <span className="mail-notif-ico">📬</span>
+          <span className="mail-notif-text">
+            <span className="mail-notif-title">You&apos;ve got mail!</span>
+            <span className="mail-notif-sub">Al @ Already Spilled — first dibs on the drop</span>
+          </span>
+          <span
+            className="mail-notif-x"
+            role="button"
+            aria-label="Dismiss"
+            onClick={(e) => { e.stopPropagation(); setMailNotif(false); }}
+          >
+            ×
+          </span>
+        </button>
+      )}
+
       {/* AL'S GUIDED TOUR (first visit; replay via the button) */}
       {showTour && <Tour onDone={finishTour} onJoin={playJingle} />}
 
@@ -1126,6 +1166,7 @@ export default function Home() {
           onCleanUp={cleanUp}
           windows={windows}
           onWindowClick={toggleWindow}
+          unread={mailUnread ? "inbox" : undefined}
         />
       )}
 
