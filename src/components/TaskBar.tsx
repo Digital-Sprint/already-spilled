@@ -18,7 +18,7 @@ export default function TaskBar({
   crtOn, setCrtOn,
   stainsOn, setStainsOn,
   darkMode, setDarkMode,
-  onTour, onCleanUp,
+  onTour, onCleanUp, onSpillBeans,
   windows, onWindowClick, unread,
 }: {
   soundOn: boolean; setSoundOn: Toggle;
@@ -27,6 +27,7 @@ export default function TaskBar({
   darkMode: boolean; setDarkMode: Toggle;
   onTour: () => void;
   onCleanUp: () => void;
+  onSpillBeans?: () => void;
   windows: { id: string; min: boolean }[];
   onWindowClick: (id: string) => void;
   unread?: string;
@@ -106,7 +107,7 @@ export default function TaskBar({
           ))}
         </div>
 
-        <span className="sb-copy">© 2026 Already Spilled</span>
+        <button className="sb-copy" onClick={onSpillBeans} title="don't click this">© 2026 Already Spilled</button>
         <div className="sb-tray">
           <span className="sb-clock">{clock}</span>
         </div>
