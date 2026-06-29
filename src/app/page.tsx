@@ -1349,25 +1349,39 @@ export default function Home() {
                     <button className="welcome-ghost" onClick={onClose}>poke around the desktop</button>
                   </div>
 
-                  {/* Scrollable readme: what it is + how to get around + links */}
+                  {/* readme.txt — styled like an old text file you scroll through */}
                   <div className="welcome-readme">
-                    <h4 className="welcome-readme-h">what is this?</h4>
-                    <p>
-                      <b>Already Spilled</b> is a brand for people who make a mess and own it —
-                      coffee on the shirt, beans on the floor, perfection nowhere in sight.
-                      What you&apos;re looking at is <b>Spillville 95</b>, our little desktop. poke around, click stuff, drag stuff.
-                    </p>
-                    <h4 className="welcome-readme-h">how to get around</h4>
-                    <ul className="welcome-links">
-                      <li><span className="welcome-link" onClick={() => openWindow("story")}>📖 Story Time</span> — read (and add) real spill stories</li>
-                      <li><span className="welcome-link" onClick={() => openWindow("collection")}>📬 El Boletín</span> — the drop is coming; get on the list</li>
-                      <li><span className="welcome-link" onClick={() => openWindow("signup")}>✍️ Spill It</span> — sign the guestbook with your worst stain</li>
-                      <li><span className="welcome-link" onClick={() => openWindow("paint")}>🎨 Paint</span> — make an actual mess on a canvas</li>
-                    </ul>
-                    <p className="welcome-readme-tip">
-                      tip: drag the desktop icons (and the letters) anywhere, poke the cherubs for chaos,
-                      and the <b>taskbar</b> at the bottom shows everything that&apos;s open. that&apos;s it — go make a mess.
-                    </p>
+                    <div className="welcome-readme-bar">
+                      <span>📄 readme.txt</span>
+                      <span className="wr-scrollcue">scroll ▼</span>
+                    </div>
+                    <div className="welcome-readme-scroll">
+                      <p className="wr-title">✶ welcome to spillville 95 ✶</p>
+                      <p className="wr-div">═══════════════════════</p>
+                      <p className="wr-h">&gt; what is this?</p>
+                      <p>
+                        <b>Already Spilled</b> is a brand for people who make a mess and
+                        own it — coffee on the shirt, beans on the floor, perfection
+                        nowhere in sight. what you&apos;re looking at is <b>Spillville 95</b>,
+                        our little desktop. poke around. click stuff. drag stuff.
+                      </p>
+                      <p className="wr-div">· · · · · · · · · · · · ·</p>
+                      <p className="wr-h">&gt; how to get around</p>
+                      <ul className="welcome-links">
+                        <li><span className="wr-bullet">»</span> <span className="welcome-link" onClick={() => openWindow("story")}>📖 Story Time</span><br />read &amp; add real spill stories</li>
+                        <li><span className="wr-bullet">»</span> <span className="welcome-link" onClick={() => openWindow("collection")}>📬 El Boletín</span><br />the drop is coming — get on the list</li>
+                        <li><span className="wr-bullet">»</span> <span className="welcome-link" onClick={() => openWindow("signup")}>✍️ Spill It</span><br />sign the guestbook with your worst stain</li>
+                        <li><span className="wr-bullet">»</span> <span className="welcome-link" onClick={() => openWindow("paint")}>🎨 Paint</span><br />make an actual mess on a canvas</li>
+                      </ul>
+                      <p className="wr-div">· · · · · · · · · · · · ·</p>
+                      <p className="wr-h">&gt; pro tips</p>
+                      <p>
+                        drag the desktop icons (and the letters) anywhere. poke the
+                        cherubs for chaos. the <b>taskbar</b> down below shows everything
+                        that&apos;s open. that&apos;s it — now go make a mess.
+                      </p>
+                      <p className="wr-eof">— end of file —</p>
+                    </div>
                   </div>
                 </div>
               </div>
