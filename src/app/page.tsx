@@ -1164,6 +1164,7 @@ export default function Home() {
           darkMode={darkMode} setDarkMode={setDarkMode}
           onTour={() => setShowTour(true)}
           onCleanUp={cleanUp}
+          onSpillBeans={spillBeans}
           windows={windows}
           onWindowClick={toggleWindow}
           unread={mailUnread ? "inbox" : undefined}
