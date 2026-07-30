@@ -241,6 +241,7 @@ export default function Home() {
   const [showTour, setShowTour] = useState(false);
   const [quickCherubs, setQuickCherubs] = useState(false);
   const [beansSpilled, setBeansSpilled] = useState(false);
+  const [shaking, setShaking] = useState(false); // etch-a-sketch shake
   const [clockHands, setClockHands] = useState({ h: 0, m: 0 });
 
   // Auto-play Al's tour on a visitor's first visit (or when forced via ?tour=1)
@@ -282,6 +283,13 @@ export default function Home() {
     const ctx = canvas?.getContext("2d");
     if (canvas && ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
   };
+  // Etch-a-sketch: shake the whole screen, then everything resets
+  const etchASketch = () => {
+    triggerChaos("fall");
+    cleanUp();
+    setShaking(true);
+    setTimeout(() => setShaking(false), 600);
+  };
   const audioRef = useRef<HTMLAudioElement>(null);
   const jingleRef = useRef<HTMLAudioElement>(null);
   const soundOnRef = useRef(true);
@@ -313,7 +321,6 @@ export default function Home() {
   const sprayCanvasRef = useRef<HTMLCanvasElement>(null);
   const selectedColorRef = useRef<string | null>(null);
   const paintingRef = useRef(false);
-  const pendingTourRef = useRef(false);
   const lastPosRef = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
@@ -740,7 +747,7 @@ export default function Home() {
 
   return (
     <ResetContext.Provider value={resetSignal}>
-    <main className={`${darkMode ? 'dark-bg' : 'paper-bg'} min-h-screen flex flex-col items-center justify-center p-4 pt-16 pb-24 md:p-8 relative overflow-hidden transition-colors duration-500`}>
+    <main className={`${darkMode ? 'dark-bg' : 'paper-bg'} ${shaking ? 'screen-shake' : ''} min-h-screen flex flex-col items-center justify-center p-4 pt-16 pb-24 md:p-8 relative overflow-hidden transition-colors duration-500`}>
 
       {/* HAND-PAINTED SPLATTER BACKGROUND (inverts in dark mode) */}
       <div className={`bg-splatter ${darkMode ? 'bg-splatter-dark' : ''}`} />
@@ -853,12 +860,12 @@ export default function Home() {
         )}
       </div>
 
-      {/* INTERACTIVE CHERUB - Right (Pink) - Makes letters fall */}
+      {/* INTERACTIVE CHERUB - Right (Pink) - Etch-a-sketch: shake + clean */}
       <div className={`fixed right-2 md:right-8 top-1/2 -translate-y-1/2 z-40 animate-load-cherub-right ${quickCherubs ? 'cherub-quick' : ''} ${showTour ? 'hidden' : ''}`}>
         <button
-          onClick={() => { triggerChaos('fall'); cleanUp(); pendingTourRef.current = true; }}
+          onClick={etchASketch}
           className="cherub-btn animate-float-2"
-          title="Shake it up & take the tour"
+          title="Shake it clean (etch-a-sketch)"
         >
           <Image
             src="/assets/cherub-pink.png"
@@ -969,42 +976,28 @@ export default function Home() {
           >
             {darkMode ? '🌚 night night' : '☀️ bom dia'}
           </button>
-          <button className="ctrl-btn ctrl-cleanup" onClick={cleanUp}>
-            🧹 Clean Up
-          </button>
-          <button className="ctrl-btn ctrl-tour" onClick={() => setShowTour(true)}>
-            👋 tour
-          </button>
         </div>
       </div>
 
       {/* MAIN CONTENT */}
       <div className="text-center z-20 max-w-4xl">
-        {/* Logo */}
+        {/* Logo — click it to (re)play Al's tour */}
         <div className="mb-3 md:mb-6 animate-load-logo">
-          <Image
-            src="/assets/already-spilled-logo.png"
-            alt="Already Spilled"
-            width={2375}
-            height={1545}
-            className="mx-auto w-[150px] sm:w-[240px] md:w-[380px] select-none pointer-events-none"
-            draggable={false}
-            priority
-          />
+          <button onClick={() => setShowTour(true)} className="logo-btn" title="take the tour" aria-label="Take the tour">
+            <Image
+              src="/assets/already-spilled-logo.png"
+              alt="Already Spilled"
+              width={2375}
+              height={1545}
+              className="mx-auto w-[150px] sm:w-[240px] md:w-[380px] select-none"
+              draggable={false}
+              priority
+            />
+          </button>
         </div>
 
         {/* BIG HEADLINE - letters are draggable */}
-        <div
-          id="tour-headline"
-          className="mb-5 md:mb-8 select-none"
-          onAnimationEnd={(e) => {
-            // When the letters finish falling back into place, kick off the tour
-            if (pendingTourRef.current && (e as React.AnimationEvent).animationName === "fall-letter") {
-              pendingTourRef.current = false;
-              setShowTour(true);
-            }
-          }}
-        >
+        <div id="tour-headline" className="mb-5 md:mb-8 select-none">
           <HeadlineLetters initialAnimationDone={initialAnimationDone} chaos={chaos} />
         </div>
 
