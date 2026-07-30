@@ -931,11 +931,13 @@ export default function Home() {
           aria-label="Toggle light and dark mode"
         />
         <button
-          className={`hot hot-moo ${soundOn ? 'on' : ''}`}
+          className={`hot hot-moo ${soundOn ? '' : 'muted'}`}
           onClick={() => setSoundOn((v) => !v)}
-          title="moosic — sound on/off"
+          title={soundOn ? "moosic — sound on (click to mute)" : "moosic — muted (click for sound)"}
           aria-label="Toggle sound"
-        />
+        >
+          <span className="moo-x" aria-hidden="true" />
+        </button>
       </div>
 
       {/* MAIN CONTENT */}

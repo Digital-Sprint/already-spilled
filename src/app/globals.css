@@ -3806,15 +3806,43 @@ html.dark body {
 .hot:hover { background: rgba(255, 255, 255, 0.16); }
 .hot:active { background: rgba(0, 0, 0, 0.08); }
 .hot:focus-visible { outline: 2px solid #4a90d9; outline-offset: 1px; }
-/* soft glow when a toggle is ON */
-.hot.on { box-shadow: 0 0 0 2px rgba(90, 200, 130, 0.55), 0 0 10px rgba(90, 200, 130, 0.4); }
+/* subtle "pressed / active" look when a toggle is ON — no loud glow */
+.hot.on { background: rgba(0, 0, 0, 0.16); box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3); }
 
 /* button positions as % of the illustration */
 .hot-fuzz { left: 18.5%; top: 14.2%; width: 17.5%; height: 10.4%; }
 .hot-plop { left: 18.5%; top: 28.0%; width: 17.5%; height: 10.4%; }
 .hot-day  { left: 18.5%; top: 40.8%; width: 22.0%; height: 12.0%; }
-.hot-moo  { left: 72.8%; top: 29.2%; width: 6.4%; height: 9.6%; border-radius: 50%; }
-.hot-moo.on { box-shadow: 0 0 0 2px rgba(90, 200, 130, 0.6), 0 0 12px rgba(90, 200, 130, 0.5); }
+.hot-moo  {
+  left: 72.8%; top: 29.2%; width: 6.4%; height: 9.6%; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+/* the cow: a red X when sound is muted, nothing loud when on */
+.hot-moo .moo-x {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  width: 155%;
+  height: 155%;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+.hot-moo .moo-x::before,
+.hot-moo .moo-x::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 0;
+  width: 100%;
+  height: 15%;
+  min-height: 3px;
+  background: #e12d2d;
+  border-radius: 3px;
+  box-shadow: 0 0 3px rgba(255, 255, 255, 0.9), 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+.hot-moo .moo-x::before { transform: translateY(-50%) rotate(45deg); }
+.hot-moo .moo-x::after { transform: translateY(-50%) rotate(-45deg); }
+.hot-moo.muted .moo-x { opacity: 1; }
 
 @media (max-width: 640px) {
   .computah { width: 52vw; right: 10px; bottom: 12px; }
