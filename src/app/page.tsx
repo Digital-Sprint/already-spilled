@@ -187,31 +187,47 @@ function HeadlineLetters({
   let idx = 0;
   const cls = (i: number) =>
     `inline-block letter-hover ${!initialAnimationDone ? `animate-letter letter-delay-${i}` : ""} ${chaos === "fall" ? `animate-fall-${(i % 7) + 1}` : ""} ${chaos === "spin" ? `animate-spin-letter${i % 3 === 1 ? "-delay-1" : i % 3 === 2 ? "-delay-2" : ""}` : ""}`;
+  // Jagged arc: each letter rides an upward arch (translateY %, so it scales
+  // with the letter) plus a deterministic jitter + tilt for a hand-made feel.
+  const JIT_Y = [0, -7, 5, -4, 8, -5, 3, -6, 4];
+  const JIT_R = [-4, 5, -3, 6, -5, 3, -6, 4, -2];
+  const arc = (k: number, n: number): React.CSSProperties => {
+    const t = n > 1 ? (k / (n - 1)) * 2 - 1 : 0; // -1 .. 1 across the row
+    const arcY = -18 * (1 - t * t); // arch: 0 at the ends, up in the middle
+    const rot = t * 8 + JIT_R[k % JIT_R.length];
+    return { display: "inline-block", transform: `translateY(${arcY + JIT_Y[k % JIT_Y.length]}%) rotate(${rot}deg)` };
+  };
   return (
     <>
       <div className="cutout-line mb-2 md:mb-3">
         <div className="flex items-center justify-center -space-x-px">
-          {EMBRACE_LETTERS.map(([src, alt, w]) => {
+          {EMBRACE_LETTERS.map(([src, alt, w], k) => {
             const i = ++idx;
             return (
-              <DraggableLetter key={src} className={cls(i)}>
-                <Image src={`/assets/letters-v2/${src}.png`} alt={alt} width={w} height={172} className={`${h} w-auto`} draggable={false} priority />
-              </DraggableLetter>
+              <span key={src} style={arc(k, EMBRACE_LETTERS.length)}>
+                <DraggableLetter className={cls(i)}>
+                  <Image src={`/assets/letters-v2/${src}.png`} alt={alt} width={w} height={172} className={`${h} w-auto`} draggable={false} priority />
+                </DraggableLetter>
+              </span>
             );
           })}
         </div>
       </div>
       <div className="cutout-line flex items-center justify-center">
-        <DraggableLetter className={cls(++idx)}>
-          <Image src="/assets/letters-v2/The.png" alt="the" width={167} height={170} className={`${h} w-auto`} draggable={false} priority />
-        </DraggableLetter>
+        <span style={arc(0, MESS_LETTERS.length + 1)}>
+          <DraggableLetter className={cls(++idx)}>
+            <Image src="/assets/letters-v2/The.png" alt="the" width={167} height={170} className={`${h} w-auto`} draggable={false} priority />
+          </DraggableLetter>
+        </span>
         <div className="flex items-center -space-x-px">
-          {MESS_LETTERS.map(([src, alt, w]) => {
+          {MESS_LETTERS.map(([src, alt, w], k) => {
             const i = ++idx;
             return (
-              <DraggableLetter key={src} className={cls(i)}>
-                <Image src={`/assets/letters-v2/${src}.png`} alt={alt} width={w} height={170} className={`${h} w-auto`} draggable={false} priority />
-              </DraggableLetter>
+              <span key={src} style={arc(k + 1, MESS_LETTERS.length + 1)}>
+                <DraggableLetter className={cls(i)}>
+                  <Image src={`/assets/letters-v2/${src}.png`} alt={alt} width={w} height={170} className={`${h} w-auto`} draggable={false} priority />
+                </DraggableLetter>
+              </span>
             );
           })}
         </div>
