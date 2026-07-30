@@ -227,7 +227,6 @@ export default function Home() {
   const [darkMode, setDarkMode] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
-  const [controlsOpen, setControlsOpen] = useState(false);
   // Story Time / El Boletín / Spill It open as centered modal panels.
   const openWindow = (id: string) => setActivePanel(id);
   const storyOpen = activePanel === "story";
@@ -242,7 +241,6 @@ export default function Home() {
   const [quickCherubs, setQuickCherubs] = useState(false);
   const [beansSpilled, setBeansSpilled] = useState(false);
   const [shaking, setShaking] = useState(false); // etch-a-sketch shake
-  const [clockHands, setClockHands] = useState({ h: 0, m: 0 });
 
   // Auto-play Al's tour on a visitor's first visit (or when forced via ?tour=1)
   useEffect(() => {
@@ -256,19 +254,6 @@ export default function Home() {
     setQuickCherubs(true); // bring the cherubs in fast after the tour
     localStorage.setItem("as_tour_seen", "1");
   };
-
-  // Live analog clock for the corner control
-  useEffect(() => {
-    const update = () => {
-      const d = new Date();
-      const m = d.getMinutes();
-      const h = d.getHours() % 12;
-      setClockHands({ h: h * 30 + m * 0.5, m: m * 6 });
-    };
-    update();
-    const id = setInterval(update, 20000);
-    return () => clearInterval(id);
-  }, []);
 
   // Easter egg: tip over the © badge and the beans spill everywhere
   const spillBeans = () => {
@@ -683,7 +668,7 @@ export default function Home() {
     };
 
     const isUi = (t: EventTarget | null) =>
-      (t as HTMLElement | null)?.closest("button, a, input, textarea, .control-panel, .paint-palette");
+      (t as HTMLElement | null)?.closest("button, a, input, textarea, .computah, .paint-palette");
 
     const handleDown = (e: PointerEvent) => {
       if (!selectedColorRef.current || isUi(e.target)) return;
@@ -913,71 +898,53 @@ export default function Home() {
       <audio ref={audioRef} src="/assets/website-ui.mp3" loop preload="auto" />
       <audio ref={jingleRef} src="/assets/as-jingle.wav" preload="auto" />
 
-      {/* CONTROL KNOB — tucked away, expands on click */}
-      <div className={`control-panel ${controlsOpen ? 'is-open' : ''}`}>
+      {/* CONTROL — the AS2001 computer. The on-screen buttons + the cow on
+          the speaker are the actual controls (photosensitivity note on fuzz). */}
+      <div className="computah">
+        {/* both images stacked + cross-faded so day/night doesn't flash */}
+        <Image
+          src="/assets/computah-light.png"
+          alt="AS2001 control computer"
+          width={8708}
+          height={5367}
+          className={`computah-img ${darkMode ? 'computah-off' : ''}`}
+          draggable={false}
+          priority
+        />
+        <Image
+          src="/assets/computah-dark.png"
+          alt=""
+          aria-hidden
+          width={8708}
+          height={5367}
+          className={`computah-img computah-layer ${darkMode ? '' : 'computah-off'}`}
+          draggable={false}
+          priority
+        />
         <button
-          className="control-knob"
-          onClick={() => setControlsOpen((v) => !v)}
-          title={controlsOpen ? "Hide controls" : "Controls"}
-          aria-label="Toggle controls"
-        >
-          <svg className="knob-dial" viewBox="0 0 44 44" aria-hidden="true">
-            <defs>
-              <radialGradient id="knobgrad" cx="38%" cy="32%" r="72%">
-                <stop offset="0%" stopColor="#fffdf7" />
-                <stop offset="100%" stopColor="#ece2cd" />
-              </radialGradient>
-            </defs>
-            <circle cx="22" cy="22" r="18" fill="url(#knobgrad)" stroke="#1a1a1a" strokeWidth="2.5" />
-            <g stroke="#1a1a1a" strokeLinecap="round">
-              {Array.from({ length: 12 }).map((_, i) => {
-                const a = (i * 30) * Math.PI / 180;
-                const r1 = i % 3 === 0 ? 13 : 15;
-                const round = (n: number) => Number(n.toFixed(2));
-                return (
-                  <line
-                    key={i}
-                    x1={round(22 + Math.sin(a) * r1)}
-                    y1={round(22 - Math.cos(a) * r1)}
-                    x2={round(22 + Math.sin(a) * 16.5)}
-                    y2={round(22 - Math.cos(a) * 16.5)}
-                    strokeWidth={i % 3 === 0 ? 1.8 : 1}
-                  />
-                );
-              })}
-            </g>
-            <line className="clock-hand" x1="22" y1="22" x2="22" y2="14" stroke="#1a1a1a" strokeWidth="2.4" strokeLinecap="round" transform={`rotate(${clockHands.h} 22 22)`} />
-            <line className="clock-hand" x1="22" y1="22" x2="22" y2="9.5" stroke="#1a1a1a" strokeWidth="1.6" strokeLinecap="round" transform={`rotate(${clockHands.m} 22 22)`} />
-            <circle cx="22" cy="22" r="1.7" fill="#1a1a1a" />
-          </svg>
-        </button>
-        <div className="control-chips">
-          <button
-            className={`ctrl-btn ${soundOn ? 'ctrl-on' : 'ctrl-off'}`}
-            onClick={() => setSoundOn((v) => !v)}
-          >
-            🐮 moosic
-          </button>
-          <button
-            className={`ctrl-btn ${crtOn ? 'ctrl-on' : 'ctrl-off'}`}
-            onClick={() => setCrtOn((v) => !v)}
-            title="⚠ photosensitivity warning: brief flashing when toggled"
-          >
-            🍑 fuzz <span className="ctrl-warn" title="⚠ photosensitivity warning: brief flashing when toggled">⚠</span>
-          </button>
-          <button
-            className={`ctrl-btn ${stainsOn ? 'ctrl-on' : 'ctrl-off'}`}
-            onClick={() => setStainsOn((v) => !v)}
-          >
-            💦 plop
-          </button>
-          <button
-            className={`ctrl-btn ${darkMode ? 'ctrl-on' : 'ctrl-off'}`}
-            onClick={() => setDarkMode((v) => !v)}
-          >
-            {darkMode ? '🌚 night night' : '☀️ bom dia'}
-          </button>
-        </div>
+          className={`hot hot-fuzz ${crtOn ? 'on' : ''}`}
+          onClick={() => setCrtOn((v) => !v)}
+          title="⚠ fuzz — CRT effect (brief flashing when toggled)"
+          aria-label="Toggle fuzz CRT effect. Photosensitivity warning: brief flashing."
+        />
+        <button
+          className={`hot hot-plop ${stainsOn ? 'on' : ''}`}
+          onClick={() => setStainsOn((v) => !v)}
+          title="plop — splatter stains"
+          aria-label="Toggle splatter stains"
+        />
+        <button
+          className={`hot hot-day ${darkMode ? 'on' : ''}`}
+          onClick={() => setDarkMode((v) => !v)}
+          title={darkMode ? "boa noite — dark mode (click for light)" : "bom dia — light mode (click for dark)"}
+          aria-label="Toggle light and dark mode"
+        />
+        <button
+          className={`hot hot-moo ${soundOn ? 'on' : ''}`}
+          onClick={() => setSoundOn((v) => !v)}
+          title="moosic — sound on/off"
+          aria-label="Toggle sound"
+        />
       </div>
 
       {/* MAIN CONTENT */}

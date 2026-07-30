@@ -3832,3 +3832,54 @@ html.dark body {
 }
 .logo-btn:hover { transform: scale(1.02) rotate(-0.5deg); }
 .logo-btn:active { transform: scale(0.99); }
+
+/* ============================================================
+   AS2001 control computer — the on-screen buttons + the speaker
+   cow are the real controls (replaces the old knob).
+   ============================================================ */
+.computah {
+  position: fixed;
+  left: 8px;
+  bottom: 6px;
+  width: min(34vw, 300px);
+  z-index: 30;
+  line-height: 0;
+}
+.computah-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  filter: drop-shadow(2px 3px 5px rgba(0, 0, 0, 0.25));
+  -webkit-user-drag: none;
+  user-select: none;
+  transition: opacity 0.4s ease;
+}
+.computah-layer { position: absolute; top: 0; left: 0; }
+.computah-off { opacity: 0; }
+/* transparent clickable zones sitting over the drawn buttons */
+.hot {
+  position: absolute;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 9px;
+  transition: background 0.12s ease, box-shadow 0.15s ease;
+}
+.hot:hover { background: rgba(255, 255, 255, 0.16); }
+.hot:active { background: rgba(0, 0, 0, 0.08); }
+.hot:focus-visible { outline: 2px solid #4a90d9; outline-offset: 1px; }
+/* soft glow when a toggle is ON */
+.hot.on { box-shadow: 0 0 0 2px rgba(90, 200, 130, 0.55), 0 0 10px rgba(90, 200, 130, 0.4); }
+
+/* button positions as % of the illustration */
+.hot-fuzz { left: 18.5%; top: 14.2%; width: 17.5%; height: 10.4%; }
+.hot-plop { left: 18.5%; top: 28.0%; width: 17.5%; height: 10.4%; }
+.hot-day  { left: 18.5%; top: 40.8%; width: 22.0%; height: 12.0%; }
+.hot-moo  { left: 72.8%; top: 29.2%; width: 6.4%; height: 9.6%; border-radius: 50%; }
+.hot-moo.on { box-shadow: 0 0 0 2px rgba(90, 200, 130, 0.6), 0 0 12px rgba(90, 200, 130, 0.5); }
+
+@media (max-width: 640px) {
+  .computah { width: 54vw; left: 6px; bottom: 6px; }
+}
