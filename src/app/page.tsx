@@ -894,8 +894,12 @@ export default function Home() {
         style={{ mixBlendMode: darkMode ? "screen" : "multiply" }}
       />
 
-      {/* CRT OVERLAY - Fuzzy TV effect */}
-      {crtOn && <div className="crt-overlay pointer-events-none"></div>}
+      {/* CRT OVERLAY - Fuzzy TV effect (flickers on power-up, then settles) */}
+      {crtOn && (
+        <div className="crt-overlay pointer-events-none">
+          <div className="crt-flicker" />
+        </div>
+      )}
 
       {/* BACKGROUND MUSIC + SUBMIT JINGLE */}
       <audio ref={audioRef} src="/assets/website-ui.mp3" loop preload="auto" />
@@ -949,8 +953,9 @@ export default function Home() {
           <button
             className={`ctrl-btn ${crtOn ? 'ctrl-on' : 'ctrl-off'}`}
             onClick={() => setCrtOn((v) => !v)}
+            title="⚠ photosensitivity warning: brief flashing when toggled"
           >
-            🍑 fuzz
+            🍑 fuzz <span className="ctrl-warn" title="⚠ photosensitivity warning: brief flashing when toggled">⚠</span>
           </button>
           <button
             className={`ctrl-btn ${stainsOn ? 'ctrl-on' : 'ctrl-off'}`}

@@ -2307,8 +2307,46 @@ body {
   position: absolute;
   inset: 0;
   background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-  animation: static-shift 0.08s steps(4) infinite;
-  opacity: 0.8;
+  /* calmer, slower static so it isn't a constant seizure-y buzz */
+  animation: static-shift 0.5s steps(3) infinite;
+  opacity: 0.3;
+}
+
+/* Flicker layer: rapid flicker on power-up, then a mostly-stable signal
+   with only the occasional spike. */
+.crt-flicker {
+  position: absolute;
+  inset: 0;
+  background: rgba(150, 255, 150, 0.05);
+  mix-blend-mode: screen;
+  animation:
+    crt-poweron 0.6s steps(5, end) 1 both,
+    crt-idle 9s ease-in-out 0.6s infinite;
+}
+@keyframes crt-poweron {
+  0% { opacity: 0; }
+  15% { opacity: 1; }
+  30% { opacity: 0.15; }
+  50% { opacity: 0.9; }
+  70% { opacity: 0.25; }
+  85% { opacity: 0.7; }
+  100% { opacity: 0.4; }
+}
+@keyframes crt-idle {
+  0%, 37% { opacity: 0.4; }
+  /* spike */
+  39% { opacity: 0.85; }
+  40% { opacity: 0.28; }
+  42% { opacity: 0.42; }
+  68%, 70% { opacity: 0.4; }
+  /* spike */
+  72% { opacity: 0.8; }
+  73% { opacity: 0.3; }
+  75% { opacity: 0.4; }
+  100% { opacity: 0.4; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .crt-flicker { animation: crt-poweron 0.4s steps(3, end) 1 both; opacity: 0.4; }
 }
 
 @keyframes scanline-move {
@@ -3308,6 +3346,13 @@ html.dark body {
 }
 .dark .control-panel.is-open .control-knob { background: #b3416d; }
 
+.ctrl-warn {
+  font-size: 0.62em;
+  vertical-align: super;
+  margin-left: 1px;
+  cursor: help;
+  filter: grayscale(0.15);
+}
 .ctrl-btn {
   font-family: 'Courier New', monospace;
   font-weight: 700;
