@@ -901,9 +901,10 @@ export default function Home() {
         style={{ mixBlendMode: darkMode ? "screen" : "multiply" }}
       />
 
-      {/* CRT OVERLAY - Fuzzy TV effect (flickers on power-up, then settles) */}
+      {/* CRT OVERLAY - boots up like an old computer, then settles (static scanlines) */}
       {crtOn && (
         <div className="crt-overlay pointer-events-none">
+          <div className="crt-boot" />
           <div className="crt-flicker" />
         </div>
       )}
