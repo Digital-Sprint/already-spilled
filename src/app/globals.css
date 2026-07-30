@@ -2261,20 +2261,21 @@ body {
   100% { opacity: 0.75; }
 }
 
-/* CRT Overlay — boots like an old computer, then holds a calm signal.
-   Scanlines are STATIC (no temporal strobe = no top/bottom flicker). */
+/* CRT Overlay - Prominent retro TV scanlines */
 .crt-overlay {
   position: fixed;
   inset: 0;
   z-index: 100;
   background:
+    /* Strong horizontal scanlines */
     repeating-linear-gradient(
       0deg,
       transparent 0px,
-      transparent 2px,
-      rgba(0, 0, 0, 0.06) 2px,
-      rgba(0, 0, 0, 0.06) 3px
+      transparent 1px,
+      rgba(0, 0, 0, 0.08) 1px,
+      rgba(0, 0, 0, 0.08) 2px
     );
+  animation: scanline-move 0.1s linear infinite;
 }
 
 .crt-overlay::before {
@@ -2282,7 +2283,7 @@ body {
   position: absolute;
   inset: 0;
   background:
-    /* RGB phosphor stripes */
+    /* RGB phosphor dots */
     repeating-linear-gradient(
       90deg,
       rgba(255, 0, 0, 0.03) 0px,
@@ -2296,8 +2297,8 @@ body {
     radial-gradient(
       ellipse at center,
       transparent 0%,
-      transparent 55%,
-      rgba(0, 0, 0, 0.22) 100%
+      transparent 50%,
+      rgba(0, 0, 0, 0.25) 100%
     );
 }
 
@@ -2306,69 +2307,13 @@ body {
   position: absolute;
   inset: 0;
   background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-  /* gentle slow shimmer instead of a jittery buzz */
-  animation: static-shift 2.4s ease-in-out infinite;
-  opacity: 0.16;
+  animation: static-shift 0.08s steps(4) infinite;
+  opacity: 0.8;
 }
 
-/* Faint phosphor glow: mostly steady, only the rare soft flicker. */
-.crt-flicker {
-  position: absolute;
-  inset: 0;
-  background: rgba(150, 255, 170, 0.045);
-  mix-blend-mode: screen;
-  animation: crt-idle 11s ease-in-out infinite;
-}
-@keyframes crt-idle {
-  0%, 40% { opacity: 0.5; }
-  43% { opacity: 0.78; }
-  46% { opacity: 0.45; }
-  75%, 78% { opacity: 0.5; }
-  80% { opacity: 0.7; }
-  83% { opacity: 0.5; }
-  100% { opacity: 0.5; }
-}
-
-/* Power-on sequence: black screen -> a bright beam line -> it expands to
-   fill -> flash -> fades to reveal the picture (classic CRT turn-on). */
-.crt-boot {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  background: #050805;
-  animation: crt-boot-fade 1.3s ease-out forwards;
-}
-.crt-boot::before {
-  content: '';
-  position: absolute;
-  left: -5%; right: -5%; top: 50%;
-  height: 46%;
-  transform: translateY(-50%) scaleY(0.008);
-  background: radial-gradient(ellipse 70% 100% at center, rgba(215, 255, 230, 0.98), rgba(150, 255, 195, 0.45) 65%, transparent 100%);
-  filter: blur(1.5px);
-  mix-blend-mode: screen;
-  animation: crt-boot-beam 1.3s cubic-bezier(0.2, 0.75, 0.2, 1) forwards;
-}
-@keyframes crt-boot-fade {
-  0%, 9% { background: #050805; }
-  40% { background: rgba(5, 8, 5, 0.55); }
-  70% { background: rgba(5, 8, 5, 0.12); }
-  100% { background: rgba(5, 8, 5, 0); }
-}
-@keyframes crt-boot-beam {
-  0% { transform: translateY(-50%) scaleY(0.006); opacity: 0; }
-  9% { transform: translateY(-50%) scaleY(0.01); opacity: 1; }
-  18% { transform: translateY(-50%) scaleY(0.03); opacity: 1; }
-  44% { transform: translateY(-50%) scaleY(1); opacity: 0.95; }
-  52% { opacity: 1; }
-  60% { opacity: 0.55; }
-  68% { opacity: 0.9; }
-  100% { transform: translateY(-50%) scaleY(1.12); opacity: 0; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .crt-boot { animation: crt-boot-fade 0.5s ease-out forwards; }
-  .crt-boot::before { display: none; }
-  .crt-flicker { animation: none; opacity: 0.45; }
+@keyframes scanline-move {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 4px; }
 }
 
 @keyframes static-shift {
@@ -3424,56 +3369,46 @@ html.dark body {
   display: inline-block;
 }
 
-/* Paint palette (blue cherub) — a wooden artist's palette held at the cherub's hand */
+/* Paint palette (blue cherub) — the photographed palette; click a well to pick */
 .paint-palette {
   position: absolute;
-  top: 54%;
+  top: 58%;
   left: 50%;
   transform: translateX(-50%);
   z-index: 45;
-  width: 170px;
-  height: 153px;
+  width: 208px;
+  height: 208px;
   animation: crayon-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
-.palette-shape {
-  position: absolute;
-  inset: 0;
+.palette-img {
   width: 100%;
   height: 100%;
+  object-fit: contain;
   pointer-events: none;
-  z-index: 0;
-  filter: drop-shadow(3px 4px 3px rgba(0, 0, 0, 0.35));
+  filter: drop-shadow(3px 4px 4px rgba(0, 0, 0, 0.35));
+  -webkit-user-drag: none;
+  user-select: none;
 }
-.paint-swatch {
+.paint-well {
   position: absolute;
-  width: 27px;
-  height: 27px;
-  border-radius: 50%;
-  border: 2px solid rgba(0, 0, 0, 0.5);
-  cursor: pointer;
-  padding: 0;
-  z-index: 1;
+  width: 15%;
+  height: 15%;
   transform: translate(-50%, -50%);
-  box-shadow: inset 2px 2px 4px rgba(255, 255, 255, 0.4), 1px 2px 3px rgba(0, 0, 0, 0.35);
-  transition: transform 0.12s ease;
+  border-radius: 50%;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  z-index: 1;
+  transition: box-shadow 0.12s ease, transform 0.12s ease;
 }
-.paint-swatch:hover { transform: translate(-50%, -50%) scale(1.2) rotate(-6deg); }
-.paint-swatch.selected {
-  transform: translate(-50%, -50%) scale(1.28);
+.paint-well:hover { box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.85), 0 0 0 4px rgba(0, 0, 0, 0.45); }
+.paint-well.selected {
+  transform: translate(-50%, -50%) scale(1.06);
   box-shadow: 0 0 0 3px #fff, 0 0 0 5px #1a1a1a;
 }
-/* Blobs in an arc on the wood, leaving the lower-left thumb hole clear */
-.paint-swatch:nth-of-type(1) { left: 18%; top: 48%; }
-.paint-swatch:nth-of-type(2) { left: 23%; top: 27%; }
-.paint-swatch:nth-of-type(3) { left: 41%; top: 16%; }
-.paint-swatch:nth-of-type(4) { left: 60%; top: 16%; }
-.paint-swatch:nth-of-type(5) { left: 78%; top: 28%; }
-.paint-swatch:nth-of-type(6) { left: 84%; top: 50%; }
-.paint-swatch:nth-of-type(7) { left: 76%; top: 70%; }
-.paint-swatch:nth-of-type(8) { left: 54%; top: 77%; }
 @media (max-width: 640px) {
-  .paint-palette { width: 146px; height: 131px; }
-  .paint-swatch { width: 22px; height: 22px; }
+  .paint-palette { width: 176px; height: 176px; }
 }
 
 /* Clean Up is an action, not a toggle — give it its own pink look */
@@ -3823,7 +3758,8 @@ html.dark body {
 }
 
 .logo-btn {
-  display: block;
+  display: inline-block;
+  margin: 0 auto;
   background: none;
   border: none;
   padding: 0;
@@ -3839,8 +3775,8 @@ html.dark body {
    ============================================================ */
 .computah {
   position: fixed;
-  left: 8px;
-  bottom: 6px;
+  right: 28px;
+  bottom: 26px;
   width: min(34vw, 300px);
   z-index: 30;
   line-height: 0;
@@ -3881,5 +3817,5 @@ html.dark body {
 .hot-moo.on { box-shadow: 0 0 0 2px rgba(90, 200, 130, 0.6), 0 0 12px rgba(90, 200, 130, 0.5); }
 
 @media (max-width: 640px) {
-  .computah { width: 54vw; left: 6px; bottom: 6px; }
+  .computah { width: 52vw; right: 10px; bottom: 12px; }
 }
