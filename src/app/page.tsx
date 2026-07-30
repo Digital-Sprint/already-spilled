@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { useState, useEffect, useRef, useCallback, createContext, useContext } from "react";
 import Tour from "@/components/intros/Tour";
-import TaskBar from "@/components/TaskBar";
 
 // Base background-music volume (0..1)
 const BG_VOLUME = 0.45;
@@ -144,25 +143,6 @@ function DraggableLetter({ className, children }: { className?: string; children
   );
 }
 
-// A desktop shortcut icon you can drag anywhere on the desktop. A real click
-// (to open its window) only fires if the pointer didn't move.
-function DraggableShortcut({ id, onOpen, children }: { id?: string; onOpen: () => void; children: React.ReactNode }) {
-  const { handlers, style, grabbing, movedRef } = useDraggable();
-  const open = () => { if (!movedRef.current) onOpen(); };
-  return (
-    <button
-      id={id}
-      {...handlers}
-      onClick={open}
-      onDoubleClick={open}
-      className="desk-icon"
-      style={{ ...style, zIndex: grabbing ? 60 : undefined }}
-    >
-      {children}
-    </button>
-  );
-}
-
 // A homepage button that is both clickable and draggable. A real click only
 // fires if the pointer didn't move (so dragging doesn't open a panel).
 function DraggableButton({ onClick, children, id }: { onClick: () => void; children: React.ReactNode; id?: string }) {
@@ -248,113 +228,10 @@ export default function Home() {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [controlsOpen, setControlsOpen] = useState(false);
-  const [controlStyle, setControlStyle] = useState<"knob" | "deskLogo" | "deskLetters">("knob");
-  // Window system (taskbar mode): multiple panels open as draggable windows
-  type WinState = { id: string; min: boolean; max: boolean; x: number; y: number; z: number };
-  const [windows, setWindows] = useState<WinState[]>([]);
-  const zTopRef = useRef(50);
-  const winDrag = useRef<{ id: string; sx: number; sy: number; ox: number; oy: number } | null>(null);
-
-  const focusWindow = (id: string) => {
-    zTopRef.current += 1;
-    const z = zTopRef.current;
-    setWindows((ws) => ws.map((w) => (w.id === id ? { ...w, z, min: false } : w)));
-  };
-  const closeWindow = (id: string) => setWindows((ws) => ws.filter((w) => w.id !== id));
-  const minimizeWindow = (id: string) => setWindows((ws) => ws.map((w) => (w.id === id ? { ...w, min: true } : w)));
-  const maximizeWindow = (id: string) => setWindows((ws) => ws.map((w) => (w.id === id ? { ...w, max: !w.max } : w)));
-  const toggleWindow = (id: string) => {
-    if (id === "inbox") { setMailNotif(false); setMailUnread(false); }
-    const w = windows.find((x) => x.id === id);
-    if (!w) return;
-    if (w.min) focusWindow(id);
-    else minimizeWindow(id);
-  };
-
-  const openWindow = (id: string) => {
-    if (controlStyle === "knob") {
-      setActivePanel(id);
-      return;
-    }
-    zTopRef.current += 1;
-    const z = zTopRef.current;
-    setWindows((ws) => {
-      if (ws.some((w) => w.id === id)) return ws.map((w) => (w.id === id ? { ...w, min: false, z } : w));
-      const n = ws.length;
-      // The SpillMail inbox opens off to the right so it doesn't sit on top
-      // of the centered Welcome window.
-      const pos =
-        id === "inbox"
-          ? { x: 290, y: -40 }
-          : { x: (n % 4) * 30 - 45, y: (n % 4) * 26 - 36 };
-      return [...ws, { id, min: false, max: false, ...pos, z }];
-    });
-  };
-
-  const onWinPointerDown = (e: React.PointerEvent, id: string) => {
-    focusWindow(id);
-    if (!(e.target as HTMLElement).closest(".win-drag")) return;
-    if ((e.target as HTMLElement).closest("button")) return; // let titlebar buttons work
-    const w = windows.find((x) => x.id === id);
-    winDrag.current = { id, sx: e.clientX, sy: e.clientY, ox: w?.x ?? 0, oy: w?.y ?? 0 };
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-  };
-  const onWinPointerMove = (e: React.PointerEvent, id: string) => {
-    const d = winDrag.current;
-    if (!d || d.id !== id) return;
-    setWindows((ws) => ws.map((w) => (w.id === id ? { ...w, x: d.ox + (e.clientX - d.sx), y: d.oy + (e.clientY - d.sy) } : w)));
-  };
-  const onWinPointerUp = () => { winDrag.current = null; };
-
-  const taskbarMode = controlStyle !== "knob";
-  // Which asset sits loose on the desktop (bottom-right); the Welcome window
-  // shows the opposite. deskLogo => logo on desktop, letters in the window.
-  const deskLettersLoose = controlStyle === "deskLetters";
-  const storyOpen = taskbarMode ? windows.some((w) => w.id === "story") : activePanel === "story";
-  const collectionOpen = taskbarMode ? windows.some((w) => w.id === "collection") : activePanel === "collection";
-
-  // MS Paint window (taskbar mode) — draw inside the window with a solid brush
-  const [paintColor, setPaintColor] = useState("rgba(255, 107, 157,");
-  const paintCanvasRef = useRef<HTMLCanvasElement>(null);
-  const paintDownRef = useRef(false);
-  const paintLastRef = useRef<{ x: number; y: number } | null>(null);
-  const paintStroke = (x: number, y: number) => {
-    const ctx = paintCanvasRef.current?.getContext("2d");
-    if (!ctx) return;
-    ctx.fillStyle = `${paintColor} 1)`;
-    ctx.beginPath();
-    ctx.arc(x, y, 6, 0, Math.PI * 2);
-    ctx.fill();
-  };
-  const paintCoords = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    const c = e.currentTarget;
-    const r = c.getBoundingClientRect();
-    return { x: (e.clientX - r.left) * (c.width / r.width), y: (e.clientY - r.top) * (c.height / r.height) };
-  };
-  const onPaintDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    e.currentTarget.setPointerCapture(e.pointerId);
-    paintDownRef.current = true;
-    const p = paintCoords(e);
-    paintLastRef.current = p;
-    paintStroke(p.x, p.y);
-  };
-  const onPaintMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (!paintDownRef.current) return;
-    const p = paintCoords(e);
-    const last = paintLastRef.current;
-    if (last) {
-      const dx = p.x - last.x, dy = p.y - last.y;
-      const steps = Math.max(1, Math.floor(Math.hypot(dx, dy) / 3));
-      for (let s = 0; s <= steps; s++) paintStroke(last.x + (dx * s) / steps, last.y + (dy * s) / steps);
-    }
-    paintLastRef.current = p;
-  };
-  const onPaintUp = () => { paintDownRef.current = false; paintLastRef.current = null; };
-  const clearPaint = () => {
-    const c = paintCanvasRef.current;
-    const ctx = c?.getContext("2d");
-    if (c && ctx) ctx.clearRect(0, 0, c.width, c.height);
-  };
+  // Story Time / El Boletín / Spill It open as centered modal panels.
+  const openWindow = (id: string) => setActivePanel(id);
+  const storyOpen = activePanel === "story";
+  const collectionOpen = activePanel === "collection";
 
   const [crayonExchange, setCrayonExchange] = useState<"ask" | "return" | null>(null);
   const [crtOn, setCrtOn] = useState(false);
@@ -364,11 +241,6 @@ export default function Home() {
   const [showTour, setShowTour] = useState(false);
   const [quickCherubs, setQuickCherubs] = useState(false);
   const [beansSpilled, setBeansSpilled] = useState(false);
-  // SpillMail inbox (taskbar mode) — spotlights the collection for conversion
-  const [spamEmail, setSpamEmail] = useState("");
-  const [spamJoined, setSpamJoined] = useState(false);
-  const [mailNotif, setMailNotif] = useState(false); // "you've got mail" toast
-  const [mailUnread, setMailUnread] = useState(false); // taskbar tab flashes
   const [clockHands, setClockHands] = useState({ h: 0, m: 0 });
 
   // Auto-play Al's tour on a visitor's first visit (or when forced via ?tour=1)
@@ -401,60 +273,6 @@ export default function Home() {
   const spillBeans = () => {
     setBeansSpilled(true);
     setTimeout(() => setBeansSpilled(false), 4500);
-  };
-
-  // New mail "arrives" a few seconds in: it lands as a (minimized) SpillMail
-  // tab in the taskbar with a "you've got mail" notification — not a window
-  // popping open in your face. Clicking the tab or the notification opens it.
-  const inboxShownRef = useRef(false);
-  useEffect(() => {
-    if (!taskbarMode || inboxShownRef.current) return;
-    const t = setTimeout(() => {
-      inboxShownRef.current = true;
-      zTopRef.current += 1;
-      const z = zTopRef.current;
-      setWindows((ws) => (ws.some((w) => w.id === "inbox") ? ws : [...ws, { id: "inbox", min: true, max: false, x: 290, y: -40, z }]));
-      setMailUnread(true);
-      setMailNotif(true);
-    }, 6500);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [taskbarMode]);
-
-  // Auto-dismiss the notification toast after a while (the tab keeps flashing)
-  useEffect(() => {
-    if (!mailNotif) return;
-    const t = setTimeout(() => setMailNotif(false), 9000);
-    return () => clearTimeout(t);
-  }, [mailNotif]);
-
-  const openMail = () => { focusWindow("inbox"); setMailNotif(false); setMailUnread(false); };
-
-  // Welcome window opens once when you enter the Spillville desktop
-  const welcomeShownRef = useRef(false);
-  useEffect(() => {
-    if (taskbarMode && !welcomeShownRef.current) {
-      welcomeShownRef.current = true;
-      openWindow("welcome");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [taskbarMode]);
-
-  const spamJoin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!spamEmail.trim()) return;
-    setSpamJoined(true);
-    playJingle();
-    try {
-      await fetch("https://digitalsprint.app.n8n.cloud/webhook/already-spilled-waitlist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: spamEmail, source: "inbox" }),
-      });
-    } catch {
-      // still confirm
-    }
-    setTimeout(() => closeWindow("inbox"), 2200);
   };
 
   const cleanUp = () => {
@@ -927,70 +745,6 @@ export default function Home() {
       {/* HAND-PAINTED SPLATTER BACKGROUND (inverts in dark mode) */}
       <div className={`bg-splatter ${darkMode ? 'bg-splatter-dark' : ''}`} />
 
-      {/* DESKTOP SHORTCUTS (taskbar mode) — custom lettering as desktop icons */}
-      {taskbarMode && (
-        <div className="desk-icons">
-          <DraggableShortcut id="tour-story" onOpen={() => openWindow("story")}>
-            <svg className="desk-svg" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-              <path d="M16 7C13 5 8 5 5 6v20c3-1 8-1 11 1 3-2 8-2 11-1V6c-3-1-8-1-11 1z" fill="#fdf8ec" stroke="#1a1a1a" strokeWidth="1.6" strokeLinejoin="round" />
-              <path d="M16 7v21" stroke="#1a1a1a" strokeWidth="1.6" />
-              <path d="M8 11c2-.4 4-.4 6 0M8 15c2-.4 4-.4 6 0M18 11c2-.4 4-.4 6 0M18 15c2-.4 4-.4 6 0" stroke="#4a90d9" strokeWidth="1.4" strokeLinecap="round" />
-            </svg>
-            <Image src="/assets/buttons/story-time.png" alt="Story Time" width={1331} height={426} className="desk-icon-art" draggable={false} />
-          </DraggableShortcut>
-          <DraggableShortcut id="tour-boletin" onOpen={() => openWindow("collection")}>
-            <svg className="desk-svg" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-              <rect x="4" y="8" width="24" height="17" rx="1.5" fill="#f5e050" stroke="#1a1a1a" strokeWidth="1.6" />
-              <path d="M5 9l11 8 11-8" stroke="#1a1a1a" strokeWidth="1.6" fill="none" strokeLinejoin="round" />
-            </svg>
-            <Image src="/assets/buttons/el-boletin.png" alt="El Boletín" width={1326} height={456} className="desk-icon-art" draggable={false} />
-          </DraggableShortcut>
-          <DraggableShortcut id="tour-spill" onOpen={() => openWindow("signup")}>
-            <svg className="desk-svg" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-              <path d="M6 26l1.5-5L21 7.5l3.5 3.5L11 24.5 6 26z" fill="#f5e050" stroke="#1a1a1a" strokeWidth="1.6" strokeLinejoin="round" />
-              <path d="M21 7.5l2-2 3.5 3.5-2 2z" fill="#ff6b9d" stroke="#1a1a1a" strokeWidth="1.6" strokeLinejoin="round" />
-              <path d="M6 26l1.5-5 3.5 3.5z" fill="#1a1a1a" />
-            </svg>
-            <Image src="/assets/buttons/spill-it.png" alt="Spill It" width={1334} height={617} className="desk-icon-art" draggable={false} />
-          </DraggableShortcut>
-        </div>
-      )}
-
-      {/* DESKTOP CORNER — the brand asset that lives loose on the background.
-          deskLogo => the logo sits here; deskLetters => the draggable
-          EMBRACE THE MESS lettering sits here (the Welcome window shows the
-          opposite of whichever this is). */}
-      {taskbarMode && (
-        deskLettersLoose ? (
-          <div className="desk-corner desk-corner-letters select-none">
-            <HeadlineLetters initialAnimationDone={initialAnimationDone} chaos={chaos} h="h-[24px] sm:h-[32px] md:h-[40px]" />
-          </div>
-        ) : (
-          <div className="desk-corner desk-corner-logo">
-            <Image src="/assets/already-spilled-logo.png" alt="Already Spilled" width={2375} height={1545} className="w-[150px] md:w-[210px] select-none pointer-events-none" draggable={false} />
-          </div>
-        )
-      )}
-
-      {/* NEW MAIL notification — Win95 tray balloon; click to open SpillMail */}
-      {taskbarMode && mailNotif && (
-        <button className="mail-notif" onClick={openMail}>
-          <span className="mail-notif-ico">📬</span>
-          <span className="mail-notif-text">
-            <span className="mail-notif-title">You&apos;ve got mail!</span>
-            <span className="mail-notif-sub">Al @ Already Spilled — first dibs on the drop</span>
-          </span>
-          <span
-            className="mail-notif-x"
-            role="button"
-            aria-label="Dismiss"
-            onClick={(e) => { e.stopPropagation(); setMailNotif(false); }}
-          >
-            ×
-          </span>
-        </button>
-      )}
-
       {/* AL'S GUIDED TOUR (first visit; replay via the button) */}
       {showTour && <Tour onDone={finishTour} onJoin={playJingle} />}
 
@@ -1033,12 +787,12 @@ export default function Home() {
       </div>
       )}
 
-      {/* INTERACTIVE CHERUB - Left (Blue) - Opens the paint palette / Paint window */}
-      <div className={`fixed left-2 md:left-8 ${taskbarMode ? 'top-[78%]' : 'top-1/2'} -translate-y-1/2 z-40 animate-load-cherub-left ${quickCherubs ? 'cherub-quick' : ''} ${showTour ? 'hidden' : ''}`}>
+      {/* INTERACTIVE CHERUB - Left (Blue) - Opens the paint palette */}
+      <div className={`fixed left-2 md:left-8 top-1/2 -translate-y-1/2 z-40 animate-load-cherub-left ${quickCherubs ? 'cherub-quick' : ''} ${showTour ? 'hidden' : ''}`}>
         {/* cherub + palette float together so the palette looks held */}
         <div className="cherub-hold animate-float-1">
           <button
-            onClick={taskbarMode ? () => openWindow("paint") : togglePalette}
+            onClick={togglePalette}
             className="cherub-btn"
             title={paletteOpen ? "Put the paints away" : "Can I have some paint?"}
           >
@@ -1147,32 +901,7 @@ export default function Home() {
       <audio ref={audioRef} src="/assets/website-ui.mp3" loop preload="auto" />
       <audio ref={jingleRef} src="/assets/as-jingle.wav" preload="auto" />
 
-      {/* PREVIEW: switch between the two control styles */}
-      <div className="ui-switch">
-        <span className="ui-switch-label">version:</span>
-        <button className={controlStyle === 'knob' ? 'on' : ''} onClick={() => setControlStyle('knob')}>knob</button>
-        <button className={controlStyle === 'deskLogo' ? 'on' : ''} onClick={() => setControlStyle('deskLogo')}>desktop · logo</button>
-        <button className={controlStyle === 'deskLetters' ? 'on' : ''} onClick={() => setControlStyle('deskLetters')}>desktop · letters</button>
-      </div>
-
-      {/* OPTION 2: Spillville 95 taskbar (both desktop variants) */}
-      {taskbarMode && (
-        <TaskBar
-          soundOn={soundOn} setSoundOn={setSoundOn}
-          crtOn={crtOn} setCrtOn={setCrtOn}
-          stainsOn={stainsOn} setStainsOn={setStainsOn}
-          darkMode={darkMode} setDarkMode={setDarkMode}
-          onTour={() => setShowTour(true)}
-          onCleanUp={cleanUp}
-          onSpillBeans={spillBeans}
-          windows={windows}
-          onWindowClick={toggleWindow}
-          unread={mailUnread ? "inbox" : undefined}
-        />
-      )}
-
-      {/* OPTION 1: knob — tucked away, expands on click */}
-      {controlStyle === 'knob' && (
+      {/* CONTROL KNOB — tucked away, expands on click */}
       <div className={`control-panel ${controlsOpen ? 'is-open' : ''}`}>
         <button
           className="control-knob"
@@ -1235,14 +964,18 @@ export default function Home() {
           >
             {darkMode ? '🌚 night night' : '☀️ bom dia'}
           </button>
+          <button className="ctrl-btn ctrl-cleanup" onClick={cleanUp}>
+            🧹 Clean Up
+          </button>
+          <button className="ctrl-btn ctrl-tour" onClick={() => setShowTour(true)}>
+            👋 tour
+          </button>
         </div>
       </div>
-      )}
 
       {/* MAIN CONTENT */}
-      <div className={`text-center z-20 max-w-4xl ${taskbarMode ? '-translate-y-12 md:-translate-y-20' : ''}`}>
-        {/* Logo — hidden in taskbar mode; the Welcome window carries the logo there */}
-        {!taskbarMode && (
+      <div className="text-center z-20 max-w-4xl">
+        {/* Logo */}
         <div className="mb-3 md:mb-6 animate-load-logo">
           <Image
             src="/assets/already-spilled-logo.png"
@@ -1254,11 +987,8 @@ export default function Home() {
             priority
           />
         </div>
-        )}
 
-        {/* BIG HEADLINE - letters are draggable (knob only; desktop puts them
-            in the Welcome window or loose on the background) */}
-        {!taskbarMode && (
+        {/* BIG HEADLINE - letters are draggable */}
         <div
           id="tour-headline"
           className="mb-5 md:mb-8 select-none"
@@ -1272,10 +1002,8 @@ export default function Home() {
         >
           <HeadlineLetters initialAnimationDone={initialAnimationDone} chaos={chaos} />
         </div>
-        )}
 
-        {/* BUTTONS - clickable and draggable (knob mode only; taskbar uses desktop icons) */}
-        {!taskbarMode && (
+        {/* BUTTONS - clickable and draggable */}
         <div className="flex flex-wrap justify-center items-center gap-3 md:gap-4 animate-load-buttons">
           <DraggableButton id="tour-story" onClick={() => openWindow("story")}>
             <Image src="/assets/buttons/story-time.png" alt="Story Time" width={1331} height={426} className="h-[44px] md:h-[56px] lg:h-[66px] w-auto" draggable={false} />
@@ -1287,178 +1015,23 @@ export default function Home() {
             <Image src="/assets/buttons/spill-it.png" alt="Spill It" width={1334} height={617} className="h-[44px] md:h-[56px] lg:h-[66px] w-auto" draggable={false} />
           </DraggableButton>
         </div>
-        )}
       </div>
 
-      {/* EXPANDABLE PANELS — modal (knob) or floating windows (taskbar) */}
-      {(taskbarMode ? windows : activePanel ? [{ id: activePanel, min: false, max: false, x: 0, y: 0, z: 0 }] : []).map((w) => {
-        if (taskbarMode && w.min) return null;
-        const which = w.id;
-        const onClose = taskbarMode ? () => closeWindow(w.id) : closePanel;
-        const onMinimize = taskbarMode ? () => minimizeWindow(w.id) : undefined;
-        const onMaximize = taskbarMode ? () => maximizeWindow(w.id) : undefined;
+      {/* EXPANDABLE PANEL — centered modal */}
+      {activePanel && (() => {
+        const which = activePanel;
+        const onClose = closePanel;
+        const onMinimize: (() => void) | undefined = undefined;
+        const onMaximize: (() => void) | undefined = undefined;
         return (
         <div
-          key={w.id}
-          className={
-            taskbarMode
-              ? "win-layer"
-              : "fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
-          }
-          style={taskbarMode ? { zIndex: w.z } : undefined}
-          onClick={taskbarMode ? undefined : closePanel}
+          className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+          onClick={closePanel}
         >
           <div
-            className={
-              taskbarMode
-                ? `win-frame win-${which} ${w.max ? "win-max" : ""}`
-                : "relative max-w-[95vw] sm:max-w-md md:max-w-lg w-full animate-panel-in"
-            }
-            style={taskbarMode && !w.max ? { transform: `translate(calc(-50% + ${w.x}px), calc(-50% + ${w.y}px))` } : undefined}
+            className="relative max-w-[95vw] sm:max-w-md md:max-w-lg w-full animate-panel-in"
             onClick={(e) => e.stopPropagation()}
-            onPointerDown={(e) => taskbarMode && onWinPointerDown(e, w.id)}
-            onPointerMove={(e) => taskbarMode && onWinPointerMove(e, w.id)}
-            onPointerUp={onWinPointerUp}
-            onPointerCancel={onWinPointerUp}
           >
-            {/* WELCOME PANEL - logo + tagline, opens on the desktop */}
-            {which === "welcome" && (
-              <div className="welcome-win">
-                <div className="welcome-titlebar win-drag">
-                  <span>👋 Welcome to Spillville 95</span>
-                  <span className="win-btns">
-                    {onMinimize && <button onClick={onMinimize} className="welcome-x win-min" title="Minimize" aria-label="Minimize">–</button>}
-                    {onMaximize && <button onClick={onMaximize} className="welcome-x win-max-btn" title="Maximize" aria-label="Maximize">▢</button>}
-                    <button onClick={onClose} className="welcome-x" aria-label="Close">×</button>
-                  </span>
-                </div>
-                <div className={`welcome-body ${deskLettersLoose ? "" : "welcome-body-letters"}`}>
-                  {deskLettersLoose ? (
-                    <>
-                      <Image src="/assets/already-spilled-logo.png" alt="Already Spilled" width={2375} height={1545} className="welcome-logo" draggable={false} />
-                      <p className="welcome-sub">coffee got on everything, so we made it the whole point. perfection is boring — you&apos;re already spilled.</p>
-                    </>
-                  ) : (
-                    <div className="welcome-letters select-none">
-                      <HeadlineLetters initialAnimationDone={initialAnimationDone} chaos={chaos} h="h-[48px] sm:h-[64px] md:h-[80px]" />
-                      <p className="welcome-hint">psst — drag the letters right off the window and play with them on the desktop.</p>
-                    </div>
-                  )}
-                  <div className="welcome-actions">
-                    <button className="welcome-cta" onClick={() => openWindow("collection")}>see the collection →</button>
-                    <button className="welcome-ghost" onClick={onClose}>poke around the desktop</button>
-                  </div>
-
-                  {/* readme.txt — styled like an old text file you scroll through */}
-                  <div className="welcome-readme">
-                    <div className="welcome-readme-bar">
-                      <span>📄 readme.txt</span>
-                      <span className="wr-scrollcue">scroll ▼</span>
-                    </div>
-                    <div className="welcome-readme-scroll">
-                      <p className="wr-title">✶ welcome to spillville 95 ✶</p>
-                      <p className="wr-div">═══════════════════════</p>
-                      <p className="wr-h">&gt; what is this?</p>
-                      <p>
-                        <b>Already Spilled</b> is a brand for people who make a mess and
-                        own it — coffee on the shirt, beans on the floor, perfection
-                        nowhere in sight. what you&apos;re looking at is <b>Spillville 95</b>,
-                        our little desktop. poke around. click stuff. drag stuff.
-                      </p>
-                      <p className="wr-div">· · · · · · · · · · · · ·</p>
-                      <p className="wr-h">&gt; how to get around</p>
-                      <ul className="welcome-links">
-                        <li><span className="wr-bullet">»</span> <span className="welcome-link" onClick={() => openWindow("story")}>📖 Story Time</span><br />read &amp; add real spill stories</li>
-                        <li><span className="wr-bullet">»</span> <span className="welcome-link" onClick={() => openWindow("collection")}>📬 El Boletín</span><br />the drop is coming — get on the list</li>
-                        <li><span className="wr-bullet">»</span> <span className="welcome-link" onClick={() => openWindow("signup")}>✍️ Spill It</span><br />sign the guestbook with your worst stain</li>
-                        <li><span className="wr-bullet">»</span> <span className="welcome-link" onClick={() => openWindow("paint")}>🎨 Paint</span><br />make an actual mess on a canvas</li>
-                      </ul>
-                      <p className="wr-div">· · · · · · · · · · · · ·</p>
-                      <p className="wr-h">&gt; pro tips</p>
-                      <p>
-                        drag the desktop icons (and the letters) anywhere. poke the
-                        cherubs for chaos. the <b>taskbar</b> down below shows everything
-                        that&apos;s open. that&apos;s it — now go make a mess.
-                      </p>
-                      <p className="wr-eof">— end of file —</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* INBOX PANEL - SpillMail email client (conversion) */}
-            {which === "inbox" && (
-              <div className="mail">
-                <div className="mail-titlebar win-drag">
-                  <span>📬 SpillMail — Inbox</span>
-                  <span className="win-btns">
-                    {onMinimize && <button onClick={onMinimize} className="mail-x win-min" title="Minimize" aria-label="Minimize">–</button>}
-                    {onMaximize && <button onClick={onMaximize} className="mail-x win-max-btn" title="Maximize" aria-label="Maximize">▢</button>}
-                    <button onClick={onClose} className="mail-x" aria-label="Close">×</button>
-                  </span>
-                </div>
-                <div className="mail-toolbar">
-                  <span className="mail-tool">✉ New</span>
-                  <span className="mail-tool">↩ Reply</span>
-                  <span className="mail-tool">↪ Forward</span>
-                  <span className="mail-tool">🗑 Delete</span>
-                  <span className="mail-tool mail-tool-end">Inbox (1 unread)</span>
-                </div>
-                <div className="mail-main">
-                  <ul className="mail-list">
-                    <li className="mail-row unread active">
-                      <span className="mail-dot">●</span>
-                      <span className="mail-from">Al @ Already Spilled</span>
-                      <span className="mail-subj">first dibs on the drop 🫘</span>
-                      <span className="mail-time">now</span>
-                    </li>
-                    <li className="mail-row">
-                      <span className="mail-dot" />
-                      <span className="mail-from">SpillNet Support</span>
-                      <span className="mail-subj">Re: your stain warranty</span>
-                      <span className="mail-time">Tue</span>
-                    </li>
-                    <li className="mail-row">
-                      <span className="mail-dot" />
-                      <span className="mail-from">no-reply</span>
-                      <span className="mail-subj">your coffee order is ready ☕</span>
-                      <span className="mail-time">Mon</span>
-                    </li>
-                  </ul>
-                  <div className="mail-reading">
-                    {spamJoined ? (
-                      <div className="mail-done">✅ you&apos;re on the list.<br /><span>watch your inbox (and your shirt).</span></div>
-                    ) : (
-                      <>
-                        <div className="mail-head">
-                          <h3 className="mail-head-subj">first dibs on the drop 🫘</h3>
-                          <div className="mail-meta"><b>From:</b> Al @ Already Spilled &lt;al@alreadyspilled.com&gt;</div>
-                          <div className="mail-meta"><b>To:</b> you</div>
-                        </div>
-                        <div className="mail-bodytext">
-                          <p>hey —</p>
-                          <p>the collection drops soon, and i wanted you to hear it first. leave your email and i&apos;ll ping you the <i>second</i> it spills. no spam, just the drop.</p>
-                          <form className="mail-form" onSubmit={spamJoin}>
-                            <input
-                              type="email"
-                              className="mail-input"
-                              placeholder="you@email.com"
-                              value={spamEmail}
-                              onChange={(e) => setSpamEmail(e.target.value)}
-                              required
-                            />
-                            <button type="submit" className="mail-cta">count me in</button>
-                          </form>
-                          <p className="mail-sig">— Al, court jester of spillville</p>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-
             {/* STORY PANEL - AIM Chat Style */}
             {which === "story" && (
               <div className="aim-window">
@@ -1845,53 +1418,13 @@ export default function Home() {
                 </div>
               </div>
             )}
-            {which === "paint" && (
-              <div className="mspaint">
-                <div className="mspaint-titlebar win-drag">
-                  <span>🎨 untitled — Paint</span>
-                  <span className="win-btns">
-                    {onMinimize && <button onClick={onMinimize} className="mspaint-x win-min" title="Minimize" aria-label="Minimize">–</button>}
-                    {onMaximize && <button onClick={onMaximize} className="mspaint-x win-max-btn" title="Maximize" aria-label="Maximize">▢</button>}
-                    <button onClick={onClose} className="mspaint-x">×</button>
-                  </span>
-                </div>
-                <div className="mspaint-menubar"><span>File</span><span>Edit</span><span>View</span><span>Image</span></div>
-                <div className="mspaint-body">
-                  <div className="mspaint-tools">
-                    {PAINTS.current.map((p) => (
-                      <button
-                        key={p.name}
-                        className={`mspaint-swatch ${paintColor === p.c ? "sel" : ""}`}
-                        style={{ background: `${p.c} 1)` }}
-                        onClick={() => setPaintColor(p.c)}
-                        title={p.name}
-                        aria-label={p.name}
-                      />
-                    ))}
-                    <button className="mspaint-clear" onClick={clearPaint} title="Clear canvas" aria-label="Clear">🧽</button>
-                  </div>
-                  <div className="mspaint-canvas-wrap">
-                    <canvas
-                      ref={paintCanvasRef}
-                      width={640}
-                      height={430}
-                      className="mspaint-canvas"
-                      onPointerDown={onPaintDown}
-                      onPointerMove={onPaintMove}
-                      onPointerUp={onPaintUp}
-                      onPointerCancel={onPaintUp}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
+
           </div>
         </div>
         );
-      })}
+      })()}
 
-      {/* FOOTER - secret: tip the badge over to spill the beans (hidden in taskbar mode; © lives in the bar) */}
-      {!taskbarMode && (
+      {/* FOOTER - secret: tip the badge over to spill the beans */}
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-20 animate-load-footer">
         <button
           onClick={spillBeans}
@@ -1901,7 +1434,6 @@ export default function Home() {
           <Image src="/assets/2026.png" alt="© 2026 Already Spilled" width={520} height={88} className="h-[28px] md:h-[38px] w-auto" draggable={false} />
         </button>
       </div>
-      )}
 
       {/* EASTER EGG: spilled beans raining down */}
       {beansSpilled && (
