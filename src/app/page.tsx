@@ -638,15 +638,15 @@ export default function Home() {
   // Paint palette — brand colors (rgba prefixes, opacity appended when painting)
   // Colors + well positions matched to the photographed palette (color pallet.png)
   const PAINTS = useRef([
-    { name: "cream", c: "rgba(235, 227, 205,", x: 26, y: 34.5 },
-    { name: "light pink", c: "rgba(245, 190, 210,", x: 35, y: 21 },
-    { name: "pink", c: "rgba(242, 148, 182,", x: 51, y: 17 },
-    { name: "magenta", c: "rgba(233, 78, 122,", x: 65, y: 18.5 },
-    { name: "navy", c: "rgba(40, 58, 105,", x: 78, y: 28 },
-    { name: "green", c: "rgba(64, 174, 134,", x: 81, y: 44 },
-    { name: "light blue", c: "rgba(126, 168, 214,", x: 72.5, y: 59 },
-    { name: "yellow", c: "rgba(230, 178, 62,", x: 18.5, y: 51 },
-    { name: "dark blue", c: "rgba(52, 78, 124,", x: 22, y: 69 },
+    { name: "cream", c: "rgba(235, 227, 205,", x: 25, y: 39 },
+    { name: "light pink", c: "rgba(245, 190, 210,", x: 37, y: 27 },
+    { name: "pink", c: "rgba(242, 148, 182,", x: 53, y: 18 },
+    { name: "magenta", c: "rgba(233, 78, 122,", x: 69, y: 18 },
+    { name: "navy", c: "rgba(40, 58, 105,", x: 80, y: 30 },
+    { name: "green", c: "rgba(64, 174, 134,", x: 84, y: 45 },
+    { name: "light blue", c: "rgba(126, 168, 214,", x: 75, y: 63 },
+    { name: "yellow", c: "rgba(230, 178, 62,", x: 22, y: 55 },
+    { name: "dark blue", c: "rgba(52, 78, 124,", x: 24, y: 74 },
   ]);
 
   // Size the canvas to the window
@@ -814,30 +814,6 @@ export default function Home() {
               className={`w-[64px] sm:w-[88px] md:w-[100px] lg:w-[150px] transition-all duration-300 ${paletteOpen ? 'drop-shadow-[0_0_10px_rgba(124,160,217,0.9)] scale-110' : ''}`}
             />
           </button>
-
-          {/* Paint palette — pick a well, then hold to paint */}
-          {paletteOpen && (
-            <div className="paint-palette">
-              <Image
-                src="/assets/color-palette.png"
-                alt="paint palette"
-                width={2048}
-                height={2048}
-                className="palette-img"
-                draggable={false}
-              />
-              {PAINTS.current.map((p) => (
-                <button
-                  key={p.name}
-                  className={`paint-well ${selectedColor === p.c ? 'selected' : ''}`}
-                  style={{ left: `${p.x}%`, top: `${p.y}%` }}
-                  onClick={() => selectColor(p.c)}
-                  title={p.name}
-                  aria-label={`${p.name} paint`}
-                />
-              ))}
-            </div>
-          )}
         </div>
 
         {/* Crayon speech bubbles - stacked above the cherub */}
@@ -856,6 +832,30 @@ export default function Home() {
           </div>
         )}
       </div>
+
+      {/* PAINT PALETTE — fixed in the bottom-left corner (blue cherub opens it) */}
+      {paletteOpen && (
+        <div className="paint-palette">
+          <Image
+            src="/assets/color-palette.png"
+            alt="paint palette"
+            width={500}
+            height={500}
+            className="palette-img"
+            draggable={false}
+          />
+          {PAINTS.current.map((p) => (
+            <button
+              key={p.name}
+              className={`paint-well ${selectedColor === p.c ? 'selected' : ''}`}
+              style={{ left: `${p.x}%`, top: `${p.y}%` }}
+              onClick={() => selectColor(p.c)}
+              title={p.name}
+              aria-label={`${p.name} paint`}
+            />
+          ))}
+        </div>
+      )}
 
       {/* INTERACTIVE CHERUB - Right (Pink) - Etch-a-sketch: shake + clean */}
       <div className={`fixed right-2 md:right-8 top-1/2 -translate-y-1/2 z-40 animate-load-cherub-right ${quickCherubs ? 'cherub-quick' : ''} ${showTour ? 'hidden' : ''}`}>
