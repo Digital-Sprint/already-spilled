@@ -620,15 +620,17 @@ export default function Home() {
   }, [progressPhase, progressPhrases.length]);
 
   // Paint palette — brand colors (rgba prefixes, opacity appended when painting)
+  // Colors + well positions matched to the photographed palette (color pallet.png)
   const PAINTS = useRef([
-    { name: "pink", c: "rgba(255, 107, 157," },
-    { name: "blue", c: "rgba(74, 144, 217," },
-    { name: "yellow", c: "rgba(245, 224, 80," },
-    { name: "green", c: "rgba(124, 184, 96," },
-    { name: "orange", c: "rgba(255, 140, 66," },
-    { name: "purple", c: "rgba(157, 78, 221," },
-    { name: "red", c: "rgba(230, 57, 70," },
-    { name: "teal", c: "rgba(46, 196, 182," },
+    { name: "cream", c: "rgba(235, 227, 205,", x: 26, y: 34.5 },
+    { name: "light pink", c: "rgba(245, 190, 210,", x: 35, y: 21 },
+    { name: "pink", c: "rgba(242, 148, 182,", x: 51, y: 17 },
+    { name: "magenta", c: "rgba(233, 78, 122,", x: 65, y: 18.5 },
+    { name: "navy", c: "rgba(40, 58, 105,", x: 78, y: 28 },
+    { name: "green", c: "rgba(64, 174, 134,", x: 81, y: 44 },
+    { name: "light blue", c: "rgba(126, 168, 214,", x: 72.5, y: 59 },
+    { name: "yellow", c: "rgba(230, 178, 62,", x: 18.5, y: 51 },
+    { name: "dark blue", c: "rgba(52, 78, 124,", x: 22, y: 69 },
   ]);
 
   // Size the canvas to the window
@@ -797,28 +799,22 @@ export default function Home() {
             />
           </button>
 
-          {/* Paint palette — pick a color, then hold to paint */}
+          {/* Paint palette — pick a well, then hold to paint */}
           {paletteOpen && (
             <div className="paint-palette">
-              <svg className="palette-shape" viewBox="0 0 200 180" aria-hidden="true">
-                <defs>
-                  <radialGradient id="palette-wood" cx="42%" cy="36%" r="78%">
-                    <stop offset="0%" stopColor="#cd9156" />
-                    <stop offset="100%" stopColor="#a4642d" />
-                  </radialGradient>
-                  <mask id="palette-thumb">
-                    <rect width="200" height="180" fill="#fff" />
-                    <ellipse cx="48" cy="130" rx="20" ry="18" fill="#000" />
-                  </mask>
-                </defs>
-                <ellipse cx="100" cy="88" rx="94" ry="80" fill="url(#palette-wood)" stroke="#6f4419" strokeWidth="6" mask="url(#palette-thumb)" />
-                <ellipse cx="48" cy="130" rx="20" ry="18" fill="none" stroke="#6f4419" strokeWidth="4" />
-              </svg>
+              <Image
+                src="/assets/color-palette.png"
+                alt="paint palette"
+                width={2048}
+                height={2048}
+                className="palette-img"
+                draggable={false}
+              />
               {PAINTS.current.map((p) => (
                 <button
                   key={p.name}
-                  className={`paint-swatch ${selectedColor === p.c ? 'selected' : ''}`}
-                  style={{ background: `${p.c} 1)` }}
+                  className={`paint-well ${selectedColor === p.c ? 'selected' : ''}`}
+                  style={{ left: `${p.x}%`, top: `${p.y}%` }}
                   onClick={() => selectColor(p.c)}
                   title={p.name}
                   aria-label={`${p.name} paint`}
@@ -886,13 +882,8 @@ export default function Home() {
         style={{ mixBlendMode: darkMode ? "screen" : "multiply" }}
       />
 
-      {/* CRT OVERLAY - boots up like an old computer, then settles (static scanlines) */}
-      {crtOn && (
-        <div className="crt-overlay pointer-events-none">
-          <div className="crt-boot" />
-          <div className="crt-flicker" />
-        </div>
-      )}
+      {/* CRT OVERLAY - Fuzzy TV effect */}
+      {crtOn && <div className="crt-overlay pointer-events-none"></div>}
 
       {/* BACKGROUND MUSIC + SUBMIT JINGLE */}
       <audio ref={audioRef} src="/assets/website-ui.mp3" loop preload="auto" />
@@ -924,8 +915,8 @@ export default function Home() {
         <button
           className={`hot hot-fuzz ${crtOn ? 'on' : ''}`}
           onClick={() => setCrtOn((v) => !v)}
-          title="⚠ fuzz — CRT effect (brief flashing when toggled)"
-          aria-label="Toggle fuzz CRT effect. Photosensitivity warning: brief flashing."
+          title="fuzz — CRT effect"
+          aria-label="Toggle fuzz CRT effect"
         />
         <button
           className={`hot hot-plop ${stainsOn ? 'on' : ''}`}
