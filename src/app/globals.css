@@ -2897,6 +2897,27 @@ body {
   animation-delay: 1.85s;
 }
 
+/* Launcher buttons load in one at a time, then shake on hover */
+.btn-load {
+  display: inline-block;
+  opacity: 0;
+  animation: fade-in-up 0.5s ease-out forwards;
+}
+.btn-load-1 { animation-delay: 1.30s; }
+.btn-load-2 { animation-delay: 1.48s; }
+.btn-load-3 { animation-delay: 1.66s; }
+
+.btn-shake:hover { animation: btn-shake-kf 0.55s ease-in-out infinite; }
+@keyframes btn-shake-kf {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  20% { transform: translate(-2px, 1px) rotate(-3deg); }
+  45% { transform: translate(2px, -1px) rotate(3deg); }
+  70% { transform: translate(-1px, 1px) rotate(-2deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn-shake:hover { animation: none; }
+}
+
 /* ============================================
    MOBILE RESPONSIVE STYLES
    ============================================ */
