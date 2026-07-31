@@ -155,7 +155,7 @@ function DraggableButton({ onClick, children, id }: { onClick: () => void; child
         if (movedRef.current) return; // it was a drag, not a tap
         onClick();
       }}
-      className="hover:brightness-105"
+      className="btn-shake hover:brightness-105"
       style={{ ...style, display: "inline-block", position: "relative", zIndex: grabbing ? 50 : "auto" }}
     >
       {children}
@@ -394,21 +394,26 @@ export default function Home() {
     return () => { document.body.style.cursor = ""; };
   }, [selectedColor]);
 
-  // Background music — best-effort autoplay, fall back to first interaction
+  // Background music — start as early as the browser allows: try immediately,
+  // retry the moment it's buffered, and start on the very first interaction.
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
     audio.volume = BG_VOLUME;
-    audio.play().catch(() => {
-      // Autoplay blocked — start on the first user gesture
-      const start = () => {
-        audio.play().catch(() => {});
-        window.removeEventListener("pointerdown", start);
-        window.removeEventListener("keydown", start);
-      };
-      window.addEventListener("pointerdown", start);
-      window.addEventListener("keydown", start);
-    });
+    let started = false;
+    const gestures = ["pointerdown", "pointerup", "keydown", "touchstart", "click"];
+    const cleanup = () => {
+      gestures.forEach((g) => window.removeEventListener(g, tryPlay));
+      audio.removeEventListener("canplay", tryPlay);
+    };
+    function tryPlay() {
+      if (started || !audio) return;
+      audio.play().then(() => { started = true; cleanup(); }).catch(() => {});
+    }
+    tryPlay();                                   // best-effort right away
+    audio.addEventListener("canplay", tryPlay);  // ...and the instant it can play
+    gestures.forEach((g) => window.addEventListener(g, tryPlay));
+    return cleanup;
   }, []);
 
   // Sound on/off toggle (mute rather than stop so it stays in sync)
@@ -978,17 +983,23 @@ export default function Home() {
           <HeadlineLetters initialAnimationDone={initialAnimationDone} chaos={chaos} />
         </div>
 
-        {/* BUTTONS - clickable and draggable */}
-        <div className="flex flex-wrap justify-center items-center gap-3 md:gap-4 animate-load-buttons">
-          <DraggableButton id="tour-story" onClick={() => openWindow("story")}>
-            <Image src="/assets/buttons/story-time.png" alt="Story Time" width={1331} height={426} className="h-[44px] md:h-[56px] lg:h-[66px] w-auto" draggable={false} />
-          </DraggableButton>
-          <DraggableButton id="tour-boletin" onClick={() => openWindow("collection")}>
-            <Image src="/assets/buttons/el-boletin.png" alt="El Boletín" width={1326} height={456} className="h-[44px] md:h-[56px] lg:h-[66px] w-auto" draggable={false} />
-          </DraggableButton>
-          <DraggableButton id="tour-spill" onClick={() => openWindow("signup")}>
-            <Image src="/assets/buttons/spill-it.png" alt="Spill It" width={1334} height={617} className="h-[44px] md:h-[56px] lg:h-[66px] w-auto" draggable={false} />
-          </DraggableButton>
+        {/* BUTTONS - each loads in separately, shakes on hover */}
+        <div className="flex flex-wrap justify-center items-center gap-3 md:gap-4">
+          <span className="btn-load btn-load-1">
+            <DraggableButton id="tour-story" onClick={() => openWindow("story")}>
+              <Image src="/assets/buttons/story-time.png" alt="Story Time" width={1331} height={426} className="h-[44px] md:h-[56px] lg:h-[66px] w-auto" draggable={false} />
+            </DraggableButton>
+          </span>
+          <span className="btn-load btn-load-2">
+            <DraggableButton id="tour-boletin" onClick={() => openWindow("collection")}>
+              <Image src="/assets/buttons/el-boletin.png" alt="El Boletín" width={1326} height={456} className="h-[44px] md:h-[56px] lg:h-[66px] w-auto" draggable={false} />
+            </DraggableButton>
+          </span>
+          <span className="btn-load btn-load-3">
+            <DraggableButton id="tour-spill" onClick={() => openWindow("signup")}>
+              <Image src="/assets/buttons/spill-it.png" alt="Spill It" width={1334} height={617} className="h-[44px] md:h-[56px] lg:h-[66px] w-auto" draggable={false} />
+            </DraggableButton>
+          </span>
         </div>
       </div>
 
