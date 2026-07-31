@@ -2891,6 +2891,12 @@ body {
   animation-delay: 1.9s;
 }
 
+.animate-load-computer {
+  opacity: 0;
+  animation: fade-in-up 0.7s ease-out forwards;
+  animation-delay: 1.85s;
+}
+
 /* ============================================
    MOBILE RESPONSIVE STYLES
    ============================================ */

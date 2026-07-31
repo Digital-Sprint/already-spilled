@@ -907,7 +907,7 @@ export default function Home() {
 
       {/* CONTROL — the AS2001 computer. The on-screen buttons + the cow on
           the speaker are the actual controls (photosensitivity note on fuzz). */}
-      <div className="computah">
+      <div className="computah animate-load-computer">
         {/* both images stacked + cross-faded so day/night doesn't flash */}
         <Image
           src="/assets/computah-light.png"
